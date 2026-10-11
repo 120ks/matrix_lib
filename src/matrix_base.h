@@ -17,8 +17,13 @@ class Slice
         ~Slice() = default;
 
 
-    friend Slice operator+(const Slice sl1, const Slice sl2)
-    {
+    friend Slice operator+(const Slice sl1, Slice sl2)
+    {   
+        //korjaa, jos sl2 on tyhjä niin asettaa sen sl1 total kanssa samaan
+        sl2.total == 0 ? sl1.total : sl2.total; //esim näin
+        
+        //asettaa aloituksen siihen kohtaa josta alkaa ja säilyttää sl2 total, joka tulisi olla sama
+        //ottaen huomioon
         return Slice{sl1.begin + sl2.begin, sl2.total + (sl1.begin + sl2.begin)};
     }
 };

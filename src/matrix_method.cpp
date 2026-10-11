@@ -185,6 +185,24 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const double val, Operation op)
     broadcast(mxb1, temp_val, op);
 }
 
+//
+//for r-val inplace operaatiot, esim Matrix{std(mx1, true)({2, 3}, {3, 6}) + 2};
+//
+    Matrix Matrix_method::broadcast(const Matrix_base &mxb1, const Matrix_base &mxb2, Operation op, const bool tile)
+    {
+        Matrix temp_mx{mxb1};
+        broadcast(temp_mx, mxb2, op, tile);
+        return temp_mx;
+    }
+
+    Matrix Matrix_method::broadcast(const Matrix_base &mxb1, const double val, Operation op)
+    {
+        Matrix temp_mx{mxb1};
+        broadcast(temp_mx, val, op);
+        return temp_mx;
+    }
+
+
 Matrix Matrix_method::copy(const Matrix_base &mxb1)
 {   
     auto r1{mxb1.get_rows()};
@@ -231,33 +249,52 @@ Matrix Matrix_method::avg(const Matrix_base &mxb1, bool row_wise)
     return avarage;
 }
 
-double Matrix_method::std(const Matrix_base &mxb1, int degree)
+double Matrix_method::variance(const Matrix_base &mxb1, double degree)
 {   
     auto r1{mxb1.get_rows()};
     auto c1{mxb1.get_cols()};
     double mean{avg(mxb1)};
 
-    Matrix standard_deviation{mxb1};
-    broadcast(standard_deviation, mean, Operation::substract);
-    broadcast(standard_deviation, standard_deviation, Operation::multiply);
-    double std_out{sum(standard_deviation)};
-    std_out /= (r1*c1-degree);
-    return std::sqrt(std_out);
+    Matrix var{mxb1};
+    var -= mean;
+    broadcast(var, 2, Operation::power);
+    double var_out{sum(var)};
+    return  var_out / (r1*c1-degree);
 }
 
-Matrix Matrix_method::std(const Matrix_base &mxb1, bool row_wise, int degree)
+Matrix Matrix_method::variance(const Matrix_base &mxb1, const bool row_wise, double degree)
 {   
     auto r1{mxb1.get_rows()};
     auto c1{mxb1.get_cols()};
     Matrix mean{avg(mxb1, row_wise)};
 
-    Matrix standard_deviation{mxb1};
-    broadcast(standard_deviation, mean, Operation::substract);
-    broadcast(standard_deviation, standard_deviation, Operation::multiply);
-    Matrix std_out {sum(standard_deviation, row_wise)};
-    broadcast(std_out, (row_wise)? c1-degree : r1-degree, Operation::divide);
-    broadcast(std_out, 2.0, Operation::root);
-    return std_out;
+    Matrix var{mxb1};
+    var -= mean;
+    broadcast(var, 2, Operation::power);
+    Matrix var_out {sum(var, row_wise)};
+    broadcast(var_out, (row_wise)? c1-degree : r1-degree, Operation::divide);
+    return var_out;
+}
+
+
+double Matrix_method::std(const Matrix_base &mxb1, double degree)
+{   
+    return std::sqrt(variance(mxb1, degree));
+}
+
+Matrix Matrix_method::std(const Matrix_base &mxb1, const bool row_wise, double degree)
+{   
+    Matrix standard_deviation{variance(mxb1, row_wise, degree)};
+    broadcast(standard_deviation, 2.0, Operation::root);
+    return standard_deviation;
+}
+
+Matrix Matrix_method::normal_distribution(const Matrix_base &mxb1, const bool row_wise)
+{   
+    double small_num {0.001};
+    Matrix n_dist{mxb1 - avg(mxb1, row_wise)};
+    Matrix variance_squared{broadcast(variance(mxb1, row_wise) + small_num, 2.0, Operation::root)};
+    return n_dist / variance_squared;
 }
 
 Matrix Matrix_method::get_transposed(const Matrix_base& mxb1)
@@ -305,3 +342,5 @@ void Matrix_method::print(std::ostream &os, const Matrix_base &mxb1)
     }
     os<<'\n';
 }
+
+

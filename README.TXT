@@ -30,7 +30,9 @@ this can be done in three ways.
 empty{} takes all rows / cols so mx( {} , {1, 3} ) would select all rows and cols at indexes 1 and 2, same works vice versa and if both.
 single{1} takes only that specific col / row for example mx( {1} , {} would take row at index 1 and all its cols. again same works vice versa and both.
 both{1, 4} takes the all cols/rows between index 1 and 4 (excluding 4) so mx( {1,4} , {2}; would take the rows of indexes 1, 2, 3 and cols at index 2.
-the core principle of this method is that
+the core principle of this method is that it allows for fast and reliant ways to index only a single row/col or slice all of the others in a way that is more readable,
+documenting and intuitive.
+
 
 
 //
