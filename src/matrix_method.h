@@ -27,7 +27,7 @@ class Matrix_method
 
     public:
         static bool has_zero(const Matrix_base &mxb1);
-        static void broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operation op);
+        static void broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operation op, const bool tile = false);
         static void broadcast(Matrix_base &mxb1, const double val, Operation op);
         static Matrix copy(const Matrix_base &mxb1);
 
@@ -43,12 +43,10 @@ class Matrix_method
 
         static void normalize(Matrix_base &mxb1);
         static void initialize(Matrix_base &mxb1);
-        
 
         static Matrix get_transposed(const Matrix_base &mxb1);
+        static Matrix dot(Matrix_base &mxb1, Matrix_base &mxb2);
 
         static void print(const Matrix_base &mxb1);
         static void print(std::ostream &os, const Matrix_base &mxb1);
-
-        static Matrix dot(Matrix_base &mxb1, Matrix_base &mxb2);
 };

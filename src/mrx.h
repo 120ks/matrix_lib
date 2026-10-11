@@ -4,9 +4,11 @@
 #include "matrix_view.h"
 #include "matrix_method.h"
 
+using mrx = Matrix_method;
 
-inline std::ostream& operator<<(std::ostream &os, const Matrix &mx)
+inline std::ostream& operator<<(std::ostream &os, const Matrix_base &mxb)
 {
-    Matrix_method::print(os, mx);
+    mrx::print(os, mxb);
     return os;
 }
+

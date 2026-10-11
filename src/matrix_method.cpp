@@ -38,7 +38,7 @@ bool Matrix_method::has_zero(const Matrix_base &mxb1)
     return false;
 }
 
-void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operation op)
+void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operation op, const bool tile)
 {
     auto r1{mxb1.get_rows()}, r2{mxb2.get_rows()};
     auto c1{mxb1.get_cols()}, c2{mxb2.get_cols()};
@@ -52,79 +52,127 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operat
     {
         case(Operation::multiply):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++){
-                for(size_t c{} ; c<std::max(c1, c2) ; c++){
-                    mxb1(std::min(r, r1-1), std::min(c, c1-1)) = 
-                        mxb1(std::min(r, r1-1), std::min(c, c1-1))*
-                        mxb2(std::min(r, r2-1), std::min(c, c2-1)); 
+            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            {
+                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
+                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
+
+                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                {
+                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
+                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
+
+                    mxb1(iter_r1, iter_c1) = mxb1(iter_r1, iter_c1) * mxb2(iter_r2, iter_c2); 
                 }
+                
             }
             return;
         }
         case(Operation::divide):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++){
-                for(size_t c{} ; c<std::max(c1, c2) ; c++){
-                    mxb1(std::min(r, r1-1), std::min(c, c1-1)) = 
-                        mxb1(std::min(r, r1-1), std::min(c, c1-1))/
-                        mxb2(std::min(r, r2-1), std::min(c, c2-1)); 
+            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            {
+                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
+                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
+
+                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                {
+                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
+                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
+
+                    mxb1(iter_r1, iter_c1) = mxb1(iter_r1, iter_c1) / mxb2(iter_r2, iter_c2); 
                 }
+                
             }
             return;
         }
         case(Operation::add):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++){
-                for(size_t c{} ; c<std::max(c1, c2) ; c++){
-                    mxb1(std::min(r, r1-1), std::min(c, c1-1)) = 
-                        mxb1(std::min(r, r1-1), std::min(c, c1-1))+
-                        mxb2(std::min(r, r2-1), std::min(c, c2-1)); 
+            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            {
+                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
+                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
+
+                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                {
+                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
+                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
+
+                    mxb1(iter_r1, iter_c1) = mxb1(iter_r1, iter_c1)+mxb2(iter_r2, iter_c2); 
                 }
+                
             }
             return;
         }               
         case(Operation::substract):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++){
-                for(size_t c{} ; c<std::max(c1, c2) ; c++){
-                    mxb1(std::min(r, r1-1), std::min(c, c1-1)) = 
-                        mxb1(std::min(r, r1-1), std::min(c, c1-1))-
-                        mxb2(std::min(r, r2-1), std::min(c, c2-1)); 
+            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            {
+                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
+                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
+
+                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                {
+                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
+                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
+
+                    mxb1(iter_r1, iter_c1) = mxb1(iter_r1, iter_c1) - mxb2(iter_r2, iter_c2); 
                 }
+                
             }
             return;
         }
         case(Operation::equal):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++){
-                for(size_t c{} ; c<std::max(c1, c2) ; c++){
-                    mxb1(std::min(r, r1-1), std::min(c, c1-1)) = 
-                        mxb2(std::min(r, r2-1), std::min(c, c2-1)); 
+            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            {
+                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
+                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
+
+                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                {
+                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
+                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
+
+                    mxb1(iter_r1, iter_c1) =  mxb2(iter_r2, iter_c2); 
                 }
+                
             }
             return;
         }
         case(Operation::power):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++){
-                for(size_t c{} ; c<std::max(c1, c2) ; c++){
-                    mxb1(std::min(r, r1-1), std::min(c, c1-1)) = std::pow(
-                        mxb1(std::min(r, r1-1), std::min(c, c1-1)),
-                        mxb2(std::min(r, r2-1), std::min(c, c2-1))
-                    ); 
+            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            {
+                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
+                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
+
+                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                {
+                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
+                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
+
+                    mxb1(iter_r1, iter_c1) = std::pow(mxb1(iter_r1, iter_c1), mxb2(iter_r2, iter_c2)); 
                 }
+                
             }
             return;
         }
         case(Operation::root):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++){
-                for(size_t c{} ; c<std::max(c1, c2) ; c++){
-                    mxb1(std::min(r, r1-1), std::min(c, c1-1)) = std::pow(
-                        mxb1(std::min(r, r1-1), std::min(c, c1-1)),
-                        1.0 / mxb2(std::min(r, r2-1), std::min(c, c2-1))
-                    );
+            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            {
+                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
+                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
+
+                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                {
+                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
+                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
+
+                    mxb1(iter_r1, iter_c1) = std::pow(mxb1(iter_r1, iter_c1), 1.0/mxb2(iter_r2, iter_c2)); 
                 }
+                
             }
             return;
         }

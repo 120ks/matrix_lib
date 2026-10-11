@@ -74,8 +74,7 @@ the matrix method which handles only Matrix_base (mxb used as short) reference o
 these allow the calling of virtual functions from Matrix_base allowing for a dynamic way of treating Matrix_view objects as matrix objects
 without the need for multiple overloaded counterparts.
 
-many functions in Matrix_method have Operation specifier (op), these are add, divide, multiply, substract, root, power and equals, these 
-are the last argument of a function and are told as Operation::multiplu for example.
+many functions in Matrix_method have Operation specifier (op), these are add, divide, multiply, substract, root, power and equals.
 
 there is also the row_wise boolean, that overloads many "statistical" functions like std, avg, sum etc. if given, it performs row_wise operation
 if true or col_wise if false.
@@ -103,6 +102,10 @@ mxb += double
 where mxb is either matrix or matrix_view
 
 
+like said almost every possible combination of matrices is allowed. This can be used to create unique ways of calculations. This method is primarily used by the sum, std avg methods,
+to calculate row/col wise products.
+
+
 //
 //design way
 //
@@ -113,3 +116,21 @@ ptr if mx goes out of scope before mxv. Disallowing public creation removes this
 
 the Matrix_base is a interface class of only pure virtuals (excluding constructor), this is used the "usual" way to allow
 dynamic operating in Matrix method.
+
+
+
+//
+//ideas
+//
+
+to allow using a (bool loop)
+
+if true (by default false) it would instead of using the maximum possible row count, loop trough continuously its own index (if it is smaller than the maximum)
+
+for example
+
+
+2x2 + 4x4 assuming first has all 0 and second all 1
+
+would produce [1, 3][3, 9] with loop true it would become [4, 4][4, 4] as when c = 2(over bounds) it would again become 0, then 1, same for r
+this would need to dynamically fit into the broadcast as creating overload for this makes a messy code that only changes a little, (also kind of cheating)

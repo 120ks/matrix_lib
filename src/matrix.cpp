@@ -18,7 +18,7 @@ Matrix::Matrix(Matrix &&other)noexcept
 {}
 
 Matrix::Matrix(const Matrix_view &mxv)
-: Matrix(mxv.rows, mxv.cols)
+: Matrix(mxv.row_slice.total, mxv.col_slice.total)
 {
     for(size_t r{} ; r<rows; r++){
         for(size_t c{} ; c<cols ; c++){
@@ -36,9 +36,9 @@ double& Matrix::operator()(const size_t row, const size_t col){
 double Matrix::operator()(const size_t row, const size_t col)const{
     return matrix[row*cols + col];
 }
-Matrix_view Matrix::operator()(size_t r_begin, size_t r_end, size_t c_begin, size_t c_end)
+Matrix_view Matrix::operator()(const Slice r_slice, const Slice c_slice)
 {
-    return{*this, r_begin, r_end, c_begin, c_end};
+    return{*this, r_slice, c_slice};
 }
 
 Matrix& Matrix::operator=(Matrix other)

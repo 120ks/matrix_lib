@@ -25,7 +25,7 @@ class Matrix : public Matrix_container
 
         double& operator()(const size_t row, const size_t col)override;
         double operator()(const size_t row, const size_t col)const override;
-        Matrix_view operator()(size_t r_begin, size_t r_end, size_t c_begin, size_t c_end)override;
+        Matrix_view operator()(const Slice r_slice, const Slice c_slice)override;
 
         //operators
         Matrix& operator=(Matrix other);
