@@ -17,9 +17,9 @@ class Slice
         ~Slice() = default;
 
 
-    friend Slice operator+(Slice sl1, Slice sl2)
+    friend Slice operator+(const Slice sl1, const Slice sl2)
     {
-        return Slice{sl1.begin + sl2.begin, sl1.total};
+        return Slice{sl1.begin + sl2.begin, sl2.total + (sl1.begin + sl2.begin)};
     }
 };
 

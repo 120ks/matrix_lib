@@ -21,24 +21,16 @@ finding if matrix has 0, getting transposed matrix. (more will be added)
 //slicing
 //
 
-slicing is done using operator() with four params (row_index first, row_index_exclusive, col_index firs, col_index_exclusive);
-this can be chainer where the latters slice the already sliced sub matrix.
+slicing (now updated) is done witht two slicing objects class Slice that hold only begin and total. When slicing an matrix or matrix_view object,
+use mx_obj( {}, {} );
 
-this submatrix can be treated with the same arithmetic operators as regular matrix
-for example
+inside the brackets goes the begin index (inclusive) and end index (exclusive), first one is for rows, second for cols
+this can be done in three ways.
 
-mx(3,4 , 3,5) *= mx2(3,4 , 5,7);
-
-
-the assign operator works differently between Matrix and Matrix_view
-with Matrix the object "becomes" the assigned object (matrix or view) 
-with Matrix_view the slice's values become the assigned objects value.
-
-so if Matrix mx is 3x5
-and mx = mx2(2,4 , 3,4);
-mx becomes a 2x1 Matrix.
-
-with Matrix_view the slice only changes value.
+empty{} takes all rows / cols so mx( {} , {1, 3} ) would select all rows and cols at indexes 1 and 2, same works vice versa and if both.
+single{1} takes only that specific col / row for example mx( {1} , {} would take row at index 1 and all its cols. again same works vice versa and both.
+both{1, 4} takes the all cols/rows between index 1 and 4 (excluding 4) so mx( {1,4} , {2}; would take the rows of indexes 1, 2, 3 and cols at index 2.
+the core principle of this method is that
 
 
 //
@@ -107,22 +99,12 @@ to calculate row/col wise products.
 
 
 //
-//design way
-//
-
-The core design element (after some while), was to treat Matrix_view as plain r-value, constructors accessible only by friend classes.
-this means that for example multislicing and assigning it into object cant be done. Matrix_view mxv( mx(1,5, 2,4)(1,2,1,2)) would create a dangling
-ptr if mx goes out of scope before mxv. Disallowing public creation removes this problem.
-
-the Matrix_base is a interface class of only pure virtuals (excluding constructor), this is used the "usual" way to allow
-dynamic operating in Matrix method.
-
-
-
-//
 //ideas
 //
 
+//
+//1
+//
 to allow using a (bool loop)
 
 if true (by default false) it would instead of using the maximum possible row count, loop trough continuously its own index (if it is smaller than the maximum)
@@ -133,4 +115,14 @@ for example
 2x2 + 4x4 assuming first has all 0 and second all 1
 
 would produce [1, 3][3, 9] with loop true it would become [4, 4][4, 4] as when c = 2(over bounds) it would again become 0, then 1, same for r
-this would need to dynamically fit into the broadcast as creating overload for this makes a messy code that only changes a little, (also kind of cheating)
+this would need to dynamically fit into the broadcast as creating overload for this makes a messy code (~100 lines) that only changes a little.
+
+//done with tile = true in broadcast
+
+
+//
+//2
+//
+to allow better use in ml, introducing something like matrix_learning (mxl) that could be used to perform forward and backward dynamic calculations (chain rule)´
+also functions like softmax, layer_norm, activation functions (of varying type) propability calculation functions etc.
+core flow would be that it would only work with interfaces from classes like Method. Allowing it to exist as a different header that can be imported if wanted.
