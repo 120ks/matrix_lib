@@ -4,6 +4,17 @@
 #include <cassert>
 
 class Matrix_view;
+class Matrix_mask;
+
+enum class Condition
+{
+    under,
+    over,
+    over_or,
+    under_or,
+    is,
+    is_not
+};
 
 
 class Slice
@@ -42,5 +53,5 @@ class Matrix_base
 
         virtual inline size_t get_rows()const = 0;
         virtual inline size_t get_cols()const = 0;
-
+        
 };

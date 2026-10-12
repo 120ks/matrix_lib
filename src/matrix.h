@@ -53,8 +53,12 @@ class Matrix : public Matrix_container
         friend Matrix operator*(const Matrix_base& mxb1, const double val);
         friend Matrix operator/(const Matrix_base& mxb1, const double val);
 
-
-    
+        friend Matrix operator<(const Matrix_base& mxb1, const double val);
+        friend Matrix operator>(const Matrix_base& mxb1, const double val);
+        friend Matrix operator<=(const Matrix_base& mxb1, const double val);
+        friend Matrix operator>=(const Matrix_base& mxb1, const double val);
+        friend Matrix operator==(const Matrix_base& mxb1, const double val);
+        friend Matrix operator!=(const Matrix_base& mxb1, const double val);
 
 };
 

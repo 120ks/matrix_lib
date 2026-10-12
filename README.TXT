@@ -128,3 +128,16 @@ this would need to dynamically fit into the broadcast as creating overload for t
 to allow better use in ml, introducing something like matrix_learning (mxl) that could be used to perform forward and backward dynamic calculations (chain rule)´
 also functions like softmax, layer_norm, activation functions (of varying type) propability calculation functions etc.
 core flow would be that it would only work with interfaces from classes like Method. Allowing it to exist as a different header that can be imported if wanted.
+
+
+//
+//3
+//
+allow masking of matrices that would allow changing certain elements based on conditions like over, under, is, not etc.
+this could be done with a mask_object that would return the actual value ref or a fake value like 0 if the object meets the criteria as all operations use
+the operator() for indexing, prechecking the value could allow for a smoother way do conditional math and would introduce logical operators.
+
+
+
+
+

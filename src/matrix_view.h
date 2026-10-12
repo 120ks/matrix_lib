@@ -24,8 +24,10 @@ class Matrix_view : public Matrix_base
         //overrides
         inline size_t get_cols()const override {return col_slice.total;}
         inline size_t get_rows()const override {return row_slice.total;}
+        inline Matrix* get_address()const override{return &(*view_ptr);}
         double& operator()(const size_t row, const size_t col)override;
         double operator()(const size_t row, const size_t col)const override;
+        
 
         //huom, pidetään by val palautuksena kunnes mahd testin avulla todetaan että voi palauttaa by ref
         //muutenkin aika vähän käytettävä operaattori.

@@ -224,6 +224,30 @@ src/matrix_learn.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.s
 .PHONY : src/matrix_learn.cpp.s
 
+src/matrix_mask.obj: src/matrix_mask.cpp.obj
+.PHONY : src/matrix_mask.obj
+
+# target to build an object file
+src/matrix_mask.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/src/matrix_mask.cpp.obj
+.PHONY : src/matrix_mask.cpp.obj
+
+src/matrix_mask.i: src/matrix_mask.cpp.i
+.PHONY : src/matrix_mask.i
+
+# target to preprocess a source file
+src/matrix_mask.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/src/matrix_mask.cpp.i
+.PHONY : src/matrix_mask.cpp.i
+
+src/matrix_mask.s: src/matrix_mask.cpp.s
+.PHONY : src/matrix_mask.s
+
+# target to generate assembly for a file
+src/matrix_mask.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/src/matrix_mask.cpp.s
+.PHONY : src/matrix_mask.cpp.s
+
 src/matrix_method.obj: src/matrix_method.cpp.obj
 .PHONY : src/matrix_method.obj
 
@@ -317,6 +341,9 @@ help:
 	@echo ... src/matrix_learn.obj
 	@echo ... src/matrix_learn.i
 	@echo ... src/matrix_learn.s
+	@echo ... src/matrix_mask.obj
+	@echo ... src/matrix_mask.i
+	@echo ... src/matrix_mask.s
 	@echo ... src/matrix_method.obj
 	@echo ... src/matrix_method.i
 	@echo ... src/matrix_method.s
