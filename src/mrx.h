@@ -1,8 +1,7 @@
 #pragma once
-
+#include "matrix_method.h"
 #include "matrix.h"
 #include "matrix_view.h"
-#include "matrix_method.h"
 
 inline std::ostream& operator<<(std::ostream &os, const Matrix_base &mxb)
 {

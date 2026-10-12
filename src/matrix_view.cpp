@@ -1,5 +1,5 @@
 #include "matrix_view.h"
-#include "matrix_method.h"
+
 
 Matrix_view::Matrix_view(Matrix &mx, const Slice r_slice, const Slice c_slice)
 : view_ptr{&mx}
@@ -22,6 +22,9 @@ Matrix_view::Matrix_view(Matrix_view &&other)noexcept
 , col_slice{other.col_slice}
 {other.view_ptr = nullptr;}
 
+
+
+
 double& Matrix_view::operator()(const size_t row, const size_t col)
 {   
     assert(view_ptr);
@@ -38,8 +41,7 @@ double Matrix_view::operator()(const size_t row, const size_t col)const
 
 Matrix_view Matrix_view::operator()(const Slice r_slice, const Slice c_slice)
 {   
-
-    return{*view_ptr, r_slice+row_slice, c_slice+col_slice};
+    return {*view_ptr, r_slice+row_slice, c_slice+col_slice};
 }
 
 Matrix_view& Matrix_view::operator=(const Matrix_base &mxb1)
@@ -110,4 +112,6 @@ Matrix_view& Matrix_view::operator/=(const double val)
     Matrix_method::broadcast(*this, val, Operation::divide);
     return *this;
 }
+
+
 

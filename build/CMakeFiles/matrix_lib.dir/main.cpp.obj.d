@@ -1,6 +1,7 @@
 CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:\Users\ppako\Documents\projects\matrix_lib\main.cpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/mrx.h \
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_method.h \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix.h \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_container.h \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_base.h \
@@ -190,7 +191,7 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/bits/ranges_algobase.h \
  C:/msys64/mingw64/include/c++/16.1.0/pstl/glue_memory_defs.h \
  C:/msys64/mingw64/include/c++/16.1.0/pstl/execution_defs.h \
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_method.h \
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_mask.h \
  C:/msys64/mingw64/include/c++/16.1.0/cmath \
  C:/msys64/mingw64/include/math.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/specfun.h \

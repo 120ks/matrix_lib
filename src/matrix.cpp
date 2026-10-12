@@ -4,6 +4,7 @@
 
 class Matrix_view;
 class Matrix_method;
+class Matrix_mask;
 
 Matrix::Matrix(const size_t row_count, const size_t col_count, const double val)
 : Matrix_container(row_count, col_count, val)
@@ -37,8 +38,8 @@ double Matrix::operator()(const size_t row, const size_t col)const{
     return matrix[row*cols + col];
 }
 Matrix_view Matrix::operator()(const Slice r_slice, const Slice c_slice)
-{
-    return{*this, r_slice, c_slice};
+{   
+    return {*this, r_slice, c_slice};
 }
 
 Matrix& Matrix::operator=(Matrix other)
@@ -173,8 +174,5 @@ Matrix operator/(const Matrix_base &mxb1, const double val)
     return mx;
 }
 
-//
-//OTHER FRIEND FUNCTIONS
-//
 
 

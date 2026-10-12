@@ -5,9 +5,11 @@
 
 class Matrix_view;
 class Matrix_mask;
+class Matrix;
 
 enum class Condition
-{
+{   
+    na,
     under,
     over,
     over_or,
@@ -31,8 +33,8 @@ class Slice
 
     friend Slice operator+(const Slice sl1, Slice sl2)
     {   
-        //korjaa, jos sl2 on tyhjä niin asettaa sen sl1 total kanssa samaan
-        sl2.total == 0 ? sl1.total : sl2.total; //esim näin
+        
+        sl2.total == 0 ? sl1.total : sl2.total;
         
         //asettaa aloituksen siihen kohtaa josta alkaa ja säilyttää sl2 total, joka tulisi olla sama
         //ottaen huomioon
@@ -49,9 +51,13 @@ class Matrix_base
     public:
         virtual double& operator()(const size_t, const size_t) = 0;
         virtual double operator()(const size_t, const size_t) const = 0;
+
         virtual Matrix_view operator()(const Slice, const Slice) = 0;
 
         virtual inline size_t get_rows()const = 0;
         virtual inline size_t get_cols()const = 0;
+        
+        virtual inline size_t begin_row()const = 0;
+        virtual inline size_t begin_col()const = 0;
         
 };

@@ -6,7 +6,9 @@ int main()
 
     //matriisin luominen eri tavoin
 
-    
+    Matrix mx1{10, 20, 1};
+
+
 
 
     
