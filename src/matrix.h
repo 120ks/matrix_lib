@@ -32,10 +32,10 @@ class Matrix : public Matrix_container
         Matrix& operator=(const Matrix_view &mxv);
         Matrix& operator=(const Matrix_base &mxb1);
 
-        Matrix& operator+=(Matrix_base& other);
-        Matrix& operator-=(Matrix_base& other);
-        Matrix& operator*=(Matrix_base& other);
-        Matrix& operator/=(Matrix_base& other);
+        Matrix& operator+=(const Matrix_base& other);
+        Matrix& operator-=(const Matrix_base& other);
+        Matrix& operator*=(const Matrix_base& other);
+        Matrix& operator/=(const Matrix_base& other);
 
 
         Matrix& operator+=(const double val);

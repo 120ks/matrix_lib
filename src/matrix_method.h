@@ -38,27 +38,13 @@ class Matrix_method
         //
         //
         //
-
-        static void initialize(Matrix_base &mxb1);
         static Matrix copy(const Matrix_base &mxb1);
-
-        //helper functions
-        static double sum(const Matrix_base &mxb1);
-        static Matrix sum(const Matrix_base &mxb1, const bool row_wise);
-
-        static double avg(const Matrix_base &mxb1);
-        static Matrix avg(const Matrix_base &mxb1, const bool row_wise);
+        static void initialize(Matrix_base &mxb1);
         
-        static double variance(const Matrix_base &mxb1, double degree = 0);
-        static Matrix variance(const Matrix_base &mxb1, const bool row_wise, double degree = 0);
-
-        static double std(const Matrix_base &mxb1, double degree = 0);
-        static Matrix std(const Matrix_base &mxb1, const bool row_wise, double degree = 0);
-
-        static Matrix normal_distribution(const Matrix_base &mxb1, const bool row_wise);
-
+        static Matrix dot(const Matrix_base &mxb1, const Matrix_base &mxb2);
         static Matrix get_transposed(const Matrix_base &mxb1);
-        static Matrix dot(Matrix_base &mxb1, Matrix_base &mxb2);
+
+        static Matrix filter(const Matrix_base &mxb1, const double filter_val, const double if_under, const double otherwise);
 
         static void print(const Matrix_base &mxb1);
         static void print(std::ostream &os, const Matrix_base &mxb1);

@@ -4,7 +4,7 @@
 class Matrix;
 
 
-Matrix Matrix_method::dot(Matrix_base &mxb1, Matrix_base &mxb2)
+Matrix Matrix_method::dot(const Matrix_base &mxb1, const Matrix_base &mxb2)
 {
     assert(mxb1.get_cols() == mxb2.get_rows());
 
@@ -216,101 +216,6 @@ Matrix Matrix_method::copy(const Matrix_base &mxb1)
     return mx;
 }
 
-double Matrix_method::sum(const Matrix_base &mxb1)
-{
-    Matrix mx{1, 1};
-    broadcast(mx, mxb1, Operation::add);
-    return mx(0,0);
-}
-
-Matrix Matrix_method::sum(const Matrix_base &mxb1, bool row_wise)
-{   
-    Matrix mx{(row_wise)? Matrix{mxb1.get_rows(), 1} : Matrix{1, mxb1.get_cols()}};
-    broadcast(mx, mxb1, Operation::add);
-    return mx;
-}
-
-double Matrix_method::avg(const Matrix_base &mxb1)
-{   
-    auto r1{mxb1.get_rows()};
-    auto c1{mxb1.get_cols()};
-
-    double avarage{sum(mxb1)};
-    return avarage / (r1*c1);
-}
-
-Matrix Matrix_method::avg(const Matrix_base &mxb1, bool row_wise)
-{
-    auto r1{mxb1.get_rows()};
-    auto c1{mxb1.get_cols()};
-
-    Matrix avarage{sum(mxb1, (row_wise)? true : false)};
-    broadcast(avarage, (row_wise)? c1 : r1, Operation::divide);
-    return avarage;
-}
-
-double Matrix_method::variance(const Matrix_base &mxb1, double degree)
-{   
-    auto r1{mxb1.get_rows()};
-    auto c1{mxb1.get_cols()};
-    double mean{avg(mxb1)};
-
-    Matrix var{mxb1};
-    var -= mean;
-    broadcast(var, 2, Operation::power);
-    double var_out{sum(var)};
-    return  var_out / (r1*c1-degree);
-}
-
-Matrix Matrix_method::variance(const Matrix_base &mxb1, const bool row_wise, double degree)
-{   
-    auto r1{mxb1.get_rows()};
-    auto c1{mxb1.get_cols()};
-    Matrix mean{avg(mxb1, row_wise)};
-
-    Matrix var{mxb1};
-    var -= mean;
-    broadcast(var, 2, Operation::power);
-    Matrix var_out {sum(var, row_wise)};
-    broadcast(var_out, (row_wise)? c1-degree : r1-degree, Operation::divide);
-    return var_out;
-}
-
-
-double Matrix_method::std(const Matrix_base &mxb1, double degree)
-{   
-    return std::sqrt(variance(mxb1, degree));
-}
-
-Matrix Matrix_method::std(const Matrix_base &mxb1, const bool row_wise, double degree)
-{   
-    Matrix standard_deviation{variance(mxb1, row_wise, degree)};
-    broadcast(standard_deviation, 2.0, Operation::root);
-    return standard_deviation;
-}
-
-Matrix Matrix_method::normal_distribution(const Matrix_base &mxb1, const bool row_wise)
-{   
-    double small_num {0.001};
-    Matrix n_dist{mxb1 - avg(mxb1, row_wise)};
-    Matrix variance_squared{broadcast(variance(mxb1, row_wise) + small_num, 2.0, Operation::root)};
-    return n_dist / variance_squared;
-}
-
-Matrix Matrix_method::get_transposed(const Matrix_base& mxb1)
-{
-    auto r1{mxb1.get_rows()};
-    auto c1{mxb1.get_cols()};
-    Matrix mx_t{c1, r1};
-
-    for(size_t r{} ; r<r1 ; r++){
-        for(size_t c{} ; c<c1 ; c++){
-            mx_t(c, r) = mxb1(r, c);
-        }
-    }
-    return mx_t;
-}
-
 void Matrix_method::print(const Matrix_base &mxb1)
 {
     auto r1{mxb1.get_rows()};
@@ -344,3 +249,29 @@ void Matrix_method::print(std::ostream &os, const Matrix_base &mxb1)
 }
 
 
+Matrix Matrix_method::get_transposed(const Matrix_base& mxb1)
+{
+    auto r1{mxb1.get_rows()};
+    auto c1{mxb1.get_cols()};
+    Matrix mx_t{c1, r1};
+
+    for(size_t r{} ; r<r1 ; r++){
+        for(size_t c{} ; c<c1 ; c++){
+            mx_t(c, r) = mxb1(r, c);
+        }
+    }
+    return mx_t;
+}
+
+Matrix Matrix_method::filter(const Matrix_base &mxb1, const double filter_val, const double if_under, const double otherwise)
+{
+    auto r1{mxb1.get_rows()};
+    auto c1{mxb1.get_cols()};
+    Matrix mask{c1, r1};
+    for(size_t r{} ; r<r1 ; r++){
+        for(size_t c{} ; c<c1 ; c++){
+            mask(r, c) = (mxb1(r,c) < filter_val) ? if_under : otherwise;
+        }
+    }
+    return mask;
+}

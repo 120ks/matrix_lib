@@ -200,6 +200,30 @@ src/matrix_container.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.s
 .PHONY : src/matrix_container.cpp.s
 
+src/matrix_learn.obj: src/matrix_learn.cpp.obj
+.PHONY : src/matrix_learn.obj
+
+# target to build an object file
+src/matrix_learn.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.obj
+.PHONY : src/matrix_learn.cpp.obj
+
+src/matrix_learn.i: src/matrix_learn.cpp.i
+.PHONY : src/matrix_learn.i
+
+# target to preprocess a source file
+src/matrix_learn.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.i
+.PHONY : src/matrix_learn.cpp.i
+
+src/matrix_learn.s: src/matrix_learn.cpp.s
+.PHONY : src/matrix_learn.s
+
+# target to generate assembly for a file
+src/matrix_learn.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.s
+.PHONY : src/matrix_learn.cpp.s
+
 src/matrix_method.obj: src/matrix_method.cpp.obj
 .PHONY : src/matrix_method.obj
 
@@ -223,6 +247,30 @@ src/matrix_method.s: src/matrix_method.cpp.s
 src/matrix_method.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.s
 .PHONY : src/matrix_method.cpp.s
+
+src/matrix_statistic.obj: src/matrix_statistic.cpp.obj
+.PHONY : src/matrix_statistic.obj
+
+# target to build an object file
+src/matrix_statistic.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.obj
+.PHONY : src/matrix_statistic.cpp.obj
+
+src/matrix_statistic.i: src/matrix_statistic.cpp.i
+.PHONY : src/matrix_statistic.i
+
+# target to preprocess a source file
+src/matrix_statistic.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.i
+.PHONY : src/matrix_statistic.cpp.i
+
+src/matrix_statistic.s: src/matrix_statistic.cpp.s
+.PHONY : src/matrix_statistic.s
+
+# target to generate assembly for a file
+src/matrix_statistic.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.s
+.PHONY : src/matrix_statistic.cpp.s
 
 src/matrix_view.obj: src/matrix_view.cpp.obj
 .PHONY : src/matrix_view.obj
@@ -266,9 +314,15 @@ help:
 	@echo ... src/matrix_container.obj
 	@echo ... src/matrix_container.i
 	@echo ... src/matrix_container.s
+	@echo ... src/matrix_learn.obj
+	@echo ... src/matrix_learn.i
+	@echo ... src/matrix_learn.s
 	@echo ... src/matrix_method.obj
 	@echo ... src/matrix_method.i
 	@echo ... src/matrix_method.s
+	@echo ... src/matrix_statistic.obj
+	@echo ... src/matrix_statistic.i
+	@echo ... src/matrix_statistic.s
 	@echo ... src/matrix_view.obj
 	@echo ... src/matrix_view.i
 	@echo ... src/matrix_view.s

@@ -64,7 +64,7 @@ Matrix& Matrix::operator=(const Matrix_base &mxb1)
 //
 //MEMBER ARITHMETIC OPERATORS
 //
-Matrix& Matrix::operator+=(Matrix_base& other)
+Matrix& Matrix::operator+=(const Matrix_base& other)
 {
     Matrix_method::broadcast(*this, other, Operation::add);
     return *this;
@@ -76,7 +76,7 @@ Matrix& Matrix::operator+=(const double val)
     return *this;
 }
 
-Matrix& Matrix::operator-=(Matrix_base& other)
+Matrix& Matrix::operator-=(const Matrix_base& other)
 {
     Matrix_method::broadcast(*this, other, Operation::substract);
     return *this;
@@ -88,7 +88,7 @@ Matrix& Matrix::operator-=(const double val)
     return *this;
 }
 
-Matrix& Matrix::operator*=(Matrix_base& other)
+Matrix& Matrix::operator*=(const Matrix_base& other)
 {
     Matrix_method::broadcast(*this, other, Operation::multiply);
     return *this;
@@ -100,7 +100,7 @@ Matrix& Matrix::operator*=(const double val)
     return *this;
 }
 
-Matrix& Matrix::operator/=(Matrix_base& other)
+Matrix& Matrix::operator/=(const Matrix_base& other)
 {
     Matrix_method::broadcast(*this, other, Operation::divide);
     return *this;

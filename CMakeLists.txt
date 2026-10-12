@@ -13,6 +13,8 @@ add_executable(${PROJECT_NAME}
     src/matrix.cpp
     src/matrix_view.cpp
     src/matrix_method.cpp
+    src/matrix_statistic.cpp
+    src/matrix_learn.cpp
     )
 target_include_directories(matrix_lib PRIVATE
     src
