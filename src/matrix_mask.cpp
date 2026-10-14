@@ -2,142 +2,41 @@
 
 //switch is outside to reduce unnecessary switch calls, will be looking into how this could be changed for cleaner code.
 
-Matrix_mask::Matrix_mask(const Matrix_base& mxb1, Condition cond, const double threshold)
-: rows{mxb1.get_rows() + mxb1.begin_row()}
-, cols{mxb1.get_rows() + mxb1.begin_col()}
+Matrix_mask::Matrix_mask(const Matrix_base& mxb1, const Condition condition, const double threshold)
+: rows{mxb1.get_rows()}
+, cols{mxb1.get_rows()}
 , mask(rows*cols, 0)
 //mask array on alkuperäisen matriisin kokoinen jotta indeksöinti voidaan toteuttaa
 //sekä matrix ja view objektilla
 {   
-    size_t r{mxb1.begin_row()};
-    size_t c{mxb1.begin_col()};
-    switch(cond)
-    {
-        case(Condition::over):
-        {
-            for(r ; r<rows ; r++){
-                for(c; c<cols ; c++){
-                    (*this)(r,c) = (mxb1(r,c)>threshold) ? 1 : 0;
-                }
-            }
-            break;
-        }
-        case(Condition::under):
-        {
-            for(r ; r<rows ; r++){
-                for(c; c<cols ; c++){
-                    (*this)(r,c) = (mxb1(r,c)<threshold) ? 1 : 0;
-                }
-            }
-            break;
-        }
-        case(Condition::over_or):
-        {
-            for(r ; r<rows ; r++){
-                for(c; c<cols ; c++){
-                    (*this)(r,c) = (mxb1(r,c)>=threshold) ? 1 : 0;
-                }
-            }
-            break;
-        }
-        case(Condition::under_or):
-        {
-            for(r ; r<rows ; r++){
-                for(c; c<cols ; c++){
-                    (*this)(r,c) = (mxb1(r,c)<=threshold) ? 1 : 0;
-                }
-            }
-            break;
-        }
-        case(Condition::is):
-        {
-            for(r ; r<rows ; r++){
-                for(c; c<cols ; c++){
-                    (*this)(r,c) = (mxb1(r,c)==threshold) ? 1 : 0;
-                }
-            }
-            break;
-        }
-        case(Condition::is_not):
-        {
-            for(r ; r<rows ; r++){
-                for(c; c<cols ; c++){
-                    (*this)(r,c) = (mxb1(r,c)!=threshold) ? 1 : 0;
-                }
-            }
-            break;
+    size_t r{};
+    size_t c{};
+    for(r ; r<rows ; r++){
+        for(c; c<cols ; c++){
+            (*this)(r,c) = check_condition(mxb1(r, c), condition, threshold);
+            if((*this)(r,c)){index_arr.push_back(r*cols+c);}
         }
     }
 }
 
-Matrix_mask::Matrix_mask(const Matrix_base& mxb1, Condition cond, const Matrix_base& mxb2)
-: rows{mxb1.get_rows() + mxb1.begin_row()}
-, cols{mxb1.get_rows() + mxb1.begin_col()}
+Matrix_mask::Matrix_mask(const Matrix_base& mxb1, const Condition condition, const Matrix_base& mxb2)
+: rows{mxb1.get_rows()}
+, cols{mxb1.get_rows()}
 , mask(rows*cols, 0)
 {   
     assert(mxb1.get_rows() == mxb2.get_rows());
     assert(mxb1.get_rows() == mxb2.get_rows());
 
-    size_t r{mxb1.begin_row()};
-    size_t c{mxb1.begin_col()};
-    switch(cond)
-    {
-        case(Condition::over):
-        {
-            for(r ; r<rows ; r++){
-                for(c; c<cols ; c++){
-                    (*this)(r,c) = (mxb1(r,c)>mxb2(r,c)) ? 1 : 0;
-                }
-            }
-            break;
-        }
-        case(Condition::under):
-        {
-            for(r ; r<rows ; r++){
-                for(c; c<cols ; c++){
-                    (*this)(r,c) = (mxb1(r,c)<mxb2(r,c)) ? 1 : 0;
-                }
-            }
-            break;
-        }
-        case(Condition::over_or):
-        {
-            for(r ; r<rows ; r++){
-                for(c; c<cols ; c++){
-                    (*this)(r,c) = (mxb1(r,c)>=mxb2(r,c)) ? 1 : 0;
-                }
-            }
-            break;
-        }
-        case(Condition::under_or):
-        {
-            for(r ; r<rows ; r++){
-                for(c; c<cols ; c++){
-                    (*this)(r,c) = (mxb1(r,c)<=mxb2(r,c)) ? 1 : 0;
-                }
-            }
-            break;
-        }
-        case(Condition::is):
-        {
-            for(r ; r<rows ; r++){
-                for(c; c<cols ; c++){
-                    (*this)(r,c) = (mxb1(r,c)==mxb2(r,c))? 1 : 0;
-                }
-            }
-            break;
-        }
-        case(Condition::is_not):
-        {
-            for(r ; r<rows ; r++){
-                for(c; c<cols ; c++){
-                    (*this)(r,c) = (mxb1(r,c)!=mxb2(r,c)) ? 1 : 0;
-                }
-            }
-            break;
+    size_t r{};
+    size_t c{};
+    for(r ; r<rows ; r++){
+        for(c; c<cols ; c++){
+            (*this)(r,c) = check_condition(mxb1(r, c), condition, mxb2(r, c));
+            if((*this)(r,c)){index_arr.push_back(r*cols+c);}
         }
     }
 }
+
 
 Matrix_mask::Matrix_mask(const Matrix_mask &other)
 : rows{other.rows}
@@ -150,6 +49,26 @@ Matrix_mask::Matrix_mask(Matrix_mask &&other)
 , cols{other.cols}
 , mask{std::move(other.mask)}
 {}
+
+
+char Matrix_mask::check_condition(const double val, const Condition condition, double threshold)
+{   
+    switch(condition)
+    {   
+        case(Condition::is_true): return 1;
+        case(Condition::is_false): return 0;
+        case(Condition::over): return (val == threshold) ? 1 : 0;
+        case(Condition::over_or): return (val == threshold) ? 1 : 0;
+        case(Condition::under): return (val == threshold) ? 1 : 0;
+        case(Condition::under_or): return (val == threshold) ? 1 : 0;
+        case(Condition::is) : return (val == threshold) ? 1 : 0;
+        case(Condition::is_not): return (val == threshold) ? 1 : 0;
+    }
+    return 0;
+
+}
+
+
 
 Matrix_mask& Matrix_mask::operator!()
 {
@@ -167,6 +86,9 @@ Matrix_mask operator&&(const Matrix_mask &mask1, const Matrix_mask mask2)
     for(size_t r{} ; r<mask1.rows ; r++){
         for(size_t c{} ; c<mask1.cols ; c++){
             mask3(r, c) = ((mask1(r, c) == 1) && (mask2(r,c) == 1)) ? 1 : 0;
+            if(mask3(r,c)){
+                mask3.index_arr.push_back(r*mask3.cols + c);
+            }
         }
     }
     return mask3;
@@ -179,6 +101,9 @@ Matrix_mask operator||(const Matrix_mask &mask1, const Matrix_mask mask2)
     for(size_t r{} ; r<mask1.rows ; r++){
         for(size_t c{} ; c<mask1.cols ; c++){
             mask3(r, c) = ((mask1(r, c) == 1) || (mask2(r,c) == 1)) ? 1 : 0;
+            if(mask3(r,c)){
+                mask3.index_arr.push_back(r*mask3.cols + c);
+            }
         }
     }
     return mask3;

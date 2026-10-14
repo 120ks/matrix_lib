@@ -9,7 +9,8 @@ class Matrix;
 
 enum class Condition
 {   
-    na,
+    is_true,
+    is_false,
     under,
     over,
     over_or,
@@ -51,6 +52,9 @@ class Matrix_base
     public:
         virtual double& operator()(const size_t, const size_t) = 0;
         virtual double operator()(const size_t, const size_t) const = 0;
+
+        //masking
+        //virtual Matrix_view operator()(const Matrix_mask &mask1);
 
         virtual Matrix_view operator()(const Slice, const Slice) = 0;
 

@@ -9,16 +9,19 @@ class Matrix_view : public Matrix_base
 {   
     friend class Matrix;
     friend class Matrix_method;
+    friend class Matrix_mask;
     private:
         Matrix* view_ptr{};
         Slice row_slice;
         Slice col_slice;
 
-    
+        //std::vector<size_t>index_arr{};
+        //double* matrix_start{};
+        //Matrix_mask mask{};
+
     protected:
         
         Matrix_view(Matrix &mx, const Slice r_slice, const Slice c_slice);
-        Matrix_view(Matrix_base &mxb1, Condition c, const double filter, const Slice r_slice = {}, const Slice c_slice = {});
         Matrix_view(const Matrix_view &other);
         Matrix_view(Matrix_view &&other)noexcept;
 
@@ -33,9 +36,6 @@ class Matrix_view : public Matrix_base
         inline size_t begin_row()const override {return row_slice.begin;}
         inline size_t begin_col()const override {return col_slice.begin;}
         
-
-        //huom, pidetään by val palautuksena kunnes mahd testin avulla todetaan että voi palauttaa by ref
-        //muutenkin aika vähän käytettävä operaattori.
         Matrix_view operator()(Slice r_slice, Slice c_slice)override;
 
         Matrix_view& operator=(const Matrix_base& mxb1);
@@ -65,7 +65,6 @@ class Matrix_view : public Matrix_base
         //
         //COMPARISON OPERATORS
         //
-
         friend Matrix_mask operator>(const Matrix_base &mxb1, const double val);
         friend Matrix_mask operator<(const Matrix_base &mxb1, const double val);
         friend Matrix_mask operator>=(const Matrix_base &mxb1, const double val);

@@ -18,6 +18,7 @@ enum class Operation{
     root
 };
 
+//will be converted into namespace (as it does not require access to any matrix object)
 class Matrix_method
 {
     private: 
@@ -27,14 +28,14 @@ class Matrix_method
 
     public:
         static bool has_zero(const Matrix_base &mxb1);
-        static void broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operation op, const bool tile = false);
+        static void broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, const Operation op);
         static void broadcast(Matrix_base &mxb1, const double val, Operation op);
 
         //
         //r-value broadcast (huomaa const)
         //
-        static Matrix broadcast(const Matrix_base &mxb1, const Matrix_base &mxb2, Operation op, const bool tile = false);
-        static Matrix broadcast(const Matrix_base &mxb1, const double val, Operation op);
+        static Matrix broadcast(const Matrix_base &mxb1, const Matrix_base &mxb2, const Operation op);
+        static Matrix broadcast(const Matrix_base &mxb1, const double val, const Operation op);
         //
         //
         //

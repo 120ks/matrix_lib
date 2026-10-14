@@ -9,8 +9,6 @@ int main()
     Matrix mx1{10, 20, 1};
 
 
-
-
     
     return 0;
 }

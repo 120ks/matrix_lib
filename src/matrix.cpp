@@ -42,6 +42,7 @@ Matrix_view Matrix::operator()(const Slice r_slice, const Slice c_slice)
     return {*this, r_slice, c_slice};
 }
 
+
 Matrix& Matrix::operator=(Matrix other)
 {   
     rows = other.rows;

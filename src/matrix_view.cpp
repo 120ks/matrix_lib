@@ -20,8 +20,8 @@ Matrix_view::Matrix_view(Matrix_view &&other)noexcept
 : view_ptr{other.view_ptr}
 , row_slice{other.row_slice}
 , col_slice{other.col_slice}
-{other.view_ptr = nullptr;}
 
+{other.view_ptr = nullptr;}
 
 
 

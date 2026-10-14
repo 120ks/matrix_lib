@@ -38,7 +38,7 @@ bool Matrix_method::has_zero(const Matrix_base &mxb1)
     return false;
 }
 
-void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operation op, const bool tile)
+void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, const Operation op)
 {
     auto r1{mxb1.get_rows()}, r2{mxb2.get_rows()};
     auto c1{mxb1.get_cols()}, c2{mxb2.get_cols()};
@@ -54,15 +54,9 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operat
         {
             for(size_t r{} ; r<std::max(r1, r2) ; r++)
             {
-                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
-                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
-
                 for(size_t c{} ; c<std::max(c1, c2) ; c++)
                 {
-                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
-                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
-
-                    mxb1(iter_r1, iter_c1) = mxb1(iter_r1, iter_c1) * mxb2(iter_r2, iter_c2); 
+                    mxb1(r%r1, c%c1) = mxb1(r%r1, c%c1) * mxb2(r%r2, c%c2); 
                 }
                 
             }
@@ -72,15 +66,9 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operat
         {
             for(size_t r{} ; r<std::max(r1, r2) ; r++)
             {
-                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
-                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
-
                 for(size_t c{} ; c<std::max(c1, c2) ; c++)
                 {
-                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
-                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
-
-                    mxb1(iter_r1, iter_c1) = mxb1(iter_r1, iter_c1) / mxb2(iter_r2, iter_c2); 
+                    mxb1(r%r1, c%c1) = mxb1(r%r1, c%c1) / mxb2(r%r2, c%c2);
                 }
                 
             }
@@ -90,15 +78,9 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operat
         {
             for(size_t r{} ; r<std::max(r1, r2) ; r++)
             {
-                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
-                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
-
                 for(size_t c{} ; c<std::max(c1, c2) ; c++)
                 {
-                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
-                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
-
-                    mxb1(iter_r1, iter_c1) = mxb1(iter_r1, iter_c1)+mxb2(iter_r2, iter_c2); 
+                    mxb1(r%r1, c%c1) = mxb1(r%r1, c%c1) + mxb2(r%r2, c%c2);
                 }
                 
             }
@@ -108,15 +90,9 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operat
         {
             for(size_t r{} ; r<std::max(r1, r2) ; r++)
             {
-                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
-                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
-
                 for(size_t c{} ; c<std::max(c1, c2) ; c++)
                 {
-                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
-                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
-
-                    mxb1(iter_r1, iter_c1) = mxb1(iter_r1, iter_c1) - mxb2(iter_r2, iter_c2); 
+                    mxb1(r%r1, c%c1) = mxb1(r%r1, c%c1) - mxb2(r%r2, c%c2);
                 }
                 
             }
@@ -126,15 +102,9 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operat
         {
             for(size_t r{} ; r<std::max(r1, r2) ; r++)
             {
-                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
-                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
-
                 for(size_t c{} ; c<std::max(c1, c2) ; c++)
                 {
-                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
-                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
-
-                    mxb1(iter_r1, iter_c1) =  mxb2(iter_r2, iter_c2); 
+                    mxb1(r%r1, c%c1) = mxb2(r%r2, c%c2);
                 }
                 
             }
@@ -144,15 +114,9 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operat
         {
             for(size_t r{} ; r<std::max(r1, r2) ; r++)
             {
-                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
-                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
-
                 for(size_t c{} ; c<std::max(c1, c2) ; c++)
                 {
-                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
-                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
-
-                    mxb1(iter_r1, iter_c1) = std::pow(mxb1(iter_r1, iter_c1), mxb2(iter_r2, iter_c2)); 
+                    mxb1(r%r1, c%c1) = std::pow(mxb1(r%r1, c%c1), mxb2(r%r2, c%c2)); 
                 }
                 
             }
@@ -162,17 +126,10 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, Operat
         {
             for(size_t r{} ; r<std::max(r1, r2) ; r++)
             {
-                size_t iter_r1 = (tile) ? r%r1 : std::min(r, r1-1);
-                size_t iter_r2 = (tile) ? r%r2 : std::min(r, r2-1);
-
                 for(size_t c{} ; c<std::max(c1, c2) ; c++)
                 {
-                    size_t iter_c1 = (tile) ? c%c1 : std::min(c, c1-1);
-                    size_t iter_c2 = (tile) ? c%c2 : std::min(c, c2-1);
-
-                    mxb1(iter_r1, iter_c1) = std::pow(mxb1(iter_r1, iter_c1), 1.0/mxb2(iter_r2, iter_c2)); 
+                    mxb1(r%r1, c%c1) = std::pow(mxb1(r%r1, c%c1), 1.0 / mxb2(r%r2, c%c2)); 
                 }
-                
             }
             return;
         }
@@ -188,14 +145,14 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const double val, Operation op)
 //
 //for r-val inplace operaatiot, esim Matrix{std(mx1, true)({2, 3}, {3, 6}) + 2};
 //
-    Matrix Matrix_method::broadcast(const Matrix_base &mxb1, const Matrix_base &mxb2, Operation op, const bool tile)
+    Matrix Matrix_method::broadcast(const Matrix_base &mxb1, const Matrix_base &mxb2, const Operation op)
     {
         Matrix temp_mx{mxb1};
-        broadcast(temp_mx, mxb2, op, tile);
+        broadcast(temp_mx, mxb2, op);
         return temp_mx;
     }
 
-    Matrix Matrix_method::broadcast(const Matrix_base &mxb1, const double val, Operation op)
+    Matrix Matrix_method::broadcast(const Matrix_base &mxb1, const double val, const Operation op)
     {
         Matrix temp_mx{mxb1};
         broadcast(temp_mx, val, op);
