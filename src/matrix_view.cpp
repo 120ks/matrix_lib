@@ -1,47 +1,58 @@
 #include "matrix_view.h"
 
 
-Matrix_view::Matrix_view(Matrix &mx, const Slice r_slice, const Slice c_slice)
-: view_ptr{&mx}
-, row_slice{r_slice}
-, col_slice{c_slice}
+Matrix_view::Matrix_view(double* start, Slice r_slice, Slice c_slice, const size_t total_rows, const size_t total_cols)
+: view_ptr{start}
+, start_row{r_slice.begin}
+, start_col{c_slice.begin}
+, end_row{r_slice.end}
+, end_col{c_slice.end}
+, base_rows{total_rows}
+, base_cols{total_cols}
+
 {
-    row_slice.total = (row_slice.total==0)? mx.get_rows() : row_slice.total;
-    col_slice.total = (col_slice.total==0)? mx.get_cols() : col_slice.total;
+    end_row = (end_row == 0) ? base_rows : end_row; 
+    end_col = (end_col == 0) ? base_cols : end_col; 
 }
 
 Matrix_view::Matrix_view(const Matrix_view &other)
 : view_ptr{other.view_ptr}
-, row_slice{other.row_slice}
-, col_slice{other.col_slice}
+, start_row{other.start_row}
+, start_col{other.start_col}
+, end_row{other.end_row}
+, end_col{other.end_col}
+, base_rows{other.base_rows}
+, base_cols{other.base_cols}
 {}
 
 Matrix_view::Matrix_view(Matrix_view &&other)noexcept
 : view_ptr{other.view_ptr}
-, row_slice{other.row_slice}
-, col_slice{other.col_slice}
-
+, start_row{other.start_row}
+, start_col{other.start_col}
+, end_row{other.end_row}
+, end_col{other.end_col}
+, base_rows{other.base_rows}
+, base_cols{other.base_cols}
 {other.view_ptr = nullptr;}
 
 
 
 double& Matrix_view::operator()(const size_t row, const size_t col)
 {   
-    assert(view_ptr);
-    assert(row<row_slice.total&& col<col_slice.total);
-    return (*view_ptr)(row+row_slice.begin, col+col_slice.begin);
+    return *(view_ptr+(row*base_cols) + col);
 }
 
 double Matrix_view::operator()(const size_t row, const size_t col)const
 {   
-    assert(view_ptr);
-    assert(row<row_slice.total&& col<col_slice.total);
-    return (*view_ptr)(row+row_slice.begin, col+col_slice.begin);
+    return *(view_ptr+(row*base_cols) + col);
 }
 
-Matrix_view Matrix_view::operator()(const Slice r_slice, const Slice c_slice)
+Matrix_view Matrix_view::operator()(Slice r_slice, Slice c_slice)
 {   
-    return {*view_ptr, r_slice+row_slice, c_slice+col_slice};
+    double* new_start{view_ptr+(r_slice.begin * base_cols + c_slice.begin)};
+
+    return {new_start, Slice{start_row+r_slice.begin, r_slice.end}, 
+        Slice{start_col + c_slice.begin, c_slice.end}, base_rows, base_cols};
 }
 
 Matrix_view& Matrix_view::operator=(const Matrix_base &mxb1)

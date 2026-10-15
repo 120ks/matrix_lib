@@ -17,22 +17,51 @@ other functions include (for now) dot product, sum(total and row/col wise), avg(
 finding if matrix has 0, getting transposed matrix. (more will be added)
 
 
+
 //
-//slicing
+//syntax
 //
 
-slicing (now updated) is done witht two slicing objects class Slice that hold only begin and total. When slicing an matrix or matrix_view object,
-use mx_obj( {}, {} );
+//create matrix
+    to create the first Matrix object, you do Matrix mx{} //which creates an empty matrix object.
+    The matrix has a strict set of rows and cols, so reforming it later is not possible(this is due to optimization reasons).
+    to initialize a matrix of set size you give braces the rows and cols (and potentially the initilazion value)
+    for example Matrix{10, 5, 0} creates a matrix of 10 x 5 all 0 values.
 
-inside the brackets goes the begin index (inclusive) and end index (exclusive), first one is for rows, second for cols
-this can be done in three ways.
+    you can also assign a matrix for example say you have a matrix object mx
+    doing mx = mx2 makes mx the same as mx2 (but not a reference);
+    doing mx = {10, 5, 0} also works and the new temp matrix is moved into mx's place.
 
-empty{} takes all rows / cols so mx( {} , {1, 3} ) would select all rows and cols at indexes 1 and 2, same works vice versa and if both.
-single{1} takes only that specific col / row for example mx( {1} , {} would take row at index 1 and all its cols. again same works vice versa and both.
-both{1, 4} takes the all cols/rows between index 1 and 4 (excluding 4) so mx( {1,4} , {2}; would take the rows of indexes 1, 2, 3 and cols at index 2.
-the core principle of this method is that it allows for fast and reliant ways to index only a single row/col or slice all of the others in a way that is more readable,
-documenting and intuitive.
+//slicing 
+    to slice a matrix you use operator() with two slice objects Slice, Slice. The first is used for rows, second for cols. 
+    
+    there are 3 ways to create a slice, first is to give the begin and end for the row/col slice.
+    for example mx({1, 5}, {3, 5}) takes rows at index 1, 2, 3, 4 (the end is exclusive). and cols 3, 4
+    doing chaining takes uses the previous slice, so slice after mx({1, 5}, {3, 5}) uses the index from the previous slice and not from the full
+    matrix.
 
+    second is to use single value, for example mx({1}, {3, 5}) uses only row at index 1
+
+    third is to use empty brace, now here is the caution, if the one brace is empty and the other is empty / sigle value, the 
+    program uses indexing size_t size_t its place so specifying atleast one is recommended for example mx(Slice{}, {2}) correctly uses the 
+    all rows with col 2 //NOTE: a index_object with no default constructor will be created to be able to omit the Slice from the above mentioned mixup
+    problem.
+
+    these three can be combined as wished.
+
+//Operators
+    operators include 
+
+        all arithmetics * + / -  (modulo will be added when this is made into a template) 
+        all arithemtic assigns *=, += etc.
+        assign operator =
+        comparison operators > < >= == != etc.
+        and slicing and indexing operators ()
+
+
+        also for mask object the logicals !, && , ||
+
+        indexing uses (row, col) which returns the value in either ref or value depending on constness of the matrix.
 
 
 //
@@ -42,23 +71,16 @@ documenting and intuitive.
 like said the broadcast only checks that the matrix has some rows and cols, not that they match in "logical way"
 this is used dynamically by helper functions but there is important caveat worth noticing.
 
-the smaller row and col uses its own values only as long as the iterating row/col is smaller or same as it is. Otherwise it uses
-its own maxium possible index value.
+in the iteration the two matrices loop around their own cols and rows
 
-for example if the highest rows is 5 and highest cols is also 5, with mx1(5x3) and mx2(5x5);
+for example if the highest rows is 8 and highest cols is also 8, with mx1(8x4) and mx2(8x8);
 
-this means iterating 5 rows and 5 cols
+this means iterating 8 rows and 8 cols
 
-where when c < 3 : mx1(r, c) = mx1(r,c) + mx2(r, c)
-when c>=3 : mx1(r, 2) = mx1(r,2) + mx2(r, c)
+where the second array has both row and col match the max of 8rows and 8cols. The first has only rows match
+the cols of the first get indexed twice in this example so the first col (0) get values from mx(n, 0) and (n, 4)
 
-this is calculated for both mx1 and 2 as 
-
-Matrix( MIN(index r, Matrix_rows-1) , MIN(index c, Matrix_cols-1) );
-
-also important is that the broadcast always changes the first matrix given and never second.
-so if a for example Operation::multiply is wanted without mx1 changing this can be done by Matrix mx3{mx1} //copy
-and broadcast(mx3, mx2 , Operation::multiply); //all of these are automatically done with operation+,-,/,* (root and pow not);
+this is used to calculate sums, statistics, section multiplication etc.
 
 //
 //Matrix_method::
@@ -76,28 +98,6 @@ if true or col_wise if false.
 for example Matrix_method::sum(mx1, true) returns a ROW_COUNT X 1 matrix of rows sums, if false 1 X COL_COUNT of row sums, if no is given
 then it returns the whole sum of the matrix mx1.
 
-
-//
-//Operators
-//
-
-The core flow in the matrix lib is that it is dynamic.
-for this reason almost all of the usual iteration for arithmetic operations is done with overloaded operators.
-
-four different cateqories (for arithmetic)
-
-(examples using +)
-
-mxb + mxb
-mxb += mxb
-mxb + double
-mxb += double
-
-where mxb is either matrix or matrix_view
-
-
-like said almost every possible combination of matrices is allowed. This can be used to create unique ways of calculations. This method is primarily used by the sum, std avg methods,
-to calculate row/col wise products.
 
 
 //
@@ -119,7 +119,7 @@ for example
 would produce [1, 3][3, 9] with loop true it would become [4, 4][4, 4] as when c = 2(over bounds) it would again become 0, then 1, same for r
 this would need to dynamically fit into the broadcast as creating overload for this makes a messy code (~100 lines) that only changes a little.
 
-//done with tile = true in broadcast
+//done with modulos operation
 
 
 //
@@ -129,6 +129,7 @@ to allow better use in ml, introducing something like matrix_learning (mxl) that
 also functions like softmax, layer_norm, activation functions (of varying type) propability calculation functions etc.
 core flow would be that it would only work with interfaces from classes like Method. Allowing it to exist as a different header that can be imported if wanted.
 
+//done implementing matrix_learn header
 
 //
 //3
@@ -136,6 +137,8 @@ core flow would be that it would only work with interfaces from classes like Met
 allow masking of matrices that would allow changing certain elements based on conditions like over, under, is, not etc.
 this could be done with a mask_object that would return the actual value ref or a fake value like 0 if the object meets the criteria as all operations use
 the operator() for indexing, prechecking the value could allow for a smoother way do conditional math and would introduce logical operators.
+
+//done using mask object and mask_view object, however changed the logic with index array that hold the index of all true elements. (no extra iterations)
 
 
 

@@ -4,8 +4,10 @@
 #include <cassert>
 
 class Matrix_view;
-class Matrix_mask;
 class Matrix;
+
+
+
 
 enum class Condition
 {   
@@ -24,24 +26,36 @@ class Slice
 {   
     public:
         size_t begin{};
-        size_t total{};
-        Slice() : begin{0}, total{0}{}
-        Slice(const size_t bgn) : begin{bgn}, total{1}{}
-        Slice(const size_t bgn, const size_t end) : begin{bgn}, total{end-bgn}{}
-        Slice(const Slice &other) : begin{other.begin} , total{other.total}{}
+        size_t end{};
+        Slice() : begin{0}, end{0}{}
+        Slice(const size_t bgn) : begin{bgn}, end{bgn+1}{}
+        Slice(const size_t bgn, const size_t ending) : begin{bgn}, end{ending}{}
+        Slice(const Slice &other) : begin{other.begin} , end{other.end}{}
         ~Slice() = default;
 
-
-    friend Slice operator+(const Slice sl1, Slice sl2)
-    {   
-        
-        sl2.total == 0 ? sl1.total : sl2.total;
-        
-        //asettaa aloituksen siihen kohtaa josta alkaa ja säilyttää sl2 total, joka tulisi olla sama
-        //ottaen huomioon
-        return Slice{sl1.begin + sl2.begin, sl2.total + (sl1.begin + sl2.begin)};
-    }
+        friend Slice operator+(const Slice sl1, const Slice sl2)
+        {
+            return {sl1.begin + sl2.begin, (sl2.end == 0 )? sl1.end : sl2.end+sl1.begin};
+        }
 };
+
+class BOOL //jotta voidaan kirjoittaa perinteistä c++ koodia eikä bitpäkättyä bool vektoria.
+{   
+    friend class Mask;
+    private:
+        bool value{};
+
+    public:
+        inline BOOL(const bool val) : value{val}{}
+        inline BOOL(const BOOL &other) : value{other.value}{}
+        ~BOOL() = default;
+
+        operator bool() const { return value;}
+        bool operator!(){return !value;}
+        inline BOOL& operator=(bool val){value = val; return *this;}
+
+};
+
 
 class Matrix_base
 {
@@ -53,15 +67,15 @@ class Matrix_base
         virtual double& operator()(const size_t, const size_t) = 0;
         virtual double operator()(const size_t, const size_t) const = 0;
 
-        //masking
-        //virtual Matrix_view operator()(const Matrix_mask &mask1);
-
-        virtual Matrix_view operator()(const Slice, const Slice) = 0;
-
         virtual inline size_t get_rows()const = 0;
         virtual inline size_t get_cols()const = 0;
-        
+
+        //these are needed for masking
+        virtual inline size_t matrix_rows()const = 0;
+        virtual inline size_t matrix_cols()const = 0;
         virtual inline size_t begin_row()const = 0;
         virtual inline size_t begin_col()const = 0;
+        virtual inline double* matrix_start_ptr()const = 0;
+        virtual inline double* start_ptr()const = 0;
         
 };

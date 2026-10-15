@@ -43,8 +43,14 @@
 },
 {
   "directory": "C:/Users/ppako/Documents/projects/matrix_lib/build",
-  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles\\matrix_lib.dir\\includes_CXX.rsp -g -o CMakeFiles\\matrix_lib.dir\\src\\matrix_mask.cpp.obj -c C:\\Users\\ppako\\Documents\\projects\\matrix_lib\\src\\matrix_mask.cpp",
-  "file": "C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_mask.cpp",
-  "output": "CMakeFiles/matrix_lib.dir/src/matrix_mask.cpp.obj"
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles\\matrix_lib.dir\\includes_CXX.rsp -g -o CMakeFiles\\matrix_lib.dir\\src\\mask_view.cpp.obj -c C:\\Users\\ppako\\Documents\\projects\\matrix_lib\\src\\mask_view.cpp",
+  "file": "C:/Users/ppako/Documents/projects/matrix_lib/src/mask_view.cpp",
+  "output": "CMakeFiles/matrix_lib.dir/src/mask_view.cpp.obj"
+},
+{
+  "directory": "C:/Users/ppako/Documents/projects/matrix_lib/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles\\matrix_lib.dir\\includes_CXX.rsp -g -o CMakeFiles\\matrix_lib.dir\\src\\mask.cpp.obj -c C:\\Users\\ppako\\Documents\\projects\\matrix_lib\\src\\mask.cpp",
+  "file": "C:/Users/ppako/Documents/projects/matrix_lib/src/mask.cpp",
+  "output": "CMakeFiles/matrix_lib.dir/src/mask.cpp.obj"
 }
 ]

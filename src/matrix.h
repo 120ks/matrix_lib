@@ -2,10 +2,10 @@
 
 #include "matrix_container.h"
 #include "matrix_view.h"
-#include "matrix_mask.h"
 
 class Matrix_view;
 class Matrix_method;
+class Mask;
 
 
 class Matrix : public Matrix_container
@@ -19,6 +19,7 @@ class Matrix : public Matrix_container
         Matrix(const Matrix_view &mxv);
         Matrix(const Matrix_base &mxb);
         ~Matrix()override = default;
+        double* matrix_ptr{&matrix[0]};
 
         //overrides
         inline size_t get_cols()const override {return cols;}
@@ -26,10 +27,15 @@ class Matrix : public Matrix_container
 
         double& operator()(const size_t row, const size_t col)override;
         double operator()(const size_t row, const size_t col)const override;
-        Matrix_view operator()(const Slice r_slice, const Slice c_slice)override;
+        Matrix_view operator()(Slice r_slice, Slice c_slice);
 
-        inline size_t begin_row()const override {return 0;};
-        inline size_t begin_col()const override {return 0;};
+        inline size_t matrix_rows()const override {return rows;}
+        inline size_t matrix_cols()const override {return cols;}
+        inline size_t begin_row()const override {return 0;}
+        inline size_t begin_col()const override {return 0;}
+
+        inline double* matrix_start_ptr()const override{return matrix_ptr;}
+        inline double* start_ptr()const override{return matrix_ptr;}
 
         //operators
         Matrix& operator=(Matrix other);
@@ -59,19 +65,19 @@ class Matrix : public Matrix_container
         //
         //COMPARISON OPERATORS
         //
-        friend Matrix_mask operator>(const Matrix_base &mxb1, const double val);
-        friend Matrix_mask operator<(const Matrix_base &mxb1, const double val);
-        friend Matrix_mask operator>=(const Matrix_base &mxb1, const double val);
-        friend Matrix_mask operator<=(const Matrix_base &mxb1, const double val);
-        friend Matrix_mask operator==(const Matrix_base &mxb1, const double val);
-        friend Matrix_mask operator!=(const Matrix_base &mxb1, const double val);
+        friend Mask operator>(const Matrix_base &mxb1, const double val);
+        friend Mask operator<(const Matrix_base &mxb1, const double val);
+        friend Mask operator>=(const Matrix_base &mxb1, const double val);
+        friend Mask operator<=(const Matrix_base &mxb1, const double val);
+        friend Mask operator==(const Matrix_base &mxb1, const double val);
+        friend Mask operator!=(const Matrix_base &mxb1, const double val);
 
-        friend Matrix_mask operator>(const Matrix_base &mxb1, const Matrix_base &mxb2);
-        friend Matrix_mask operator<(const Matrix_base &mxb1, const Matrix_base &mxb2);
-        friend Matrix_mask operator>=(const Matrix_base &mxb1, const Matrix_base &mxb2);
-        friend Matrix_mask operator<=(const Matrix_base &mxb1, const Matrix_base &mxb2);
-        friend Matrix_mask operator==(const Matrix_base &mxb1, const Matrix_base &mxb2);
-        friend Matrix_mask operator!=(const Matrix_base &mxb1, const Matrix_base &mxb2);
+        friend Mask operator>(const Matrix_base &mxb1, const Matrix_base &mxb2);
+        friend Mask operator<(const Matrix_base &mxb1, const Matrix_base &mxb2);
+        friend Mask operator>=(const Matrix_base &mxb1, const Matrix_base &mxb2);
+        friend Mask operator<=(const Matrix_base &mxb1, const Matrix_base &mxb2);
+        friend Mask operator==(const Matrix_base &mxb1, const Matrix_base &mxb2);
+        friend Mask operator!=(const Matrix_base &mxb1, const Matrix_base &mxb2);
         
 
 };

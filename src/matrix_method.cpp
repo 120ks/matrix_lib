@@ -1,6 +1,7 @@
 #include "matrix_method.h"
 #include "matrix.h"
 
+
 class Matrix;
 
 
@@ -48,13 +49,17 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, const 
     }
     assert(r1!=0 && c1!=0 && r2!=0 && c2!=0);
 
+    //lisätään nopeudelle suora täsmäys eli jos mxb1 ja mxb2 ovat ulottuvuudelta samat
+
+    size_t max_row{std::max(r1, r2)};
+    size_t max_col{std::max(c1, c2)};
     switch(op)
     {
         case(Operation::multiply):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            for(size_t r{} ; r<max_row ; r++)
             {
-                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                for(size_t c{} ; c<max_col ; c++)
                 {
                     mxb1(r%r1, c%c1) = mxb1(r%r1, c%c1) * mxb2(r%r2, c%c2); 
                 }
@@ -64,9 +69,9 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, const 
         }
         case(Operation::divide):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            for(size_t r{} ; r<max_row ; r++)
             {
-                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                for(size_t c{} ; c<max_col; c++)
                 {
                     mxb1(r%r1, c%c1) = mxb1(r%r1, c%c1) / mxb2(r%r2, c%c2);
                 }
@@ -76,9 +81,9 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, const 
         }
         case(Operation::add):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            for(size_t r{} ; r<max_row ; r++)
             {
-                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                for(size_t c{} ; c<max_col ; c++)
                 {
                     mxb1(r%r1, c%c1) = mxb1(r%r1, c%c1) + mxb2(r%r2, c%c2);
                 }
@@ -88,9 +93,9 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, const 
         }               
         case(Operation::substract):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            for(size_t r{} ; r<max_row ; r++)
             {
-                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                for(size_t c{} ; c<max_col ; c++)
                 {
                     mxb1(r%r1, c%c1) = mxb1(r%r1, c%c1) - mxb2(r%r2, c%c2);
                 }
@@ -100,9 +105,9 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, const 
         }
         case(Operation::equal):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            for(size_t r{} ; r<max_row ; r++)
             {
-                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                for(size_t c{} ; c<max_col ; c++)
                 {
                     mxb1(r%r1, c%c1) = mxb2(r%r2, c%c2);
                 }
@@ -112,9 +117,9 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, const 
         }
         case(Operation::power):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            for(size_t r{} ; r<max_row ; r++)
             {
-                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                for(size_t c{} ; c<max_col ; c++)
                 {
                     mxb1(r%r1, c%c1) = std::pow(mxb1(r%r1, c%c1), mxb2(r%r2, c%c2)); 
                 }
@@ -124,9 +129,9 @@ void Matrix_method::broadcast(Matrix_base &mxb1, const Matrix_base &mxb2, const 
         }
         case(Operation::root):
         {
-            for(size_t r{} ; r<std::max(r1, r2) ; r++)
+            for(size_t r{} ; r<max_row ; r++)
             {
-                for(size_t c{} ; c<std::max(c1, c2) ; c++)
+                for(size_t c{} ; c<max_col ; c++)
                 {
                     mxb1(r%r1, c%c1) = std::pow(mxb1(r%r1, c%c1), 1.0 / mxb2(r%r2, c%c2)); 
                 }
@@ -190,7 +195,8 @@ void Matrix_method::print(const Matrix_base &mxb1)
 }
 
 void Matrix_method::print(std::ostream &os, const Matrix_base &mxb1)
-{
+{   
+
     auto r1{mxb1.get_rows()};
     auto c1{mxb1.get_cols()};
 
