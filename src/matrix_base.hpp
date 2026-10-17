@@ -4,6 +4,12 @@
 #include <cassert>
 #include <cmath>
 
+enum Type
+{
+    matrix,
+    slice,
+    mask
+}; 
 template<typename T>
 class Matrix_base
 {
@@ -19,7 +25,7 @@ class Matrix_base
         virtual inline size_t get_cols()const = 0;
         virtual inline size_t matrix_rows()const = 0;
         virtual inline size_t matrix_cols()const = 0;
-
+        virtual inline Type derived_type()const = 0;
 
         virtual inline T* start_ptr()const = 0;
         

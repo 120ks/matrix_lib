@@ -162,7 +162,7 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/bits/ostream.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/istream \
  C:/msys64/mingw64/include/c++/16.1.0/bits/istream.tcc \
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_container.hpp \
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_method.hpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_base.hpp \
  C:/msys64/mingw64/include/c++/16.1.0/vector \
  C:/msys64/mingw64/include/c++/16.1.0/bits/stl_uninitialized.h \
@@ -186,8 +186,19 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/poly_hermite.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/poly_laguerre.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/riemann_zeta.tcc \
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_method.hpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_view.hpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/mask_view.hpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_statistics.hpp \
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_learn.hpp
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_learn.hpp \
+ C:/msys64/mingw64/include/c++/16.1.0/iomanip \
+ C:/msys64/mingw64/include/c++/16.1.0/locale \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/locale_facets_nonio.h \
+ C:/msys64/mingw64/include/c++/16.1.0/ctime \
+ C:/msys64/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/time_members.h \
+ C:/msys64/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/messages_members.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/codecvt.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/locale_facets_nonio.tcc \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/locale_conv.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/quoted_string.h \
+ C:/msys64/mingw64/include/c++/16.1.0/sstream \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/sstream.tcc

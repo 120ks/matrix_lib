@@ -23,52 +23,85 @@ finding if matrix has 0, getting transposed matrix. (more will be added)
 //
 
 //create matrix
-    to create the first Matrix object, you do Matrix mx{} //which creates an empty matrix object.
-    The matrix has a strict set of rows and cols, so reforming it later is not possible(this is due to optimization reasons).
-    to initialize a matrix of set size you give braces the rows and cols (and potentially the initilazion value)
-    for example Matrix{10, 5, 0} creates a matrix of 10 x 5 all 0 values.
 
-    you can also assign a matrix for example say you have a matrix object mx
-    doing mx = mx2 makes mx the same as mx2 (but not a reference);
-    doing mx = {10, 5, 0} also works and the new temp matrix is moved into mx's place.
+    Matrix<T> matrix{rows, cols, initial_value};        //new Matrix object //empty initial_value uses the T default
+    Matrix<T> matrix{const matrix<T>&&};                //copies the other named matrix 
+    Matrix<T> matrix{matrix<T>&&};                      //makes the r-value matrix into l-value matrix
+    Matrix<T> matrix{const matrix_base& object<T>};     //creates a matrix from the derived matrix, matrix_view or mask_view
+    Matrix<T> matrix{const matrix_base& object<R>};     //copies values of different type of matrix into matrix<T> values will be T
+                                                        //use auto matrix... when the other_matrix/base type T is unknown or changes types.
 
-//slicing 
-    to slice a matrix you use operator() with two slice objects Slice, Slice. The first is used for rows, second for cols. 
+//indexing
+
+                        //indexing is done using operator() instead of the normal [] (works with c++ version under 20)
+    matrix(row, col)    //returns the object inside the matrix at indexes row and col. (row and col are type size_t);
+    matrix(row, col)    //returns reference when matrix is not const, and value when matrix is const
+
+//slicing
+
+                                    //indexing is done using operator()
+    matrix(Slice rows, Slice cols)  //returns a view to matrix object that behaves like a normal matrix, but changes the underlying matrix object
+                                    // the shorter version for slice is sl
+                                    //the last number given to slice is exclusive
+    matrix(sl{1, 3}, sl{3, 6})      //returns a matrix_view object that behaves like a normal matrix with 2 rows and three cols, 
+                                    but under the hood changes made to the matrix_view are made to rows 1-2 and 3-5 in the matrix
+
+
+//masking
+
+                                            //comparison operators return a Matrix<boolean> object
+    Matrix<boolean> mask = {matrix < 2};    //mask object is a matrix that holds a custom boolean object
+    Matrix<boolean> mask = matrix > 0       //returns a mask size matrix that has true or false
+    matrix(mask) = 1;                       // makes all of the values that are true equal to one.
+    matrix(matrix<0) = 0;                   //all values under 0 in the matrix will be under zero
+                                            //mask has to match with rows and cols the matrix or its slice.
     
-    there are 3 ways to create a slice, first is to give the begin and end for the row/col slice.
-    for example mx({1, 5}, {3, 5}) takes rows at index 1, 2, 3, 4 (the end is exclusive). and cols 3, 4
-    doing chaining takes uses the previous slice, so slice after mx({1, 5}, {3, 5}) uses the index from the previous slice and not from the full
-    matrix.
-
-    second is to use single value, for example mx({1}, {3, 5}) uses only row at index 1
-
-    third is to use empty brace, now here is the caution, if the one brace is empty and the other is empty / sigle value, the 
-    program uses indexing size_t size_t its place so specifying atleast one is recommended for example mx(Slice{}, {2}) correctly uses the 
-    all rows with col 2 //NOTE: a index_object with no default constructor will be created to be able to omit the Slice from the above mentioned mixup
-    problem.
-
-    these three can be combined as wished.
-
+    
 //Operators
-    operators include 
 
-        all arithmetics * + / -  (modulo will be added when this is made into a template) 
-        all arithemtic assigns *=, += etc.
-        assign operator =
-        comparison operators > < >= == != etc.
-        and slicing and indexing operators ()
+                        //arithemtic operators +,',*,/
+                        //comparison operators <, >, <=, >=, ==, !=
+                        //logical (only work on Matrix<boolean>) !, &&, ||
+
+matrix * matrix2        //returns a matrix where matrix(0,0) * matrix2(0,0) and so on.
+matrix *= matrix2       //modifies left side "matrix" by multiplying its elements by corresponding ones on matrix2
+matrix * 2              //returns a new matrix that has all elements of matrix multiplied by 2
+matrix *= 2             //multiplies all matrix elements by 2
+
+matrix = matrix2        //copies / moves matrix2 into matrix (given that they are same type T)
+matrix<T> = matrix2<R>  //copies elements, elements will be of type The
+matrix = matrix(mask)   //copies all true elements to matrix
+matrix = matrix(slice)  //makes a new mask of the sliced matrix
+
+!mask                   //returns a opposite mask (mask is not altered) //use mask = !mask to save the opposite
+mask && mask            //returns mask where both masks had true in same index n
+mask ||                 //returns a mask atleast one mask had true in index n
 
 
-        also for mask object the logicals !, && , ||
+    //important note on arithmetic operations. To enable statistics (avg, std, normalization, etc) and ml operations like sliding multiplication,
+        the broadcast (function behind arit operations) only checks for empty row / cols, this means that if you pass in matrix 4x4 and 2X2
+        the 4x4 gets multiplied in four different places by 2x2. So for row 0, cols 0, 1, 2, 3 the 2x2 uses cols 0, 1, 0, 1 and same for rows.
+        make sure you do dimension checking before hand if it is important that they match
 
-        indexing uses (row, col) which returns the value in either ref or value depending on constness of the matrix.
+
+
+syntax tips...
+
+//even though multioperational syntax is allowed matrix(sl{2}, sl{2, 10})((matrix(sl{1, 10}, sl{2, 24})(sl{3, 4}, sl{2,10})>0)) = 1;" will compile and work
+    because view_object are treated as matrices the slice and mask applies to the "apparent matrix" and not the actual one. Therefore it is less error
+    prone to just do per line operations. for example making a mask out of a mask_view is allowed, however this returns a true_elements x 1 mask, which will 
+    not work with something like matrix(mask_from mask_view);
+
+
+
+
 
 
 //
 //broadcast info
 //
 
-like said the broadcast only checks that the matrix has some rows and cols, not that they match in "logical way"
+like said the broadcast only checks that the matrix HAS some rows and cols, not that they match in "logical way"
 this is used dynamically by helper functions but there is important caveat worth noticing.
 
 in the iteration the two matrices loop around their own cols and rows
@@ -83,21 +116,10 @@ the cols of the first get indexed twice in this example so the first col (0) get
 this is used to calculate sums, statistics, section multiplication etc.
 
 //
-//Matrix_method::
+//matrix_method::
 //
 
-the matrix method which handles only Matrix_base (mxb used as short) reference objects.
-these allow the calling of virtual functions from Matrix_base allowing for a dynamic way of treating Matrix_view objects as matrix objects
-without the need for multiple overloaded counterparts.
-
-many functions in Matrix_method have Operation specifier (op), these are add, divide, multiply, substract, root, power and equals.
-
-there is also the row_wise boolean, that overloads many "statistical" functions like std, avg, sum etc. if given, it performs row_wise operation
-if true or col_wise if false.
-
-for example Matrix_method::sum(mx1, true) returns a ROW_COUNT X 1 matrix of rows sums, if false 1 X COL_COUNT of row sums, if no is given
-then it returns the whole sum of the matrix mx1.
-
+the matrix method has few useful functions that work as the backbone for other function.
 
 
 //
@@ -119,7 +141,7 @@ for example
 would produce [1, 3][3, 9] with loop true it would become [4, 4][4, 4] as when c = 2(over bounds) it would again become 0, then 1, same for r
 this would need to dynamically fit into the broadcast as creating overload for this makes a messy code (~100 lines) that only changes a little.
 
-//done with modulos operation
+//done with modulos operation // changed to work using checks and iteration++
 
 
 //

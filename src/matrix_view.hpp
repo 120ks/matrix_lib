@@ -57,6 +57,7 @@ class Matrix_view : public Matrix_base<T>
         inline size_t get_cols()const override {return col_slice.end - col_slice.begin;}
         inline size_t matrix_rows()const override {return base_rows;}
         inline size_t matrix_cols()const override {return base_cols;}
+        Type derived_type()const override {return Type::slice;}
 
 
         T& operator()(const size_t row, const size_t col)override
@@ -72,7 +73,7 @@ class Matrix_view : public Matrix_base<T>
 //
 //SLICING AND MASKING
 //      
-        Matrix_view<T>& operator()(const Slice r_slice, const Slice c_slice)
+        Matrix_view& operator()(const Slice r_slice, const Slice c_slice)
         {   
             T* new_start{view_ptr+(r_slice.begin * base_cols + c_slice.begin)};
             row_slice = row_slice+r_slice;
@@ -86,70 +87,85 @@ class Matrix_view : public Matrix_base<T>
         
 //
 // ASSIGN OPERATORS
-// 
-        Matrix_view& operator=(const Matrix_base<T> &mxb1)
+//  
+        template<typename R>
+        Matrix_view& operator=(const Matrix_base<R> &mxb1)
         {
             matrix_method::broadcast(*this, mxb1, Operation::equal);
             return *this;
         }
 
-        Matrix_view& operator=(const T val)
+        template<typename R>
+        requires std::integral<R> || std::floating_point<R>
+        Matrix_view& operator=(const R val)
         {
             matrix_method::broadcast(*this, val, Operation::equal);
             return *this;
         }
 
-        Matrix_view& operator=(const Matrix_view<T> &mxv1)
+        template<typename R>
+        Matrix_view& operator=(const Matrix_view<R> &mxv1)
         {
             matrix_method::broadcast(*this, mxv1, Operation::equal);
             return *this;
         }
 //
 //MEMBER ARITHMETIC OPERATORS
-//
-        Matrix_view& operator+=(const Matrix_base<T>& other)
+//      
+        template<typename R>
+        Matrix_view& operator+=(const Matrix_base<R>& other)
         {
             matrix_method::broadcast(*this, other, Operation::add);
             return *this;
         }
-
-        Matrix_view& operator+=(const T val)
+        
+        template<typename R>
+        requires std::integral<R> || std::floating_point<R>
+        Matrix_view& operator+=(const R val)
         {
             matrix_method::broadcast(*this, val, Operation::add);
             return *this;
         }
 
-        Matrix_view& operator-=(const Matrix_base<T>& other)
+        template<typename R>
+        Matrix_view& operator-=(const Matrix_base<R>& other)
         {
             matrix_method::broadcast(*this, other, Operation::substract);
             return *this;
         }
 
-        Matrix_view& operator-=(const T val)
+        template<typename R>
+        requires std::integral<R> || std::floating_point<R>
+        Matrix_view& operator-=(const R val)
         {
             matrix_method::broadcast(*this, val, Operation::substract);
             return *this;
         }
-
-        Matrix_view& operator*=(const Matrix_base<T>& other)
+        template<typename R>
+        Matrix_view& operator*=(const Matrix_base<R>& other)
         {
             matrix_method::broadcast(*this, other, Operation::multiply);
             return *this;
         }
 
-        Matrix_view& operator*=(const T val)
+        template<typename R>
+        requires std::integral<R> || std::floating_point<R>
+        Matrix_view& operator*=(const R val)
         {
             matrix_method::broadcast(*this, val, Operation::multiply);
             return *this;
         }
 
-        Matrix_view& operator/=(const Matrix_base<T>& other)
+        template<typename R>
+        Matrix_view& operator/=(const Matrix_base<R>& other)
         {
             matrix_method::broadcast(*this, other, Operation::divide);
             return *this;
         }
 
-        Matrix_view& operator/=(const T val)
+        template<typename R>
+        requires std::integral<R> || std::floating_point<R>
+        Matrix_view& operator/=(const R val)
         {
             matrix_method::broadcast(*this, val, Operation::divide);
             return *this;

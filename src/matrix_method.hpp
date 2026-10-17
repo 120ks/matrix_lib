@@ -11,6 +11,7 @@ enum class Operation{
     divide,
     add,
     substract,
+    modulo,
     equal,
     power,
     root
@@ -33,166 +34,95 @@ namespace matrix_method
         return false;
     }
 
-    template<typename T>
-    void broadcast(Matrix_base<T> &mxb1, const Matrix_base<T> &mxb2, const Operation op)
+    template<typename T, typename R>
+    void broadcast(Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2, const Operation op)
     {
-        auto r1{mxb1.get_rows()}, r2{mxb2.get_rows()};
-        auto c1{mxb1.get_cols()}, c2{mxb2.get_cols()};
+        auto total_rows1{mxb1.get_rows()}, total_rows2{mxb2.get_rows()};
+        auto total_cols1{mxb1.get_cols()}, total_cols2{mxb2.get_cols()};
+        
+
+        std::cout << "broadcast-void Tyyppi T: " << typeid(T).name() << ", Tyyppi R: " << typeid(R).name() << '\n';
 
         if(op == Operation::divide || op == Operation::root){
             if(has_zero(mxb2)){return;}
         }
-        assert(r1!=0 && c1!=0 && r2!=0 && c2!=0);
+        assert(total_rows1 != 0);
+        assert(total_cols1 != 0);
+        assert(total_rows2 != 0);
+        assert(total_cols2 != 0);
 
-        //lisätään nopeudelle suora täsmäys eli jos mxb1 ja mxb2 ovat ulottuvuudelta samat
+        size_t max_row{std::max(total_rows1, total_rows2)};
+        size_t max_col{std::max(total_cols1, total_cols2)};
+        
+        size_t mxb1_row{}, mxb2_row{};
+        size_t mxb1_col{}, mxb2_col{};
 
-        size_t max_row{std::max(r1, r2)};
-        size_t max_col{std::max(c1, c2)};
-        switch(op)
-        {
-            case(Operation::multiply):
+        for(size_t r{0} ; r<max_row ; r++)
+        {   
+            for(size_t c{0} ; c<max_col ; c++)
             {
-                for(size_t r{} ; r<max_row ; r++)
-                {
-                    for(size_t c{} ; c<max_col ; c++)
-                    {
-                        mxb1(r%r1, c%c1) = mxb1(r%r1, c%c1) * mxb2(r%r2, c%c2); 
-                    }
-                    
+                switch(op){
+                    case(Operation::multiply) : mxb1(mxb1_row, mxb1_col) *= mxb2(mxb2_row, mxb2_col); break;
+                    case(Operation::divide): mxb1(mxb1_row, mxb1_col) /= mxb2(mxb2_row, mxb2_col); break;
+                    case(Operation::add): mxb1(mxb1_row, mxb1_col) += mxb2(mxb2_row, mxb2_col); break;
+                    case(Operation::substract): mxb1(mxb1_row, mxb1_col) -= mxb2(mxb2_row, mxb2_col); break;
+                    case(Operation::equal): mxb1(mxb1_row, mxb1_col) = mxb2(mxb2_row, mxb2_col); break;
+                    case(Operation::power): mxb1(mxb1_row, mxb1_col) = std::pow(mxb1(mxb1_row, mxb1_col), mxb2(mxb2_row, mxb2_col)); break;
+                    case(Operation::root): mxb1(mxb1_row, mxb1_col) = std::pow(mxb1(mxb1_row, mxb1_col), 1.0 / mxb2(mxb2_row, mxb2_col)); break;
                 }
-                return;
+                (mxb1_col < total_cols1 - 1) ? mxb1_col++ : mxb1_col = 0; 
+                (mxb2_col < total_cols2 - 1) ? mxb2_col++ : mxb2_col = 0;
             }
-            case(Operation::divide):
+            (mxb1_row < total_rows1 - 1) ? mxb1_row++ : mxb1_row = 0;
+            (mxb2_row < total_rows2 - 1) ? mxb2_row++ : mxb2_row = 0;
+        }
+    }
+
+    template<typename T, typename R>
+    requires std::integral<R> || std::floating_point<R>
+    void broadcast(Matrix_base<T> &mxb1, R value, const Operation op)
+    {
+        if(op == Operation::divide || op == Operation::root){
+            if(value == 0) {return;}
+        }
+        assert(mxb1.get_rows() != 0);
+        assert(mxb1.get_cols() != 0);
+
+        for(size_t r{0} ; r<mxb1.get_rows(); r++)
+        {   
+            for(size_t c{0} ; c<mxb1.get_cols() ; c++)
             {
-                for(size_t r{} ; r<max_row ; r++)
-                {
-                    for(size_t c{} ; c<max_col; c++)
-                    {
-                        mxb1(r%r1, c%c1) = mxb1(r%r1, c%c1) / mxb2(r%r2, c%c2);
-                    }
-                    
+                switch(op){
+                    case(Operation::multiply) : mxb1(r, c) *= value; break;
+                    case(Operation::divide): mxb1(r, c) /= value; break;
+                    case(Operation::add): mxb1(r, c) += value; break;
+                    case(Operation::substract): mxb1(r, c) -= value; break;
+                    case(Operation::equal): mxb1(r, c) = value; break;
+                    case(Operation::power): mxb1(r, c) = std::pow(mxb1(r, c), value); break;
+                    case(Operation::root): mxb1(r, c) = std::pow(mxb1(r, c), 1.0 / value); break;
                 }
-                return;
-            }
-            case(Operation::add):
-            {
-                for(size_t r{} ; r<max_row ; r++)
-                {
-                    for(size_t c{} ; c<max_col ; c++)
-                    {
-                        mxb1(r%r1, c%c1) = mxb1(r%r1, c%c1) + mxb2(r%r2, c%c2);
-                    }
-                    
-                }
-                return;
-            }               
-            case(Operation::substract):
-            {
-                for(size_t r{} ; r<max_row ; r++)
-                {
-                    for(size_t c{} ; c<max_col ; c++)
-                    {
-                        mxb1(r%r1, c%c1) = mxb1(r%r1, c%c1) - mxb2(r%r2, c%c2);
-                    }
-                    
-                }
-                return;
-            }
-            case(Operation::equal):
-            {
-                for(size_t r{} ; r<max_row ; r++)
-                {
-                    for(size_t c{} ; c<max_col ; c++)
-                    {
-                        mxb1(r%r1, c%c1) = mxb2(r%r2, c%c2);
-                    }
-                    
-                }
-                return;
-            }
-            case(Operation::power):
-            {
-                for(size_t r{} ; r<max_row ; r++)
-                {
-                    for(size_t c{} ; c<max_col ; c++)
-                    {
-                        mxb1(r%r1, c%c1) = std::pow(mxb1(r%r1, c%c1), mxb2(r%r2, c%c2)); 
-                    }
-                    
-                }
-                return;
-            }
-            case(Operation::root):
-            {
-                for(size_t r{} ; r<max_row ; r++)
-                {
-                    for(size_t c{} ; c<max_col ; c++)
-                    {
-                        mxb1(r%r1, c%c1) = std::pow(mxb1(r%r1, c%c1), 1.0 / mxb2(r%r2, c%c2)); 
-                    }
-                }
-                return;
             }
         }
     }
 
-    template<typename T>
-    void matrix_method::broadcast(Matrix_base<T> &mxb1, const T val, Operation op)
-    {
-        Matrix<T> temp_val{1, 1, val};
-        matrix_method::broadcast(mxb1, temp_val, op);
-    }
-
-    //
-    //r-value broadcast (huomaa const)
-    //
-    template<typename T>
-    Matrix<T> broadcast(const Matrix_base<T> &mxb1, const Matrix_base<T> &mxb2, const Operation op)
-    {
-        Matrix temp_mx{mxb1};
-        broadcast(temp_mx, mxb2, op);
-        return temp_mx;
-    }
-
-    template<typename T>
-    Matrix<T> broadcast(const Matrix_base<T> &mxb1, const T val, const Operation op)
-    {
-        Matrix temp_mx{mxb1};
-        broadcast(temp_mx, val, op);
-        return temp_mx;
-    }
-    //
-    //
-    //
-    template<typename T>
-    Matrix<T> copy(const Matrix_base<T> &mxb1)
-    {   
-        auto r1{mxb1.get_rows()};
-        auto c1{mxb1.get_cols()};
-        Matrix<T> mx{r1, c1};
-        for(size_t r{} ; r<r1 ; r++){
-            for(size_t c{} ; c<c1 ; c++){
-                mx(r, c) = mxb1(r, c);
-            }
-        }
-        return mx;
-    }
 
 
-    template<typename T>
-    Matrix<T> dot(const Matrix_base<T> &mxb1, const Matrix_base<T> &mxb2)
+
+
+    template<typename T, typename R>
+    auto dot(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
     {
         assert(mxb1.get_cols() == mxb2.get_rows());
 
-        auto r1{mxb1.get_rows()};
-        auto c2{mxb2.get_cols()};
-        auto r2c1{mxb2.get_rows()};
+        auto rows_1{mxb1.get_rows()};
+        auto cols_2{mxb2.get_cols()};
+        auto common_rc{mxb2.get_rows()};
 
-        Matrix mx{r1, c2};
-        for(size_t r{} ; r<r1 ; r++){
-            for(size_t c{} ; c<c2 ; c++){
+        Matrix<std::common_type_t<T, R>> mx{r1, c2}
+        for(size_t r{} ; r<rows_1 ; r++){
+            for(size_t c{} ; c<cols_2 c++){
                 T dot_sum{};
-                for(size_t k{} ; k<r2c1 ; k++){
+                for(size_t k{} ; k<common_rc k++){
                     dot_sum += mxb1(r, k) * mxb2(k, c);
                 }
                 mx(r, c) = dot_sum;
@@ -215,9 +145,6 @@ namespace matrix_method
         }
     return mx_t;
     }
-
-
-
 
     template<typename T>
     void print(std::ostream &os, const Matrix_base<T> &mxb1)

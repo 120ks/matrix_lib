@@ -8,102 +8,122 @@ template<typename T> class Matrix;
 //NON MEMBER ARITHMETIC OPERATORS
 //
 template<typename T, typename R>
-Matrix<T> operator+(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-{
-    Matrix<T> mx{mxb1};
-    matrix_method::broadcast(mx, mxb2, Operation::add);
+auto operator+(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
+{   
+    using common_type = std::common_type_t<T, R>;
+    Matrix<common_type>mx{mxb1};
+    mx += mxb2;
     return mx;
 }
 
 template<typename T, typename R>
-Matrix<T> operator+(const Matrix_base<T> &mxb1, const R val)
-{
-    Matrix<T> mx{mxb1};
-    matrix_method::broadcast(mx, val, Operation::add);
+requires std::integral<R> || std::floating_point<R>
+auto operator+(const Matrix_base<T> &mxb1, const R &val)
+{   
+    using common_type = std::common_type_t<T, R>;
+    Matrix<common_type>mx{mxb1};
+    mx += val;
     return mx;
 }
 
 template<typename T, typename R>
-Matrix<T> operator-(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-{
-    Matrix<T> mx{mxb1};
-    matrix_method::broadcast(mx, mxb2, Operation::substract);
+auto operator-(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
+{   
+    using common_type = std::common_type_t<T, R>;
+    Matrix<common_type>mx{mxb1};
+    mx -= mxb2;
     return mx;
 }
 
 template<typename T, typename R>
-Matrix<T> operator-(const Matrix_base<T> &mxb1, const R val)
-{
-    Matrix<T> mx{mxb1};
-    matrix_method::broadcast(mx, val, Operation::substract);
+requires std::integral<R> || std::floating_point<R>
+auto operator-(const Matrix_base<T> &mxb1, const R &val)
+{   
+    using common_type = std::common_type_t<T, R>;
+    Matrix<common_type>mx{mxb1};
+    mx -= val;
     return mx;
 }
 
 template<typename T, typename R>
-Matrix<T> operator*(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-{
-    Matrix<T> mx{mxb1};
-    matrix_method::broadcast(mx, mxb2, Operation::multiply);
+auto operator*(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
+{   
+    using common_type = std::common_type_t<T, R>;
+    Matrix<common_type>mx{mxb1};
+    mx *= mxb2;
     return mx;
 }
 
 template<typename T, typename R>
-Matrix<T> operator*(const Matrix_base<T> &mxb1, const R val)
-{
-    Matrix<T> mx{mxb1};
-    matrix_method::broadcast(mx, val, Operation::multiply);
+requires std::integral<R> || std::floating_point<R>
+auto operator*(const Matrix_base<T> &mxb1, const R &val)
+{   
+    using common_type = std::common_type_t<T, R>;
+    Matrix<common_type>mx{mxb1};
+    mx *= val;
     return mx;
 }
 
 template<typename T, typename R>
-Matrix<T> operator/(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-{
-    Matrix<T> mx{mxb1};
-    matrix_method::broadcast(mx, mxb2, Operation::divide);
+auto operator/(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
+{   
+    using common_type = std::common_type_t<T, R>;
+    Matrix<common_type>mx{mxb1};
+    mx /= mxb2;
     return mx;
 }
 
 template<typename T, typename R>
-Matrix<T> operator/(const Matrix_base<T> &mxb1, const R val)
-{
-    Matrix<T> mx{mxb1};
-    matrix_method::broadcast(mx, val, Operation::divide);
+requires std::integral<R> || std::floating_point<R>
+auto operator/(const Matrix_base<T> &mxb1, const R &val)
+{   
+    using common_type = std::common_type_t<T, R>;
+    Matrix<common_type>mx{mxb1};
+    mx /= val;
     return mx;
 }
+
+
 //
 //NON MEMBER COMPARISON OPERATORS
 //
 template<typename T, typename R>
+requires std::integral<R> || std::floating_point<R>
 Matrix<boolean> operator>(const Matrix_base<T> &mxb1, const R val)
 {
     return boolean_logic::make_mask(mxb1, Condition::over, val);
 }
 
 template<typename T, typename R>
+requires std::integral<R> || std::floating_point<R>
 Matrix<boolean> operator<(const Matrix_base<T> &mxb1, const R val)
 {
     return boolean_logic::make_mask(mxb1, Condition::under, val);
 }
 
 template<typename T, typename R>
+requires std::integral<R> || std::floating_point<R>
 Matrix<boolean> operator>=(const Matrix_base<T> &mxb1, const R val)
 {
     return boolean_logic::make_mask(mxb1, Condition::over_or, val);
 }
 
 template<typename T, typename R>
+requires std::integral<R> || std::floating_point<R>
 Matrix<boolean> operator<=(const Matrix_base<T> &mxb1, const R val)
 {
     return boolean_logic::make_mask(mxb1, Condition::under_or, val);
 }
 
 template<typename T, typename R>
+requires std::integral<R> || std::floating_point<R>
 Matrix<boolean> operator==(const Matrix_base<T> &mxb1, const R val)
 {
     return boolean_logic::make_mask(mxb1, Condition::is, val);
 }
 
 template<typename T, typename R>
+requires std::integral<R> || std::floating_point<R>
 Matrix<boolean> operator!=(const Matrix_base<T> &mxb1, const R val)
 {
     return boolean_logic::make_mask(mxb1, Condition::is_not, val);
