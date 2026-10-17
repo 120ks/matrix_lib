@@ -1,0 +1,158 @@
+#pragma once
+
+#include "matrix_base.hpp"
+#include "matrix_method.hpp"
+#include "matrix_subtypes.hpp"
+
+template<typename T>
+class Matrix_view : public Matrix_base<T>
+{   
+    friend class Matrix<T>;
+    private:
+        T* view_ptr{};
+        Slice row_slice{};
+        Slice col_slice{};
+
+        size_t base_rows{};
+        size_t base_cols{};
+    protected:
+//
+//CONSTRUCTORS
+//
+        Matrix_view(T* start, Slice r_slice, Slice c_slice, const size_t total_rows, const size_t total_cols)
+        : view_ptr{start}
+        , row_slice{r_slice}
+        , col_slice{c_slice}
+        , base_rows{total_rows}
+        , base_cols{total_cols}
+        {
+            row_slice.end = (row_slice.end == 0) ? base_rows : row_slice.end; 
+            col_slice.end = (col_slice.end == 0) ? base_cols : col_slice.end; 
+        }
+
+
+        Matrix_view(const Matrix_view &other)
+        : view_ptr{other.view_ptr}
+        , row_slice{other.row_slice}
+        , col_slice{other.col_slice}
+        , base_rows{other.base_rows}
+        , base_cols{other.base_cols}
+        {}
+
+
+        Matrix_view(Matrix_view &&other)noexcept
+        : view_ptr{other.view_ptr}
+        , row_slice{other.row_slice}
+        , col_slice{other.col_slice}
+        , base_rows{other.base_rows}
+        , base_cols{other.base_cols}
+        {other.view_ptr = nullptr;}
+
+    public:
+        ~Matrix_view()override = default;
+//
+// OVERRIDES
+//        
+        inline size_t get_rows()const override {return row_slice.end - row_slice.begin;}
+        inline size_t get_cols()const override {return col_slice.end - col_slice.begin;}
+        inline size_t matrix_rows()const override {return base_rows;}
+        inline size_t matrix_cols()const override {return base_cols;}
+
+
+        T& operator()(const size_t row, const size_t col)override
+        {   
+            return *(view_ptr+(row*base_cols) + col);
+        }
+
+        T operator()(const size_t row, const size_t col)const override
+        {   
+            return *(view_ptr+(row*base_cols) + col);
+        }
+        inline T* start_ptr()const override{return view_ptr;}
+//
+//SLICING AND MASKING
+//      
+        Matrix_view<T>& operator()(const Slice r_slice, const Slice c_slice)
+        {   
+            T* new_start{view_ptr+(r_slice.begin * base_cols + c_slice.begin)};
+            row_slice = row_slice+r_slice;
+            col_slice = col_slice+c_slice;
+
+            return{*this};
+        }
+        Mask_view<T> operator()(Matrix<boolean> mask){
+            return{*this, mask};
+        }
+        
+//
+// ASSIGN OPERATORS
+// 
+        Matrix_view& operator=(const Matrix_base<T> &mxb1)
+        {
+            matrix_method::broadcast(*this, mxb1, Operation::equal);
+            return *this;
+        }
+
+        Matrix_view& operator=(const T val)
+        {
+            matrix_method::broadcast(*this, val, Operation::equal);
+            return *this;
+        }
+
+        Matrix_view& operator=(const Matrix_view<T> &mxv1)
+        {
+            matrix_method::broadcast(*this, mxv1, Operation::equal);
+            return *this;
+        }
+//
+//MEMBER ARITHMETIC OPERATORS
+//
+        Matrix_view& operator+=(const Matrix_base<T>& other)
+        {
+            matrix_method::broadcast(*this, other, Operation::add);
+            return *this;
+        }
+
+        Matrix_view& operator+=(const T val)
+        {
+            matrix_method::broadcast(*this, val, Operation::add);
+            return *this;
+        }
+
+        Matrix_view& operator-=(const Matrix_base<T>& other)
+        {
+            matrix_method::broadcast(*this, other, Operation::substract);
+            return *this;
+        }
+
+        Matrix_view& operator-=(const T val)
+        {
+            matrix_method::broadcast(*this, val, Operation::substract);
+            return *this;
+        }
+
+        Matrix_view& operator*=(const Matrix_base<T>& other)
+        {
+            matrix_method::broadcast(*this, other, Operation::multiply);
+            return *this;
+        }
+
+        Matrix_view& operator*=(const T val)
+        {
+            matrix_method::broadcast(*this, val, Operation::multiply);
+            return *this;
+        }
+
+        Matrix_view& operator/=(const Matrix_base<T>& other)
+        {
+            matrix_method::broadcast(*this, other, Operation::divide);
+            return *this;
+        }
+
+        Matrix_view& operator/=(const T val)
+        {
+            matrix_method::broadcast(*this, val, Operation::divide);
+            return *this;
+        }
+};
+

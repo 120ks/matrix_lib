@@ -1,8 +1,6 @@
 CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.obj: \
  C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_statistic.cpp \
  C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_statistic.h \
- C:\Users\ppako\Documents\projects\matrix_lib\src\matrix.h \
- C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_container.h \
  C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_base.h \
  C:/msys64/mingw64/include/c++/16.1.0/vector \
  C:/msys64/mingw64/include/c++/16.1.0/bits/requires_hosted.h \
@@ -169,8 +167,6 @@ CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/bits/istream.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/cassert \
  C:/msys64/mingw64/include/assert.h \
- C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_view.h \
- C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_method.h \
  C:/msys64/mingw64/include/c++/16.1.0/cmath \
  C:/msys64/mingw64/include/math.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/specfun.h \
@@ -186,23 +182,4 @@ CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/poly_hermite.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/poly_laguerre.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/riemann_zeta.tcc \
- C:/msys64/mingw64/include/c++/16.1.0/memory \
- C:/msys64/mingw64/include/c++/16.1.0/bits/stl_tempbuf.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/stl_raw_storage_iter.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/align.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/unique_ptr.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/shared_ptr.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/shared_ptr_base.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/allocated_ptr.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/refwrap.h \
- C:/msys64/mingw64/include/c++/16.1.0/ext/aligned_buffer.h \
- C:/msys64/mingw64/include/c++/16.1.0/ext/concurrence.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/shared_ptr_atomic.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/atomic_base.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/atomic_lockfree_defines.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/atomic_wait.h \
- C:/msys64/mingw64/include/c++/16.1.0/backward/auto_ptr.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/ranges_uninitialized.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/ranges_algobase.h \
- C:/msys64/mingw64/include/c++/16.1.0/pstl/glue_memory_defs.h \
- C:/msys64/mingw64/include/c++/16.1.0/pstl/execution_defs.h
+ C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_method.h

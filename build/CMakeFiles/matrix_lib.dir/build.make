@@ -86,155 +86,19 @@ CMakeFiles/matrix_lib.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/matrix_lib.dir/main.cpp.s"
 	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\ppako\Documents\projects\matrix_lib\main.cpp -o CMakeFiles\matrix_lib.dir\main.cpp.s
 
-CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.obj: CMakeFiles/matrix_lib.dir/flags.make
-CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.obj: CMakeFiles/matrix_lib.dir/includes_CXX.rsp
-CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.obj: C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_container.cpp
-CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.obj: CMakeFiles/matrix_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.obj"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.obj -MF CMakeFiles\matrix_lib.dir\src\matrix_container.cpp.obj.d -o CMakeFiles\matrix_lib.dir\src\matrix_container.cpp.obj -c C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_container.cpp
-
-CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.i"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_container.cpp > CMakeFiles\matrix_lib.dir\src\matrix_container.cpp.i
-
-CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.s"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_container.cpp -o CMakeFiles\matrix_lib.dir\src\matrix_container.cpp.s
-
-CMakeFiles/matrix_lib.dir/src/matrix.cpp.obj: CMakeFiles/matrix_lib.dir/flags.make
-CMakeFiles/matrix_lib.dir/src/matrix.cpp.obj: CMakeFiles/matrix_lib.dir/includes_CXX.rsp
-CMakeFiles/matrix_lib.dir/src/matrix.cpp.obj: C:/Users/ppako/Documents/projects/matrix_lib/src/matrix.cpp
-CMakeFiles/matrix_lib.dir/src/matrix.cpp.obj: CMakeFiles/matrix_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/matrix_lib.dir/src/matrix.cpp.obj"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/matrix_lib.dir/src/matrix.cpp.obj -MF CMakeFiles\matrix_lib.dir\src\matrix.cpp.obj.d -o CMakeFiles\matrix_lib.dir\src\matrix.cpp.obj -c C:\Users\ppako\Documents\projects\matrix_lib\src\matrix.cpp
-
-CMakeFiles/matrix_lib.dir/src/matrix.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/matrix_lib.dir/src/matrix.cpp.i"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\ppako\Documents\projects\matrix_lib\src\matrix.cpp > CMakeFiles\matrix_lib.dir\src\matrix.cpp.i
-
-CMakeFiles/matrix_lib.dir/src/matrix.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/matrix_lib.dir/src/matrix.cpp.s"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\ppako\Documents\projects\matrix_lib\src\matrix.cpp -o CMakeFiles\matrix_lib.dir\src\matrix.cpp.s
-
-CMakeFiles/matrix_lib.dir/src/matrix_view.cpp.obj: CMakeFiles/matrix_lib.dir/flags.make
-CMakeFiles/matrix_lib.dir/src/matrix_view.cpp.obj: CMakeFiles/matrix_lib.dir/includes_CXX.rsp
-CMakeFiles/matrix_lib.dir/src/matrix_view.cpp.obj: C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_view.cpp
-CMakeFiles/matrix_lib.dir/src/matrix_view.cpp.obj: CMakeFiles/matrix_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/matrix_lib.dir/src/matrix_view.cpp.obj"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/matrix_lib.dir/src/matrix_view.cpp.obj -MF CMakeFiles\matrix_lib.dir\src\matrix_view.cpp.obj.d -o CMakeFiles\matrix_lib.dir\src\matrix_view.cpp.obj -c C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_view.cpp
-
-CMakeFiles/matrix_lib.dir/src/matrix_view.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/matrix_lib.dir/src/matrix_view.cpp.i"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_view.cpp > CMakeFiles\matrix_lib.dir\src\matrix_view.cpp.i
-
-CMakeFiles/matrix_lib.dir/src/matrix_view.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/matrix_lib.dir/src/matrix_view.cpp.s"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_view.cpp -o CMakeFiles\matrix_lib.dir\src\matrix_view.cpp.s
-
-CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.obj: CMakeFiles/matrix_lib.dir/flags.make
-CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.obj: CMakeFiles/matrix_lib.dir/includes_CXX.rsp
-CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.obj: C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_method.cpp
-CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.obj: CMakeFiles/matrix_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.obj"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.obj -MF CMakeFiles\matrix_lib.dir\src\matrix_method.cpp.obj.d -o CMakeFiles\matrix_lib.dir\src\matrix_method.cpp.obj -c C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_method.cpp
-
-CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.i"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_method.cpp > CMakeFiles\matrix_lib.dir\src\matrix_method.cpp.i
-
-CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.s"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_method.cpp -o CMakeFiles\matrix_lib.dir\src\matrix_method.cpp.s
-
-CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.obj: CMakeFiles/matrix_lib.dir/flags.make
-CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.obj: CMakeFiles/matrix_lib.dir/includes_CXX.rsp
-CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.obj: C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_statistic.cpp
-CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.obj: CMakeFiles/matrix_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.obj"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.obj -MF CMakeFiles\matrix_lib.dir\src\matrix_statistic.cpp.obj.d -o CMakeFiles\matrix_lib.dir\src\matrix_statistic.cpp.obj -c C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_statistic.cpp
-
-CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.i"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_statistic.cpp > CMakeFiles\matrix_lib.dir\src\matrix_statistic.cpp.i
-
-CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.s"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_statistic.cpp -o CMakeFiles\matrix_lib.dir\src\matrix_statistic.cpp.s
-
-CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.obj: CMakeFiles/matrix_lib.dir/flags.make
-CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.obj: CMakeFiles/matrix_lib.dir/includes_CXX.rsp
-CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.obj: C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_learn.cpp
-CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.obj: CMakeFiles/matrix_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.obj"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.obj -MF CMakeFiles\matrix_lib.dir\src\matrix_learn.cpp.obj.d -o CMakeFiles\matrix_lib.dir\src\matrix_learn.cpp.obj -c C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_learn.cpp
-
-CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.i"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_learn.cpp > CMakeFiles\matrix_lib.dir\src\matrix_learn.cpp.i
-
-CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.s"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\ppako\Documents\projects\matrix_lib\src\matrix_learn.cpp -o CMakeFiles\matrix_lib.dir\src\matrix_learn.cpp.s
-
-CMakeFiles/matrix_lib.dir/src/mask_view.cpp.obj: CMakeFiles/matrix_lib.dir/flags.make
-CMakeFiles/matrix_lib.dir/src/mask_view.cpp.obj: CMakeFiles/matrix_lib.dir/includes_CXX.rsp
-CMakeFiles/matrix_lib.dir/src/mask_view.cpp.obj: C:/Users/ppako/Documents/projects/matrix_lib/src/mask_view.cpp
-CMakeFiles/matrix_lib.dir/src/mask_view.cpp.obj: CMakeFiles/matrix_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/matrix_lib.dir/src/mask_view.cpp.obj"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/matrix_lib.dir/src/mask_view.cpp.obj -MF CMakeFiles\matrix_lib.dir\src\mask_view.cpp.obj.d -o CMakeFiles\matrix_lib.dir\src\mask_view.cpp.obj -c C:\Users\ppako\Documents\projects\matrix_lib\src\mask_view.cpp
-
-CMakeFiles/matrix_lib.dir/src/mask_view.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/matrix_lib.dir/src/mask_view.cpp.i"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\ppako\Documents\projects\matrix_lib\src\mask_view.cpp > CMakeFiles\matrix_lib.dir\src\mask_view.cpp.i
-
-CMakeFiles/matrix_lib.dir/src/mask_view.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/matrix_lib.dir/src/mask_view.cpp.s"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\ppako\Documents\projects\matrix_lib\src\mask_view.cpp -o CMakeFiles\matrix_lib.dir\src\mask_view.cpp.s
-
-CMakeFiles/matrix_lib.dir/src/mask.cpp.obj: CMakeFiles/matrix_lib.dir/flags.make
-CMakeFiles/matrix_lib.dir/src/mask.cpp.obj: CMakeFiles/matrix_lib.dir/includes_CXX.rsp
-CMakeFiles/matrix_lib.dir/src/mask.cpp.obj: C:/Users/ppako/Documents/projects/matrix_lib/src/mask.cpp
-CMakeFiles/matrix_lib.dir/src/mask.cpp.obj: CMakeFiles/matrix_lib.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/matrix_lib.dir/src/mask.cpp.obj"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/matrix_lib.dir/src/mask.cpp.obj -MF CMakeFiles\matrix_lib.dir\src\mask.cpp.obj.d -o CMakeFiles\matrix_lib.dir\src\mask.cpp.obj -c C:\Users\ppako\Documents\projects\matrix_lib\src\mask.cpp
-
-CMakeFiles/matrix_lib.dir/src/mask.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/matrix_lib.dir/src/mask.cpp.i"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\ppako\Documents\projects\matrix_lib\src\mask.cpp > CMakeFiles\matrix_lib.dir\src\mask.cpp.i
-
-CMakeFiles/matrix_lib.dir/src/mask.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/matrix_lib.dir/src/mask.cpp.s"
-	C:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\ppako\Documents\projects\matrix_lib\src\mask.cpp -o CMakeFiles\matrix_lib.dir\src\mask.cpp.s
-
 # Object files for target matrix_lib
 matrix_lib_OBJECTS = \
-"CMakeFiles/matrix_lib.dir/main.cpp.obj" \
-"CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.obj" \
-"CMakeFiles/matrix_lib.dir/src/matrix.cpp.obj" \
-"CMakeFiles/matrix_lib.dir/src/matrix_view.cpp.obj" \
-"CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.obj" \
-"CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.obj" \
-"CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.obj" \
-"CMakeFiles/matrix_lib.dir/src/mask_view.cpp.obj" \
-"CMakeFiles/matrix_lib.dir/src/mask.cpp.obj"
+"CMakeFiles/matrix_lib.dir/main.cpp.obj"
 
 # External object files for target matrix_lib
 matrix_lib_EXTERNAL_OBJECTS =
 
 matrix_lib.exe: CMakeFiles/matrix_lib.dir/main.cpp.obj
-matrix_lib.exe: CMakeFiles/matrix_lib.dir/src/matrix_container.cpp.obj
-matrix_lib.exe: CMakeFiles/matrix_lib.dir/src/matrix.cpp.obj
-matrix_lib.exe: CMakeFiles/matrix_lib.dir/src/matrix_view.cpp.obj
-matrix_lib.exe: CMakeFiles/matrix_lib.dir/src/matrix_method.cpp.obj
-matrix_lib.exe: CMakeFiles/matrix_lib.dir/src/matrix_statistic.cpp.obj
-matrix_lib.exe: CMakeFiles/matrix_lib.dir/src/matrix_learn.cpp.obj
-matrix_lib.exe: CMakeFiles/matrix_lib.dir/src/mask_view.cpp.obj
-matrix_lib.exe: CMakeFiles/matrix_lib.dir/src/mask.cpp.obj
 matrix_lib.exe: CMakeFiles/matrix_lib.dir/build.make
 matrix_lib.exe: CMakeFiles/matrix_lib.dir/linkLibs.rsp
 matrix_lib.exe: CMakeFiles/matrix_lib.dir/objects1.rsp
 matrix_lib.exe: CMakeFiles/matrix_lib.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable matrix_lib.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable matrix_lib.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\matrix_lib.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

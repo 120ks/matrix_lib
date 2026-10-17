@@ -9,14 +9,6 @@ endif()
 
 add_executable(${PROJECT_NAME}
     main.cpp
-    src/matrix_container.cpp
-    src/matrix.cpp
-    src/matrix_view.cpp
-    src/matrix_method.cpp
-    src/matrix_statistic.cpp
-    src/matrix_learn.cpp
-    src/mask_view.cpp
-    src/mask.cpp
     )
 target_include_directories(matrix_lib PRIVATE
     src
