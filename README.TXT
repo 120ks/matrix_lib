@@ -2,20 +2,8 @@
 //CORE PRINCIPLE
 //
 
-The mrx library has two main parts the Matrix class object and a Matrix_view class object.
-These two combined allow smooth indexing and slicing with automatic broadcasting trough operators
-
-
-The broadcasting function found in Matrix_method::broadcast() does inplace broadcasting to the first object given. The broadcast
-only checks for invalid row/col number (0) and invalid divider / root (0), otherwise it allows broadcasting dynamically, for example
-you can broadcast addison from 5X5 matrix to 2X2 matrix.
-important note is that the calculation is done using the larger rows and cols between the two. This is used for example to get total sum
-which can be achieved by initializing 1X1 matrix with value 0, and broadcasting with addison the full matrix into it. 
-broadcast(1x1, NxM, Operation::add)
-
-other functions include (for now) dot product, sum(total and row/col wise), avg(total and row/col) std(total and row/col), 
-finding if matrix has 0, getting transposed matrix. (more will be added)
-
+Allow for dynamic operating, viewing, slicing and masking and all of these mixed and combined.
+the goal is to allows pretty much all that make semantically some sense (not full but enough to be realistically possible)
 
 
 //
@@ -27,7 +15,7 @@ finding if matrix has 0, getting transposed matrix. (more will be added)
     Matrix<T> matrix{rows, cols, initial_value};        //new Matrix object //empty initial_value uses the T default
     Matrix<T> matrix{const matrix<T>&&};                //copies the other named matrix 
     Matrix<T> matrix{matrix<T>&&};                      //makes the r-value matrix into l-value matrix
-    Matrix<T> matrix{const matrix_base& object<T>};     //creates a matrix from the derived matrix, matrix_view or mask_view
+    Matrix<T> matrix{const matrix_base& object<T>};     //creates a matrix from the derived matrix, Slice_view or mask_view
     Matrix<T> matrix{const matrix_base& object<R>};     //copies values of different type of matrix into matrix<T> values will be T
                                                         //use auto matrix... when the other_matrix/base type T is unknown or changes types.
 
@@ -43,8 +31,8 @@ finding if matrix has 0, getting transposed matrix. (more will be added)
     matrix(Slice rows, Slice cols)  //returns a view to matrix object that behaves like a normal matrix, but changes the underlying matrix object
                                     // the shorter version for slice is sl
                                     //the last number given to slice is exclusive
-    matrix(sl{1, 3}, sl{3, 6})      //returns a matrix_view object that behaves like a normal matrix with 2 rows and three cols, 
-                                    but under the hood changes made to the matrix_view are made to rows 1-2 and 3-5 in the matrix
+    matrix(sl{1, 3}, sl{3, 6})      //returns a Slice_view object that behaves like a normal matrix with 2 rows and three cols, 
+                                    but under the hood changes made to the Slice_view are made to rows 1-2 and 3-5 in the matrix
 
 
 //masking
@@ -52,9 +40,10 @@ finding if matrix has 0, getting transposed matrix. (more will be added)
                                             //comparison operators return a Matrix<boolean> object
     Matrix<boolean> mask = {matrix < 2};    //mask object is a matrix that holds a custom boolean object
     Matrix<boolean> mask = matrix > 0       //returns a mask size matrix that has true or false
-    matrix(mask) = 1;                       // makes all of the values that are true equal to one.
-    matrix(matrix<0) = 0;                   //all values under 0 in the matrix will be under zero
-                                            //mask has to match with rows and cols the matrix or its slice.
+    matrix[mask]= 1;                       // makes all of the values that are true equal to one.
+    matrix[matrix<0] = 0;                   //all values under 0 in the matrix will be under zero
+                                            //mask has to match with rows and cols the matrix or its slice
+
     
     
 //Operators
@@ -84,6 +73,19 @@ mask ||                 //returns a mask atleast one mask had true in index n
         make sure you do dimension checking before hand if it is important that they match
 
 
+//
+//FLAGS
+//
+
+                                    //flags change how a object is treated or return one that has desired attributes .M(), .T()
+                                    // .M() tells that this object will directly be converted into Mask_view object
+                                    // .T returns a view from the matrix that treat is as transposed
+
+matrix(slice, slice) > 0 = 0        //would assign the mask to 0
+matrix(slice, slice).M() > 0 = 0    //sets the slice's mask flag to opposite (by default false so true) and this will directly create the mask_view object
+matrix(slice, slice).M(false) > 0   //nothing happens, a mask (Matrix<boolean>) is created.
+
+matrix.T() * matrix2, this          //returns a transposed view of the matrix (slice_view)
 
 syntax tips...
 
@@ -93,8 +95,14 @@ syntax tips...
     not work with something like matrix(mask_from mask_view);
 
 
-
-
+// when doing a "crazy" operation like creating a mask from over 0 then masking a matrix with it, then slicing the mask_view and mulitpying that by 3, works always sequentally
+    1. you make a mask from matrix of NxM : auto mask = matrix>0 : (mask is NxM) and has 10 true elements
+    2. you use the mask to create a mask view : matrix[mask] : the mask_view is dimensions 10x1
+    3. you slice the mask_view say between 0 and 3 : matrix[mask]({0, 3}) : the returned is slice view object of always type size_t
+    4. you multiply this slice by three. So you are multiplying the value in in the index_array and not the array that the mask_view was pointing at, this is why i
+        highly discourage not slice mask_view's;
+    
+    
 
 
 //
@@ -164,5 +172,20 @@ the operator() for indexing, prechecking the value could allow for a smoother wa
 
 
 
+//
+// 4
+//
 
+ideas on how to make masking more dynamic,
 
+1. overloading it on operator[] seperates it cleanly from other overloads for example matrix[matrix < 0] = 0;
+2. potentially making sliced matrix convert straight away into mask_view, makes it easier to read that way and takes out zero functionality, as chain slicing,
+    can be already achieved with 1 (and calculations);
+
+3. instead of creating a seperate mask_view, make the function return a Matrix of Nx1 ptr's to these elements, this way it inherits the full functionality of a masked view object
+    and only needed is a Matrix(mxb1<T>, Matrix<boolean>) constructor for masks made from slice_view with this, A flag system will be implemented that "flips" functionality in 
+    operators .M() makes a direct mask from ptr objects.
+    
+    also because this ptr matrix only exists as r-value in expression, doing auto matrix = matrix.M()>0 = 2; would only copy the matrix object. will have to look into this, 
+    as it would require saving them as ptr, and matrix currently indexes by returning pure ref (matrix[row * cols + c])
+    

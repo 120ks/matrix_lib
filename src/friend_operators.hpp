@@ -1,6 +1,6 @@
 #pragma once
 #include "matrix.hpp"
-#include "matrix_view.hpp"
+#include "slice_view.hpp"
 #include "mask_view.hpp"
 
 template<typename T> class Matrix;
@@ -61,6 +61,8 @@ auto operator*(const Matrix_base<T> &mxb1, const R &val)
     using common_type = std::common_type_t<T, R>;
     Matrix<common_type>mx{mxb1};
     mx *= val;
+
+
     return mx;
 }
 
@@ -89,8 +91,8 @@ auto operator/(const Matrix_base<T> &mxb1, const R &val)
 //
 template<typename T, typename R>
 requires std::integral<R> || std::floating_point<R>
-Matrix<boolean> operator>(const Matrix_base<T> &mxb1, const R val)
-{
+auto operator>(const Matrix_base<T> &mxb1, const R val)
+{   
     return boolean_logic::make_mask(mxb1, Condition::over, val);
 }
 
@@ -130,8 +132,8 @@ Matrix<boolean> operator!=(const Matrix_base<T> &mxb1, const R val)
 }
 
 template<typename T, typename R>
-Matrix<boolean> operator>(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-{
+auto operator>(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
+{   
     return boolean_logic::make_mask(mxb1, Condition::over, mxb2);
 }
 

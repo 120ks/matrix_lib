@@ -186,7 +186,7 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/poly_hermite.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/poly_laguerre.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/riemann_zeta.tcc \
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_view.hpp \
+ C:/Users/ppako/Documents/projects/matrix_lib/src/slice_view.hpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/mask_view.hpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_statistics.hpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_learn.hpp \

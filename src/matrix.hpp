@@ -5,7 +5,7 @@
 #include <cassert>
 
 template <typename T>
-class Matrix_view;
+class Slice_view;
 
 template<typename T>
 class Mask_view;
@@ -71,7 +71,7 @@ class Matrix : public Matrix_base<T>
 //
 //SLICE AND MASK
 //
-        Matrix_view<T> operator()(Slice r_slice, Slice c_slice)
+        Slice_view<T> operator()(Slice r_slice, Slice c_slice)
         {   
             r_slice.end = (r_slice.end == 0) ? rows : r_slice.end;
             c_slice.end = (c_slice.end == 0) ? cols : c_slice.end;
@@ -80,18 +80,18 @@ class Matrix : public Matrix_base<T>
             return {start_ptr, r_slice, c_slice, rows, cols};
         }   
         
-        Mask_view<T> operator()(Matrix<boolean> mask){
+        Mask_view<T> operator[](Matrix<boolean> mask){
             return {*this, mask};
         }
 //
 // OVERRIDES
 //        
         T& operator()(const size_t row, const size_t col)override{
-            return this->matrix[row*cols + col];
+            return matrix[row*cols + col];
         }
         
-        T operator()(const size_t row, const size_t col)const override{
-            return this->matrix[row*cols + col];
+        const T& operator()(const size_t row, const size_t col)const override{
+            return matrix[row*cols + col];
         }
 
         inline size_t get_rows()const override {return rows;}
@@ -101,9 +101,6 @@ class Matrix : public Matrix_base<T>
         inline size_t matrix_cols()const override {return cols;}
 
         Type derived_type()const override {return Type::matrix;}
-
-
-        inline T* start_ptr()const override{return const_cast<T*>(&matrix[0]);}
 //
 // ASSIGN OPERATORS
 // 
@@ -189,11 +186,11 @@ class Matrix : public Matrix_base<T>
 //
 //NOT OPERATOR
 //      
-Matrix<boolean> operator!() = delete; //Only Matrix<boolean> can use
+Matrix<boolean> operator!()const = delete; //Only Matrix<boolean> can use
 };
 
 template<>
-Matrix<boolean> Matrix<boolean>::operator!()
+Matrix<boolean> Matrix<boolean>::operator!()const
 {   
     Matrix<boolean> mask{*this};
     for(auto& val : mask.matrix){
@@ -201,8 +198,9 @@ Matrix<boolean> Matrix<boolean>::operator!()
     }
     return mask;
 }
-
-
+//
+//CREATING BOOLEANS
+//
 namespace boolean_logic
 {   
     template<typename T, typename R>

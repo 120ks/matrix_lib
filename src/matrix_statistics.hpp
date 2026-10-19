@@ -8,10 +8,26 @@ class Matrix;
 
 namespace matrix_statistics
 {   template<typename T>
-    T minimum(const Matrix_base<T>& mxb1); //not yet
+    T minimum(const Matrix_base<T>& mxb1)
+    {   
+        auto min{mxb1(0,0)};
+        for(size_t r{} ; r<mxb1.get_rows() ; r++){
+            for(size_t c{} ; c<mxb1.get_cols ; c++){
+                if(mxb1(r, c)<min){min = mxb1(r, c);}
+            }
+        }
+    }
 
     template<typename T>
-    T maximum(const Matrix_base<T>& mxb1); //not yet
+    T maximum(const Matrix_base<T>& mxb1)
+    {   
+        auto max{mxb1(0,0)};
+        for(size_t r{} ; r<mxb1.get_rows() ; r++){
+            for(size_t c{} ; c<mxb1.get_cols ; c++){
+                if(mxb1(r, c)>max){max = mxb1(r, c);}
+            }
+        }
+    }
 
     template<typename T>
     double sum(const Matrix_base<T> &mxb1)

@@ -22,7 +22,7 @@ class Slice
         size_t end{};
         explicit Slice() : begin{0}, end{0}{}
         explicit Slice(const size_t bgn) : begin{bgn}, end{bgn+1}{}
-        Slice(const size_t bgn, const size_t ending) : begin{bgn}, end{ending}{}
+        Slice(const size_t bgn, const size_t ending) : begin{bgn}, end{ending}{} //ADD INDEXING ERROR IF BEGIN >= END
         Slice(const Slice &other) : begin{other.begin} , end{other.end}{}
         ~Slice() = default;
 
@@ -32,11 +32,8 @@ class Slice
         }
 };
 
-Slice operator"" _sl(const size_t val){
-    return Slice{val};
-}
 
-class boolean //to create a c++ syntax friendly bool
+class boolean //works like bool
 {   
     private:
         bool value{};

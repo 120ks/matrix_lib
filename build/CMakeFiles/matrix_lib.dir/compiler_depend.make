@@ -10,8 +10,8 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: C:/Users/ppako/Documents/projects/matrix
   C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_method.hpp \
   C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_statistics.hpp \
   C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_subtypes.hpp \
-  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_view.hpp \
   C:/Users/ppako/Documents/projects/matrix_lib/src/mx.hpp \
+  C:/Users/ppako/Documents/projects/matrix_lib/src/slice_view.hpp \
   C:/msys64/mingw64/include/_mingw.h \
   C:/msys64/mingw64/include/_mingw_locale.h \
   C:/msys64/mingw64/include/_mingw_mac.h \
@@ -258,11 +258,11 @@ C:/msys64/mingw64/include/c++/16.1.0/bits/basic_ios.h:
 
 C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_subtypes.hpp:
 
-C:/msys64/mingw64/include/c++/16.1.0/bits/stl_function.h:
-
-C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_view.hpp:
-
 C:/Users/ppako/Documents/projects/matrix_lib/src/mx.hpp:
+
+C:/msys64/mingw64/include/c++/16.1.0/typeinfo:
+
+C:/Users/ppako/Documents/projects/matrix_lib/src/slice_view.hpp:
 
 C:/msys64/mingw64/include/_mingw.h:
 
@@ -414,6 +414,8 @@ C:/msys64/mingw64/include/vadefs.h:
 
 C:/msys64/mingw64/include/c++/16.1.0/bits/stl_construct.h:
 
+C:/msys64/mingw64/include/c++/16.1.0/bits/stl_function.h:
+
 C:/msys64/mingw64/include/c++/16.1.0/bits/stl_iterator.h:
 
 C:/msys64/mingw64/include/c++/16.1.0/bits/stl_iterator_base_funcs.h:
@@ -547,8 +549,6 @@ C:/msys64/mingw64/include/c++/16.1.0/tr1/special_function_util.h:
 C:/msys64/mingw64/include/c++/16.1.0/tuple:
 
 C:/msys64/mingw64/include/c++/16.1.0/type_traits:
-
-C:/msys64/mingw64/include/c++/16.1.0/typeinfo:
 
 C:/msys64/mingw64/include/c++/16.1.0/vector:
 

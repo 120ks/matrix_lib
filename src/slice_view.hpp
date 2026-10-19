@@ -5,9 +5,14 @@
 #include "matrix_subtypes.hpp"
 
 template<typename T>
-class Matrix_view : public Matrix_base<T>
+class Slice_view : public Matrix_base<T>
 {   
-    friend class Matrix<T>;
+    template<typename>
+    friend class Matrix;
+
+    template<typename>
+    friend class Mask_view;
+
     private:
         T* view_ptr{};
         Slice row_slice{};
@@ -19,7 +24,7 @@ class Matrix_view : public Matrix_base<T>
 //
 //CONSTRUCTORS
 //
-        Matrix_view(T* start, Slice r_slice, Slice c_slice, const size_t total_rows, const size_t total_cols)
+        Slice_view(T* start, Slice r_slice, Slice c_slice, const size_t total_rows, const size_t total_cols)
         : view_ptr{start}
         , row_slice{r_slice}
         , col_slice{c_slice}
@@ -31,7 +36,7 @@ class Matrix_view : public Matrix_base<T>
         }
 
 
-        Matrix_view(const Matrix_view &other)
+        Slice_view(const Slice_view &other)
         : view_ptr{other.view_ptr}
         , row_slice{other.row_slice}
         , col_slice{other.col_slice}
@@ -40,7 +45,7 @@ class Matrix_view : public Matrix_base<T>
         {}
 
 
-        Matrix_view(Matrix_view &&other)noexcept
+        Slice_view(Slice_view &&other)noexcept
         : view_ptr{other.view_ptr}
         , row_slice{other.row_slice}
         , col_slice{other.col_slice}
@@ -49,7 +54,7 @@ class Matrix_view : public Matrix_base<T>
         {other.view_ptr = nullptr;}
 
     public:
-        ~Matrix_view()override = default;
+        ~Slice_view()override = default;
 //
 // OVERRIDES
 //        
@@ -65,15 +70,14 @@ class Matrix_view : public Matrix_base<T>
             return *(view_ptr+(row*base_cols) + col);
         }
 
-        T operator()(const size_t row, const size_t col)const override
+        const T& operator()(const size_t row, const size_t col)const override
         {   
             return *(view_ptr+(row*base_cols) + col);
         }
-        inline T* start_ptr()const override{return view_ptr;}
 //
 //SLICING AND MASKING
 //      
-        Matrix_view& operator()(const Slice r_slice, const Slice c_slice)
+        Slice_view& operator()(const Slice r_slice, const Slice c_slice)
         {   
             T* new_start{view_ptr+(r_slice.begin * base_cols + c_slice.begin)};
             row_slice = row_slice+r_slice;
@@ -81,7 +85,7 @@ class Matrix_view : public Matrix_base<T>
 
             return{*this};
         }
-        Mask_view<T> operator()(Matrix<boolean> mask){
+        Mask_view<T> operator[](Matrix<boolean> mask){ //note the  []
             return{*this, mask};
         }
         
@@ -89,7 +93,7 @@ class Matrix_view : public Matrix_base<T>
 // ASSIGN OPERATORS
 //  
         template<typename R>
-        Matrix_view& operator=(const Matrix_base<R> &mxb1)
+        Slice_view& operator=(const Matrix_base<R> &mxb1)
         {
             matrix_method::broadcast(*this, mxb1, Operation::equal);
             return *this;
@@ -97,14 +101,14 @@ class Matrix_view : public Matrix_base<T>
 
         template<typename R>
         requires std::integral<R> || std::floating_point<R>
-        Matrix_view& operator=(const R val)
+        Slice_view& operator=(const R val)
         {
             matrix_method::broadcast(*this, val, Operation::equal);
             return *this;
         }
 
         template<typename R>
-        Matrix_view& operator=(const Matrix_view<R> &mxv1)
+        Slice_view& operator=(const Slice_view<R> &mxv1)
         {
             matrix_method::broadcast(*this, mxv1, Operation::equal);
             return *this;
@@ -113,7 +117,7 @@ class Matrix_view : public Matrix_base<T>
 //MEMBER ARITHMETIC OPERATORS
 //      
         template<typename R>
-        Matrix_view& operator+=(const Matrix_base<R>& other)
+        Slice_view& operator+=(const Matrix_base<R>& other)
         {
             matrix_method::broadcast(*this, other, Operation::add);
             return *this;
@@ -121,14 +125,14 @@ class Matrix_view : public Matrix_base<T>
         
         template<typename R>
         requires std::integral<R> || std::floating_point<R>
-        Matrix_view& operator+=(const R val)
+        Slice_view& operator+=(const R val)
         {
             matrix_method::broadcast(*this, val, Operation::add);
             return *this;
         }
 
         template<typename R>
-        Matrix_view& operator-=(const Matrix_base<R>& other)
+        Slice_view& operator-=(const Matrix_base<R>& other)
         {
             matrix_method::broadcast(*this, other, Operation::substract);
             return *this;
@@ -136,13 +140,13 @@ class Matrix_view : public Matrix_base<T>
 
         template<typename R>
         requires std::integral<R> || std::floating_point<R>
-        Matrix_view& operator-=(const R val)
+        Slice_view& operator-=(const R val)
         {
             matrix_method::broadcast(*this, val, Operation::substract);
             return *this;
         }
         template<typename R>
-        Matrix_view& operator*=(const Matrix_base<R>& other)
+        Slice_view& operator*=(const Matrix_base<R>& other)
         {
             matrix_method::broadcast(*this, other, Operation::multiply);
             return *this;
@@ -150,14 +154,14 @@ class Matrix_view : public Matrix_base<T>
 
         template<typename R>
         requires std::integral<R> || std::floating_point<R>
-        Matrix_view& operator*=(const R val)
+        Slice_view& operator*=(const R val)
         {
             matrix_method::broadcast(*this, val, Operation::multiply);
             return *this;
         }
 
         template<typename R>
-        Matrix_view& operator/=(const Matrix_base<R>& other)
+        Slice_view& operator/=(const Matrix_base<R>& other)
         {
             matrix_method::broadcast(*this, other, Operation::divide);
             return *this;
@@ -165,7 +169,7 @@ class Matrix_view : public Matrix_base<T>
 
         template<typename R>
         requires std::integral<R> || std::floating_point<R>
-        Matrix_view& operator/=(const R val)
+        Slice_view& operator/=(const R val)
         {
             matrix_method::broadcast(*this, val, Operation::divide);
             return *this;

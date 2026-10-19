@@ -36,20 +36,15 @@ namespace matrix_method
 
     template<typename T, typename R>
     void broadcast(Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2, const Operation op)
-    {
+    {   
+        if((mxb1.get_rows() != 0) || (mxb1.get_cols())) {return;}
+        
         auto total_rows1{mxb1.get_rows()}, total_rows2{mxb2.get_rows()};
         auto total_cols1{mxb1.get_cols()}, total_cols2{mxb2.get_cols()};
-        
-
-        std::cout << "broadcast-void Tyyppi T: " << typeid(T).name() << ", Tyyppi R: " << typeid(R).name() << '\n';
 
         if(op == Operation::divide || op == Operation::root){
             if(has_zero(mxb2)){return;}
         }
-        assert(total_rows1 != 0);
-        assert(total_cols1 != 0);
-        assert(total_rows2 != 0);
-        assert(total_cols2 != 0);
 
         size_t max_row{std::max(total_rows1, total_rows2)};
         size_t max_col{std::max(total_cols1, total_cols2)};
@@ -82,12 +77,11 @@ namespace matrix_method
     requires std::integral<R> || std::floating_point<R>
     void broadcast(Matrix_base<T> &mxb1, R value, const Operation op)
     {
+        if((mxb1.get_rows() != 0) || (mxb1.get_cols())) {return;}
+
         if(op == Operation::divide || op == Operation::root){
             if(value == 0) {return;}
         }
-        assert(mxb1.get_rows() != 0);
-        assert(mxb1.get_cols() != 0);
-
         for(size_t r{0} ; r<mxb1.get_rows(); r++)
         {   
             for(size_t c{0} ; c<mxb1.get_cols() ; c++)
@@ -105,10 +99,6 @@ namespace matrix_method
         }
     }
 
-
-
-
-
     template<typename T, typename R>
     auto dot(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
     {
@@ -118,11 +108,11 @@ namespace matrix_method
         auto cols_2{mxb2.get_cols()};
         auto common_rc{mxb2.get_rows()};
 
-        Matrix<std::common_type_t<T, R>> mx{r1, c2}
+        Matrix<std::common_type_t<T, R>> mx{rows_1, cols_2};
         for(size_t r{} ; r<rows_1 ; r++){
-            for(size_t c{} ; c<cols_2 c++){
+            for(size_t c{} ; c<cols_2 ; c++){
                 T dot_sum{};
-                for(size_t k{} ; k<common_rc k++){
+                for(size_t k{} ; k<common_rc ; k++){
                     dot_sum += mxb1(r, k) * mxb2(k, c);
                 }
                 mx(r, c) = dot_sum;
@@ -136,7 +126,7 @@ namespace matrix_method
     {
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
-        Matrix mx_t{c1, r1};
+        Matrix<T> mx_t{c1, r1};
 
         for(size_t r{} ; r<r1 ; r++){
             for(size_t c{} ; c<c1 ; c++){
