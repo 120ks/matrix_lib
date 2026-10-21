@@ -4,12 +4,7 @@
 #include <cassert>
 #include <cmath>
 
-enum Type
-{
-    matrix,
-    slice,
-    mask
-}; 
+
 
 template<typename>
 class Mask_view;
@@ -18,6 +13,7 @@ class Mask_view;
 template<typename T>
 class Matrix_base
 {   
+
     protected:
         Matrix_base() = default;
         virtual ~Matrix_base() = default;
@@ -30,6 +26,5 @@ class Matrix_base
         virtual inline size_t get_cols()const = 0;
         virtual inline size_t matrix_rows()const = 0;
         virtual inline size_t matrix_cols()const = 0;
-        virtual inline Type derived_type()const = 0;
 };
 

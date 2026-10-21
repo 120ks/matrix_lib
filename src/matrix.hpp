@@ -20,6 +20,8 @@ class Matrix : public Matrix_base<T>
 //
 //CONSTRUCTORS
 //  
+    friend class Slice_view<T>;
+
     public:
         explicit Matrix(const size_t row_count = 1, const size_t col_count = 1, T val = T{})
         : matrix(row_count * col_count, val)
@@ -75,11 +77,15 @@ class Matrix : public Matrix_base<T>
         {   
             r_slice.end = (r_slice.end == 0) ? rows : r_slice.end;
             c_slice.end = (c_slice.end == 0) ? cols : c_slice.end;
-
-            T* start_ptr{&((*this)(r_slice.begin, c_slice.begin))};
-            return {start_ptr, r_slice, c_slice, rows, cols};
+            return {this, r_slice, c_slice};
         }   
-        
+        Slice_view<T> operator()(Slice r_slice)
+        {   
+            r_slice.end = (r_slice.end == 0) ? rows : r_slice.end;
+            Slice c_slice{0, cols};
+            return {this, r_slice, c_slice};
+        }
+
         Mask_view<T> operator[](Matrix<boolean> mask){
             return {*this, mask};
         }
@@ -100,7 +106,6 @@ class Matrix : public Matrix_base<T>
         inline size_t matrix_rows()const override {return rows;}
         inline size_t matrix_cols()const override {return cols;}
 
-        Type derived_type()const override {return Type::matrix;}
 //
 // ASSIGN OPERATORS
 // 
@@ -120,12 +125,29 @@ class Matrix : public Matrix_base<T>
             return *this;
         }
 
+        template<typename R>
+        requires std::integral<R> || std::floating_point<R>
+        Matrix& operator=(R val)
+        {      
+            for(auto &value :  matrix){
+                value = val;
+            }                                                                                                                       
+            return *this;
+        }
+
+        Matrix& operator=(const Slice_view<T> &slice_view){
+            Matrix<T> other{slice_view};
+            std::swap(*this, other);
+            return *this;
+        }
+
 //
 //MEMBER ARITHMETIC OPERATORS
 //
         template<typename R>
         Matrix& operator+=(const Matrix_base<R>& other)
         {   
+            static_assert(!std::is_same_v<T, boolean>);
             matrix_method::broadcast(*this, other, Operation::add);
             return *this;
         }
@@ -186,18 +208,19 @@ class Matrix : public Matrix_base<T>
 //
 //NOT OPERATOR
 //      
-Matrix<boolean> operator!()const = delete; //Only Matrix<boolean> can use
+        template <typename U = T>
+        requires std::is_same_v<U, boolean>
+        Matrix<boolean> operator!()const
+        {   
+            Matrix<boolean> mask{*this};
+            for(auto& val : mask.matrix){
+                val = !val;
+            }
+            return mask;
+        }
 };
 
-template<>
-Matrix<boolean> Matrix<boolean>::operator!()const
-{   
-    Matrix<boolean> mask{*this};
-    for(auto& val : mask.matrix){
-        val = !val;
-    }
-    return mask;
-}
+
 //
 //CREATING BOOLEANS
 //

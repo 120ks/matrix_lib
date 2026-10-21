@@ -23,10 +23,11 @@ namespace matrix_statistics
     {   
         auto max{mxb1(0,0)};
         for(size_t r{} ; r<mxb1.get_rows() ; r++){
-            for(size_t c{} ; c<mxb1.get_cols ; c++){
+            for(size_t c{} ; c<mxb1.get_cols() ; c++){
                 if(mxb1(r, c)>max){max = mxb1(r, c);}
             }
         }
+        return max;
     }
 
     template<typename T>

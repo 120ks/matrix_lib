@@ -56,6 +56,8 @@ class boolean //works like bool
             value = other;
             return *this;
         }
+
+        inline bool operator!(){return !value;}
 };
 
 

@@ -14,34 +14,32 @@ class Slice_view : public Matrix_base<T>
     friend class Mask_view;
 
     private:
-        T* view_ptr{};
+        Matrix<T>* view_ptr{};
         Slice row_slice{};
         Slice col_slice{};
 
         size_t base_rows{};
         size_t base_cols{};
-    protected:
+    private:
 //
 //CONSTRUCTORS
 //
-        Slice_view(T* start, Slice r_slice, Slice c_slice, const size_t total_rows, const size_t total_cols)
-        : view_ptr{start}
+        Slice_view(Matrix<T> *matrix, Slice r_slice, Slice c_slice)
+        : view_ptr{matrix}
         , row_slice{r_slice}
         , col_slice{c_slice}
-        , base_rows{total_rows}
-        , base_cols{total_cols}
         {
-            row_slice.end = (row_slice.end == 0) ? base_rows : row_slice.end; 
-            col_slice.end = (col_slice.end == 0) ? base_cols : col_slice.end; 
+            row_slice.end = (row_slice.end == 0) ? matrix->get_rows() : row_slice.end; 
+            col_slice.end = (col_slice.end == 0) ? matrix->get_cols() : col_slice.end; 
         }
+        
 
 
         Slice_view(const Slice_view &other)
         : view_ptr{other.view_ptr}
         , row_slice{other.row_slice}
         , col_slice{other.col_slice}
-        , base_rows{other.base_rows}
-        , base_cols{other.base_cols}
+
         {}
 
 
@@ -49,37 +47,35 @@ class Slice_view : public Matrix_base<T>
         : view_ptr{other.view_ptr}
         , row_slice{other.row_slice}
         , col_slice{other.col_slice}
-        , base_rows{other.base_rows}
-        , base_cols{other.base_cols}
         {other.view_ptr = nullptr;}
 
     public:
         ~Slice_view()override = default;
-//
+        Slice_view& operator=(const Slice_view &other) = delete;
+        Slice_view& operator=(Slice_view&& other) = delete;
+//  
 // OVERRIDES
 //        
         inline size_t get_rows()const override {return row_slice.end - row_slice.begin;}
         inline size_t get_cols()const override {return col_slice.end - col_slice.begin;}
-        inline size_t matrix_rows()const override {return base_rows;}
-        inline size_t matrix_cols()const override {return base_cols;}
-        Type derived_type()const override {return Type::slice;}
+        inline size_t matrix_rows()const override {return view_ptr->get_rows();}
+        inline size_t matrix_cols()const override {return view_ptr->get_cols();}
 
 
         T& operator()(const size_t row, const size_t col)override
         {   
-            return *(view_ptr+(row*base_cols) + col);
+            return (*view_ptr)(row+row_slice.begin, col+col_slice.begin);
         }
 
         const T& operator()(const size_t row, const size_t col)const override
         {   
-            return *(view_ptr+(row*base_cols) + col);
+            return (*view_ptr)(row+row_slice.begin, col+col_slice.begin);
         }
 //
 //SLICING AND MASKING
 //      
         Slice_view& operator()(const Slice r_slice, const Slice c_slice)
         {   
-            T* new_start{view_ptr+(r_slice.begin * base_cols + c_slice.begin)};
             row_slice = row_slice+r_slice;
             col_slice = col_slice+c_slice;
 
@@ -173,6 +169,17 @@ class Slice_view : public Matrix_base<T>
         {
             matrix_method::broadcast(*this, val, Operation::divide);
             return *this;
+        }
+
+        template <typename U = T>
+        requires std::is_same_v<U, boolean>
+        Matrix<boolean> operator!()const
+        {   
+            Matrix<boolean> mask{*this};
+            for(auto& val : mask.matrix){
+                val = !val;
+            }
+            return mask;
         }
 };
 

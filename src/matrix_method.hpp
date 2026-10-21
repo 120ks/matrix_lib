@@ -37,7 +37,7 @@ namespace matrix_method
     template<typename T, typename R>
     void broadcast(Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2, const Operation op)
     {   
-        if((mxb1.get_rows() != 0) || (mxb1.get_cols())) {return;}
+        if((mxb1.get_rows() == 0) || (mxb1.get_cols() == 0)) {return;}
         
         auto total_rows1{mxb1.get_rows()}, total_rows2{mxb2.get_rows()};
         auto total_cols1{mxb1.get_cols()}, total_cols2{mxb2.get_cols()};
@@ -77,7 +77,7 @@ namespace matrix_method
     requires std::integral<R> || std::floating_point<R>
     void broadcast(Matrix_base<T> &mxb1, R value, const Operation op)
     {
-        if((mxb1.get_rows() != 0) || (mxb1.get_cols())) {return;}
+        if((mxb1.get_rows() == 0) || (mxb1.get_cols() == 0)) {return;}
 
         if(op == Operation::divide || op == Operation::root){
             if(value == 0) {return;}
@@ -136,38 +136,5 @@ namespace matrix_method
     return mx_t;
     }
 
-    template<typename T>
-    void print(std::ostream &os, const Matrix_base<T> &mxb1)
-    {   
 
-        auto r1{mxb1.get_rows()};
-        auto c1{mxb1.get_cols()};
-
-        for(size_t r{} ; r<r1 ; r++){
-            os<<"| ";
-            for(size_t c{} ; c<c1 ; c++){
-                if(c<c1-1){os<<mxb1(r, c)<<" | ";}
-                else{os<<mxb1(r, c);}
-            }
-            os<<" |\n";
-        }
-        os<<'\n';
-    }
-
-    template<typename T>
-    void print(const Matrix_base<T> &mxb1)
-        {
-        auto r1{mxb1.get_rows()};
-        auto c1{mxb1.get_cols()};
-
-        for(size_t r{} ; r<r1 ; r++){
-            std::cout<<"| ";
-            for(size_t c{} ; c<c1 ; c++){
-                if(c<c1-1){std::cout<<mxb1(r, c)<<" | ";}
-                else{std::cout<<mxb1(r, c);}
-            }
-            std::cout<<" |\n";
-        }
-        std::cout<<'\n';
-    }
 }

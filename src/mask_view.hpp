@@ -13,7 +13,7 @@ class Mask_view : public Matrix_base<T>
         size_t shift_begin{};
         std::vector<T*>true_array{};
 
-        Mask_view(const Matrix_base<T>& mxb1, const Matrix<boolean> &mask)
+        Mask_view(Matrix_base<T>& mxb1, const Matrix_base<boolean> &mask)
         : shift_begin{0}
         , true_array{}
         {   
@@ -32,7 +32,7 @@ class Mask_view : public Matrix_base<T>
                 for(size_t c{} ; c<cols ; c++)
                 {
                     if(mask(r, c) == true){
-                        true_array.push_back(const_cast<T*>(&mxb1(r, c)));
+                        true_array.push_back(&mxb1(r, c));
                     }
                 }
             }
@@ -57,25 +57,23 @@ class Mask_view : public Matrix_base<T>
             }
             assert(true_elements == true_array.size());
         }
-
 //
 //OVERRIDES
 //
     public:
         T& operator()(const size_t row, const size_t col)override{
-            assert(row < true_elements);
-            return *true_array[shift_begin+row];
+            assert(col < true_elements);
+            return *true_array[shift_begin+col];
         }
         const T& operator()(const size_t row , const size_t col) const override{
-            assert(row < true_elements);
-            return  *true_array[shift_begin+row];
+            assert(col < true_elements);
+            return  *true_array[shift_begin+col];
         }
 
-        inline size_t get_rows()const override {return true_elements;}
-        inline size_t get_cols()const override {return 1;};
-        inline size_t matrix_rows()const override {return true_elements;} //if further indexed, will use the index array
-        inline size_t matrix_cols()const override {return 1;} //if further sliced, masked etc, will use the index array
-        Type derived_type()const override {return Type::mask;}
+        inline size_t get_rows()const override {return 1;}
+        inline size_t get_cols()const override {return true_elements;};
+        inline size_t matrix_rows()const override {return 1;} //if further indexed, will use the index array
+        inline size_t matrix_cols()const override {return true_elements;} //if further sliced, masked etc, will use the index array
 
 //
 //SLICING AND MASKING
