@@ -1,13 +1,17 @@
 #include "mx.hpp"
 #include <iomanip>
 
-int main()
-{
-    //creating a matrix
 
+
+
+
+
+
+void test()
+{
+//creating a matrix
     Matrix<int> matrix1{4, 4, 1};
     Matrix<double> matrix2{3, 4, 2.5};
-
     std::cout<<"- matrix1 is 4x4 all 1's -"<<std::endl;
     std::cout<<matrix1<<'\n';
 
@@ -70,7 +74,7 @@ int main()
     std::cout<<mask<<'\n';
 
     std::cout<<"lets shave the last row off"<<std::endl;
-    mx::mask sliced_mask = mask(sl{0, 3}); //mx::mask alias for Matrix<boolean>
+    Matrix<boolean> sliced_mask = mask(sl{0, 3}); //mx::mask alias for Matrix<boolean>
     std::cout<<sliced_mask<<'\n';
 
     std::cout<<"- now that it is correct shape, lets use it on matrix2, however lets reverse it with ! - "<<std::endl;
@@ -118,8 +122,72 @@ int main()
 
     std::cout<<"-   works with multislicing   - "<<std::endl;
 
-    matrix1(sl{}, sl{0, 3})(sl{2, 4}, sl{}).M() >0 = 1;
+    matrix1(sl{}, sl{0, 3})(sl{2, 4}, sl{}).M() >0 = 0;
     std::cout<<matrix1;
+
+    std::cout<<"-   transpose() returns a Transposed matrix   - "<<std::endl;
+    std::cout<<matrix1.transpose();
+
+    std::cout<<"-   transpose works with slices aswell   - "<<std::endl;
+    std::cout<<matrix1(sl{}, sl{1, 3}).transpose();
+    std::cout<<"-   ASSIGN FLAG is used to copy the second matrix(no broadcasting), with its dimensions   - "<<std::endl;
+    std::cout<<"-   assigning matrix1 with a smaller slice without assign_flag .A(), will keep its original dimensions   - "<<std::endl;
+    matrix1 = matrix1(sl{0, 2}, sl{1, 3}).copy(); //using copy so already assigned elements dont get used (note that its the same matrix)
+    std::cout<<matrix1;
+
+    std::cout<<"-   with assign flag, matrix1 becomes a copy of the slice, no ptrs, no views it will copy it as it   - "<<std::endl;
+    matrix1.A() = matrix1(sl{2, 0}, sl{1, 3}).copy();
+    std::cout<<matrix1;
+
+    std::cout<<"-   matrix_math   - "<<std::endl;
+    std::cout<<"-   lets print matrix2 for memory   - "<<std::endl;
+    std::cout<<matrix2;
+    std::cout<<"-   statistics   - "<<std::endl;
+    std::cout<<"-sum of matrix2 : "<<mx_math::sum(matrix2)<<'\n'<<std::endl;
+    std::cout<<"-sums of matrix2 col_wise : "<<mx_math::sum(matrix2, false);
+    std::cout<<"-sums of matrix2 slice row_wise :\n"<<mx_math::sum(matrix2(sl{0, 2}, {1, 3}), true);
+
+    std::cout<<"-avg of matrix2 row_wise :\n"<< mx_math::avarage(matrix2, true);
+
+    std::cout<<"-variance of matrix2 : "<<mx_math::variance(matrix2)<<std::endl;
+    std::cout<<"-variance of matrix2 row_wise :\n"<<mx_math::variance(matrix2, true);
+
+    std::cout<<"-std of matrix2 : "<<mx_math::standard_dev(matrix2)<<std::endl;
+    std::cout<<"-std of matrix2 row_wise :\n"<<mx_math::standard_dev(matrix2, true);
+}
+
+
+
+int main()
+{
+    try
+    {
+        test();
+    }
+    catch(dimension_mismatch &e)
+    {
+        std::cout<<"dimension mismatch\n";
+        std::cout<<e.what();
+    }
+    catch(indexing_mismatch &e)
+    {
+        std::cout<<"indexing mismatch\n";
+        std::cout<<e.what();
+    }
+    catch(slicing_mismatch &e)
+    {
+        std::cout<<"slicing mismatch\n";
+        std::cout<<e.what();
+    }
+    catch(std::exception &e)
+    {   
+        std::cout<<"exception detected\n";
+        std::cout<<e.what();
+        return 1;
+    };
+
+
+
     return 0;
 
 }

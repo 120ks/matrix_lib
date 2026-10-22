@@ -164,6 +164,7 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/bits/istream.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/cassert \
  C:/msys64/mingw64/include/assert.h \
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_helper.hpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_base.hpp \
  C:/msys64/mingw64/include/c++/16.1.0/vector \
  C:/msys64/mingw64/include/c++/16.1.0/bits/stl_uninitialized.h \
@@ -185,8 +186,10 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/poly_hermite.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/poly_laguerre.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/riemann_zeta.tcc \
- C:/Users/ppako/Documents/projects/matrix_lib/src/slice_view.hpp \
- C:/msys64/mingw64/include/c++/16.1.0/iomanip \
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_exceptions.hpp \
+ C:/msys64/mingw64/include/c++/16.1.0/format \
+ C:/msys64/mingw64/include/c++/16.1.0/array \
+ C:/msys64/mingw64/include/c++/16.1.0/charconv \
  C:/msys64/mingw64/include/c++/16.1.0/locale \
  C:/msys64/mingw64/include/c++/16.1.0/bits/locale_facets_nonio.h \
  C:/msys64/mingw64/include/c++/16.1.0/ctime \
@@ -195,6 +198,27 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/bits/codecvt.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/locale_facets_nonio.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/bits/locale_conv.h \
+ C:/msys64/mingw64/include/c++/16.1.0/optional \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/enable_special_members.h \
+ C:/msys64/mingw64/include/c++/16.1.0/span \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/monostate.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/formatfwd.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/ranges_algobase.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/unicode.h \
+ C:/msys64/mingw64/include/c++/16.1.0/cstdint \
+ C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/stdint.h \
+ C:/msys64/mingw64/include/stdint.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stl_algo.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/algorithmfwd.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stl_heap.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/uniform_int_dist.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stl_tempbuf.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/unicode-data.h \
+ C:/msys64/mingw64/include/c++/16.1.0/utility \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stl_relops.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/intcmp.h \
+ C:/Users/ppako/Documents/projects/matrix_lib/src/slice_view.hpp \
+ C:/msys64/mingw64/include/c++/16.1.0/iomanip \
  C:/msys64/mingw64/include/c++/16.1.0/bits/quoted_string.h \
  C:/msys64/mingw64/include/c++/16.1.0/sstream \
  C:/msys64/mingw64/include/c++/16.1.0/bits/sstream.tcc \

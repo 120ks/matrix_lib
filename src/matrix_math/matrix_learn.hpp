@@ -3,11 +3,12 @@
 #include "matrix_base.hpp"
 #include "matrix_statistics.hpp"
 #include "matrix_lin.hpp"
+#include "matrix_helper.hpp"
 
 template<typename T>
 class Matrix;
 
-namespace matrix_math
+namespace mx_math
 {   
     static const double E{2.718281828459};
 
@@ -16,7 +17,7 @@ namespace matrix_math
     {   
         
         Matrix<T> probabilities{method::broadcast(mxb1, E, Operation::equal)};
-        probabilities /= matrix_math::sum(probabilities);
+        probabilities /= mx_math::sum(probabilities);
         
         return probabilities;
     }
@@ -25,7 +26,7 @@ namespace matrix_math
     Matrix<T> softmax(const Matrix_base<T> &mxb1, const bool row_wise)
     {   
         Matrix<T> probabilities{method::broadcast(mxb1, E, Operation::equal)};
-        probabilities /= matrix_math::sum(probabilities, row_wise);
+        probabilities /= mx_math::sum(probabilities, row_wise);
 
         return probabilities;
     }
@@ -46,7 +47,25 @@ namespace matrix_math
     template<typename T, typename R>
     auto gradients(const Matrix_base<T> &mxb1, const Matrix_base<R> &loss)
     {
-        return matrix_math::dot(mxb1, loss);
+        return mx_math::dot(mxb1, loss);
+    }
+
+    template<typename T, typename R>
+    double cross_entropy_loss(const Matrix_base<T> &prediction, const Matrix_base<R> &hot_encoded)
+    {
+        if(!(prediction.get_rows()==1 || prediction.get_cols()==1))
+        {
+            std::cerr<<"either cols or rows must be 1";
+        }
+        if(!(hot_encoded.get_rows()==1 || hot_encoded.get_cols()==1))
+        {
+            std::cerr<<"either cols or rows must be 1";
+        }
+        if(!matrix_math::same_dims(prediction, hot_encoded))
+        {
+            std::cerr<<"prediction dimensions do not match with hot encoded";
+        }
+        return -std::log((prediction[hot_encoded>=0.99])(0,0));
     }
 }
 

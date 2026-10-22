@@ -27,6 +27,12 @@ class Slice
         Slice(const Slice &other) : begin{other.begin} , end{other.end}{}
         ~Slice() = default;
 
+        Slice& operator=(const Slice &other){
+            begin = other.begin;
+            end = other.end;
+            return *this;
+        }
+
         friend Slice operator+(const Slice old_slice, const Slice new_slice)
         {
             return {old_slice.begin + new_slice.begin, (new_slice.end == 0 )? old_slice.end : new_slice.end+old_slice.begin};
@@ -63,7 +69,7 @@ class mask_ref
         T* ptr{};
     public: 
         mask_ref(T& value) : ptr{&value}{}
-
+        mask_ref() : ptr{nullptr}{}
         mask_ref(const mask_ref<T> &other) 
         : ptr{const_cast<T*> (other.ptr)}{}
 
@@ -77,7 +83,5 @@ class mask_ref
 
         template<typename R>
         mask_ref<T>& operator=(R &&value) {*ptr = value; return *this;}
-
-
         operator T& ()const noexcept {return *ptr;}
 };

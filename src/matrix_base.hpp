@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cassert>
 #include <cmath>
+#include "matrix_exceptions.hpp"
 
 template<typename T>
 class Matrix;
@@ -35,8 +36,8 @@ class Matrix_base
 
         virtual inline size_t get_rows()const = 0;
         virtual inline size_t get_cols()const = 0;
-        virtual inline size_t matrix_rows()const = 0;
-        virtual inline size_t matrix_cols()const = 0;
+        virtual inline Matrix<T> transpose()const = 0;
+        virtual inline Matrix<T> copy()const = 0;
 
 };
 //
@@ -61,7 +62,27 @@ class mask_flag
     //  
         friend mask_flag<T> Matrix<T>::M();
         friend mask_flag<T> Slice_view<T>::M();
+
 };
+
+template<typename T>
+class assign_flag
+{
+    friend class Matrix<T>;
+
+    public:
+        Matrix<T>* ptr{};
+        assign_flag(Matrix<T> &mrx);
+        assign_flag(const assign_flag<T>&) = delete;
+        assign_flag(assign_flag<T> &&other) : ptr{other.ptr} {other.ptr = nullptr;}
+        operator=(assign_flag<T>&&) = delete;
+        operator=(const assign_flag<T>&) = delete;
+
+        template<typename R>
+        Matrix<T>& operator=(const Matrix_base<R> &mxb1);
+        Matrix<T>& operator=(Matrix<T> &&mx);
+};
+
 //
 //BROADCAST OPERATIONS
 //
@@ -119,7 +140,7 @@ namespace method
         }
     }
     template<typename T, typename R>
-    requires std::integral<R> || std::floating_point<R>
+    requires (std::integral<R> || std::floating_point<R>)
     void broadcast(Matrix_base<T> &mxb1, R value, const Operation op)
     {
         if((mxb1.get_rows() == 0) || (mxb1.get_cols() == 0)) {return;}

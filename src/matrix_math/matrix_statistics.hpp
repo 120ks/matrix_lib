@@ -4,7 +4,7 @@
 template<typename T>
 class Matrix;
 
-namespace matrix_math
+namespace mx_math
 {   template<typename T>
     T minimum(const Matrix_base<T>& mxb1)
     {   
@@ -39,7 +39,7 @@ namespace matrix_math
     template<typename T>
     Matrix<T> sum(const Matrix_base<T> &mxb1, bool row_wise)
     {   
-        Matrix<T> mx{(row_wise)? Matrix{mxb1.get_rows(), 1} : Matrix<T>{1, mxb1.get_cols()}};
+        Matrix<T> mx = (row_wise)? Matrix<T>{mxb1.get_rows(), 1} : Matrix<T>{1, mxb1.get_cols()};
         method::broadcast(mx, mxb1, Operation::add);
         return mx;
     }
@@ -66,7 +66,7 @@ namespace matrix_math
     }
 
     template<typename T>
-    double variance(const Matrix_base<T> &mxb1, double degree)
+    double variance(const Matrix_base<T> &mxb1, double degree = 0)
     {   
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
@@ -80,12 +80,11 @@ namespace matrix_math
     }
 
     template<typename T>
-    Matrix<T> variance(const Matrix_base<T> &mxb1, const bool row_wise, double degree)
+    Matrix<T> variance(const Matrix_base<T> &mxb1, const bool row_wise, double degree = 0)
     {   
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
-        Matrix<T> mean{avg(mxb1, row_wise)};
-
+        Matrix<T> mean{avarage(mxb1, row_wise)};
         Matrix<T> var{mxb1};
         var -= mean;
         method::broadcast(var, 2, Operation::power);
@@ -95,13 +94,13 @@ namespace matrix_math
     }
 
     template<typename T>
-    double standard_dev(const Matrix_base<T> &mxb1, double degree)
+    double standard_dev(const Matrix_base<T> &mxb1, double degree = 0)
     {   
         return std::sqrt(variance(mxb1, degree));
     }
 
     template<typename T>
-    Matrix<T> standard_dev(const Matrix_base<T> &mxb1, const bool row_wise, double degree)
+    Matrix<T> standard_dev(const Matrix_base<T> &mxb1, const bool row_wise, double degree = 0)
     {   
         Matrix<T> standard_deviation{variance(mxb1, row_wise, degree)};
         method::broadcast(standard_deviation, 2.0, Operation::root);
@@ -142,8 +141,5 @@ namespace matrix_math
 
     template<typename T>
     Matrix<T> robust_scale();
-
-    
-
 };
 

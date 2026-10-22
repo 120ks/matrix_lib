@@ -2,7 +2,7 @@
 #include "friend_operators.hpp"
 
 
-namespace matrix_math
+namespace mx_math
 {
     template<typename T, typename R>
     auto dot(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
@@ -24,20 +24,5 @@ namespace matrix_math
             }
         }
         return mx;
-    }
-
-    template<typename T>
-    Matrix<T> transpose(const Matrix_base<T> &mxb1)
-    {
-        auto r1{mxb1.get_rows()};
-        auto c1{mxb1.get_cols()};
-        Matrix<T> mx_t{c1, r1};
-
-        for(size_t r{} ; r<r1 ; r++){
-            for(size_t c{} ; c<c1 ; c++){
-                mx_t(c, r) = mxb1(r, c);
-            }
-        }
-        return mx_t;
     }
 }

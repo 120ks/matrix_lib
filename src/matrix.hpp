@@ -2,8 +2,10 @@
 #include "matrix_subtypes.hpp"
 #include <type_traits>
 #include <cassert>
+#include "matrix_helper.hpp"
 #include "matrix_base.hpp"
-
+#include <utility>
+#include "matrix_helper.hpp"
 
 
 template <typename T>
@@ -20,11 +22,17 @@ class Matrix : public Matrix_base<T>
         std::vector<T> matrix{};
         size_t rows{};
         size_t cols{};
+
+        std::vector<T>& get_matrix(){return matrix;}
+        
     public:
 //
 //flag cababilities
-//
-    mask_flag<T> M(); //has to be defined in mask_flag
+//  
+    friend class assign_flag<T>;
+    friend class mask_flag<T>;
+    mask_flag<T> M();
+    assign_flag<T> A();
 //
 //CONSTRUCTORS
 //  
@@ -45,12 +53,12 @@ class Matrix : public Matrix_base<T>
         , rows{other.rows}
         , cols{other.cols}
         {}
-
+        
         Matrix(const Matrix_base<T> &mxb1)
         : matrix(mxb1.get_rows() * mxb1.get_cols())
         , rows{mxb1.get_rows()}
         , cols{mxb1.get_cols()}
-        {
+        {   
             auto r1{mxb1.get_rows()};
             auto c1{mxb1.get_cols()};
             for(size_t r{} ; r<r1 ; r++){
@@ -92,12 +100,14 @@ class Matrix : public Matrix_base<T>
         : matrix{}
         , rows{1}
         , cols{}
-        {
-            assert(other.get_rows() == mask.get_rows());
-            assert(other.get_cols() == mask.get_cols());
-
+        {   
             auto r1{mask.get_rows()};
             auto c1{mask.get_cols()};
+            
+            if(!matrix_math::same_dims(other, mask))
+            {
+                throw dimension_mismatch(std::format("fitting mask({}x{} into ({}x{})", r1, c1, other.get_rows(), other.get_cols()));
+            }
             matrix.reserve(r1*c1);
 
             for(size_t r{} ; r<r1 ; r++)
@@ -116,12 +126,23 @@ class Matrix : public Matrix_base<T>
 //
         Slice_view<T> operator()(Slice r_slice, Slice c_slice)
         {   
+            
+            if((r_slice.end>rows) || (c_slice.end>cols)){
+                throw slicing_mismatch(std::format("sl({}, {}) sl({}, {}) matrix({}x{})", r_slice.begin, r_slice.end, c_slice.begin, c_slice.end , rows, cols));
+            }
+
             r_slice.end = (r_slice.end == 0) ? rows : r_slice.end;
             c_slice.end = (c_slice.end == 0) ? cols : c_slice.end;
             return {this, r_slice, c_slice};
         }   
         Slice_view<T> operator()(Slice r_slice)
         {   
+            
+            if(r_slice.end>rows)
+            {
+                throw slicing_mismatch(std::format("r_slice({}, {}) matrix({}x{})", r_slice.begin, r_slice.end, rows, cols));
+            }
+
             r_slice.end = (r_slice.end == 0) ? rows : r_slice.end;
             Slice c_slice{0, cols};
             return {this, r_slice, c_slice};
@@ -134,43 +155,82 @@ class Matrix : public Matrix_base<T>
 // OVERRIDES
 //        
         inline T& operator()(const size_t row, const size_t col)override{
+            if((row>=rows) || (col>=cols)){
+                throw indexing_mismatch(std::format("index ({}, {}), matrix({}x{})", row, col, rows, cols));
+            }
             return matrix[row*cols + col];
         }
         
         inline const T& operator()(const size_t row, const size_t col)const override{
+            if((row>=rows) || (col>=cols)){
+                throw indexing_mismatch(std::format("index ({}, {}), matrix({}x{})", row, col, rows, cols));
+            }
             return matrix[row*cols + col];
         }
 
         inline size_t get_rows()const override {return rows;}
         inline size_t get_cols()const override {return cols;}
-        
-        inline size_t matrix_rows()const override {return rows;}
-        inline size_t matrix_cols()const override {return cols;}
 
+        Matrix<T> transpose()const override
+        {
+            Matrix<T> transposed{cols, rows};
+            for(size_t row{} ; row<rows ; row++){
+                for(size_t col{} ; col<cols ; col++){
+                    transposed(col, row) = (*this)(row, col);
+                }
+            }
+            return transposed;
+        }
+
+        Matrix<T> copy()const override
+        {
+            return Matrix<T>{*this};
+        }
 //
 // ASSIGN OPERATORS
 //      
+        Matrix<T>& operator=(const Matrix<T> &mx)
+        {   
+            method::broadcast(*this, mx, Operation::equal);
+            return *this;
+        }
+
+        Matrix<T>& operator=(Matrix<T> &&mx)
+        {   
+            if(&mx == this){return *this;}
+            if((mx.rows == rows) && (mx.cols == cols))
+            {   
+                std::swap(this->matrix, mx.matrix);
+                return *this;
+            }
+            else
+            {   
+                method::broadcast(*this, mx, Operation::equal);
+                return *this;
+            }
+        }
+
         template<typename R>
-        Matrix& operator=(const Matrix_base<R> &mxb1)
+        Matrix<T>& operator=(const Matrix_base<R> &mxb1)
         {   
             method::broadcast(*this, mxb1, Operation::equal);
             return *this;
         }
+
         template<typename R>
-        requires std::integral<R> || std::floating_point<R>
-        Matrix& operator=(R val)
+        requires (std::integral<R> || std::floating_point<R>)
+        Matrix<T>& operator=(R val)
         {      
             for(auto &value :  matrix){
                 value = val;
             }                                                                                                                       
             return *this;
         }
-
 //
 //MEMBER ARITHMETIC OPERATORS
 //
         template<typename R>
-        Matrix& operator+=(const Matrix_base<R>& other)
+        Matrix<T>& operator+=(const Matrix_base<R>& other)
         {   
             static_assert(!std::is_same_v<T, boolean>);
             method::broadcast(*this, other, Operation::add);
@@ -178,53 +238,53 @@ class Matrix : public Matrix_base<T>
         }
 
         template<typename R>
-        requires std::integral<R> || std::floating_point<R>
-        Matrix& operator+=(const R val)
+        requires (std::integral<R> || std::floating_point<R>)
+        Matrix<T>& operator+=(const R val)
         {   
             method::broadcast(*this, val, Operation::add);
             return *this;
         }
         
         template<typename R>
-        Matrix& operator-=(const Matrix_base<R>& other)
+        Matrix<T>& operator-=(const Matrix_base<R>& other)
         {
             method::broadcast(*this, other, Operation::substract);
             return *this;
         }
 
         template<typename R>
-        requires std::integral<R> || std::floating_point<R>
-        Matrix& operator-=(const R val)
+        requires (std::integral<R> || std::floating_point<R>)
+        Matrix<T>& operator-=(const R val)
         {
             method::broadcast(*this, val, Operation::substract);
             return *this;
         }
 
         template<typename R>
-        Matrix& operator*=(const Matrix_base<R>& other)
+        Matrix<T>& operator*=(const Matrix_base<R>& other)
         {
             method::broadcast(*this, other, Operation::multiply);
             return *this;
         }
 
         template<typename R>
-        requires std::integral<R> || std::floating_point<R>
-        Matrix& operator*=(const R val)
+        requires (std::integral<R> || std::floating_point<R>)
+        Matrix<T>& operator*=(const R val)
         {
             method::broadcast(*this, val, Operation::multiply);
             return *this;
         }
 
         template<typename R>
-        Matrix& operator/=(const Matrix_base<R>& other)
+        Matrix<T>& operator/=(const Matrix_base<R>& other)
         {
             method::broadcast(*this, other, Operation::divide);
             return *this;
         }
 
         template<typename R>
-        requires std::integral<R> || std::floating_point<R>
-        Matrix& operator/=(const R val)
+        requires (std::integral<R> || std::floating_point<R>)
+        Matrix<T>& operator/=(const R val)
         {
             method::broadcast(*this, val, Operation::divide);
             return *this;
@@ -233,7 +293,7 @@ class Matrix : public Matrix_base<T>
 //NOT OPERATOR
 //      
         template <typename U = T>
-        requires std::is_same_v<U, boolean>
+        requires (std::is_same_v<U, boolean>)
         Matrix<boolean> operator!()const
         {   
             Matrix<boolean> mask{*this};
@@ -249,7 +309,7 @@ class Matrix : public Matrix_base<T>
 namespace boolean_logic
 {   
     template<typename T, typename R>
-    requires std::integral<R> || std::floating_point<R>
+    requires (std::integral<R> || std::floating_point<R>)
     Matrix<boolean> make_mask(const Matrix_base<T> &mxb1, const Condition condition, const R &threshold)
     {
         size_t r1{mxb1.get_rows()};
@@ -281,14 +341,12 @@ namespace boolean_logic
     template<typename T, typename R>
     Matrix<boolean> make_mask(const Matrix_base<T> &mxb1, const Condition condition, const Matrix_base<R> &mxb2)
     {   
-        if(mxb1.get_rows() != mxb2.get_rows()){
-            std::cerr<<"make_mask row mismatch\n"; //change to throw
-        }
-        if(mxb1.get_cols() != mxb2.get_cols()){
-            std::cerr<<"make_mask col mismatch\n"; //change to throw
-        }
         size_t r1{mxb1.get_rows()};
         size_t c1{mxb1.get_cols()};
+        if(!matrix_math::same_dims(mxb1, mxb2)){
+            throw dimension_mismatch(std::format("masking mxb1({}x{}), with mxb2({}x{})", r1, c1, mxb2.get_rows(), mxb2.get_cols()));
+        }
+        
         Matrix<boolean> mask{r1, c1, boolean{false}};
 
         for(size_t r{} ; r<r1 ; r++){
@@ -316,7 +374,7 @@ namespace boolean_logic
 //MASK_FLAG (NOTE route in some cleaner way)
 //
 template<typename T, typename R>
-requires std::integral<R> || std::floating_point<R>
+requires (std::integral<R> || std::floating_point<R>)
 std::vector<mask_ref<T>> get_true_elements(Matrix_base<T> &mxb1, const Condition condition, const R &val)
 {   
 
@@ -348,9 +406,13 @@ std::vector<mask_ref<T>> get_true_elements(Matrix_base<T> &mxb1, const Condition
 {
     size_t rows{mxb1.get_rows()};
     size_t cols{mxb1.get_cols()};
+
+    if(!matrix_math::same_dims(mxb1, mxb2)){
+        throw dimension_mismatch(std::format("comparing mxb1({}x{}), with mxb2({}x{})", rows, cols, mxb2.get_rows(), mxb2.get_cols()));
+    }
     std::vector<mask_ref<T>> vec;
     vec.reserve(rows*cols);
-
+    
     for(size_t r{} ; r<rows ; r++){
         for(size_t c{} ; c<cols ; c++)
         {
@@ -405,4 +467,35 @@ template<typename T>
 mask_flag<T> Matrix<T>::M()
 {
     return {*this};
+}
+
+//
+//COPY FLAG
+//
+template<typename T>
+assign_flag<T>::assign_flag(Matrix<T> &matrix) : ptr{&matrix}{}
+
+
+template<typename T>
+assign_flag<T> Matrix<T>::A() //assign flag
+{
+    return {*this};
+}
+
+template<typename T>
+template<typename R>
+Matrix<T>&  assign_flag<T>::operator=(const Matrix_base<R> &mxb1){
+    Matrix<T> copy{mxb1};
+    ptr->get_matrix() = std::move(copy.matrix);
+    ptr->rows = copy.rows;
+    ptr->cols = copy.cols;
+    return *ptr;
+}
+
+template<typename T>
+Matrix<T>&  assign_flag<T>::operator=(Matrix<T> &&mx){
+    ptr->get_matrix() = std::move(mx.matrix);
+    ptr->rows = mx.rows;
+    ptr->cols = mx.cols;
+    return *ptr;
 }

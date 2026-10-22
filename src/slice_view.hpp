@@ -48,29 +48,63 @@ class Slice_view : public Matrix_base<T>
 //        
         inline size_t get_rows()const override {return row_slice.end - row_slice.begin;}
         inline size_t get_cols()const override {return col_slice.end - col_slice.begin;}
-        inline size_t matrix_rows()const override {return view_ptr->get_rows();}
-        inline size_t matrix_cols()const override {return view_ptr->get_cols();}
-
 
         inline T& operator()(const size_t row, const size_t col)override
         {   
+            if((row >= this->get_rows()) || (col >= this->get_cols())){
+                throw indexing_mismatch(std::format("index ({}, {}), matrix({}x{})", row, col, this->get_rows(), this->get_cols()));
+            }
             return (*view_ptr)(row+row_slice.begin, col+col_slice.begin);
         }
 
         inline const T& operator()(const size_t row, const size_t col)const override
         {   
+            if((row >= this->get_rows()) || (col >= this->get_cols())){
+                throw indexing_mismatch(std::format("index ({}, {}), matrix({}x{})", row, col, this->get_rows(), this->get_cols()));
+            }
             return (*view_ptr)(row+row_slice.begin, col+col_slice.begin);
+        }
+
+        Matrix<T> transpose()const override
+        {   
+            auto rows{this->get_rows()};
+            auto cols{this->get_cols()};
+            Matrix<T> transposed{cols, rows};
+
+            for(size_t row{} ; row<rows ; row++){
+                for(size_t col{} ; col<cols ; col++){
+                    transposed(col, row) = (*this)(row, col);
+                }
+            }
+            return transposed;
+        }
+        Matrix<T> copy()const override
+        {   
+            return {*this};
         }
 //
 //SLICING AND MASKING
 //      
         Slice_view& operator()(const Slice r_slice, const Slice c_slice)
         {   
+            if((r_slice.end>this->get_rows()) || (c_slice.end>this->get_cols()))
+            {
+                throw slicing_mismatch(std::format("sl({}, {}) sl({}, {}) view({}x{})", r_slice.begin, r_slice.end, c_slice.begin, c_slice.end , this->get_rows(), this->get_cols()));
+            }
+
             row_slice = row_slice+r_slice;
             col_slice = col_slice+c_slice;
 
             return{*this};
         }
+
+        Slice_view<T>& operator()(const Slice r_slice)
+        {   if(r_slice.end>this->get_rows())
+            throw slicing_mismatch(std::format("row_sl({}, {}) view({}x{})", r_slice.begin, r_slice.end, this->get_rows()));
+            row_slice = row_slice+r_slice;
+            return {*this};
+        }
+
         Matrix<mask_ref<T>> operator[](const Matrix<boolean> &mask){ //note the  []
             return{*this, mask};
         }
@@ -85,7 +119,7 @@ class Slice_view : public Matrix_base<T>
         }
 
         template<typename R>
-        requires std::integral<R> || std::floating_point<R>
+        requires (std::integral<R> || std::floating_point<R>)
         Slice_view& operator=(const R val)
         {
             method::broadcast(*this, val, Operation::equal);
@@ -102,8 +136,6 @@ class Slice_view : public Matrix_base<T>
 //FLAGS
 //          
         mask_flag<T> M();
-
-
 //
 //MEMBER ARITHMETIC OPERATORS
 //      
@@ -115,7 +147,7 @@ class Slice_view : public Matrix_base<T>
         }
         
         template<typename R>
-        requires std::integral<R> || std::floating_point<R>
+        requires (std::integral<R> || std::floating_point<R>)
         Slice_view& operator+=(const R val)
         {
             method::broadcast(*this, val, Operation::add);
@@ -130,7 +162,7 @@ class Slice_view : public Matrix_base<T>
         }
 
         template<typename R>
-        requires std::integral<R> || std::floating_point<R>
+        requires (std::integral<R> || std::floating_point<R>)
         Slice_view& operator-=(const R val)
         {
             method::broadcast(*this, val, Operation::substract);
@@ -144,7 +176,7 @@ class Slice_view : public Matrix_base<T>
         }
 
         template<typename R>
-        requires std::integral<R> || std::floating_point<R>
+        requires (std::integral<R> || std::floating_point<R>)
         Slice_view& operator*=(const R val)
         {
             method::broadcast(*this, val, Operation::multiply);
@@ -159,7 +191,7 @@ class Slice_view : public Matrix_base<T>
         }
 
         template<typename R>
-        requires std::integral<R> || std::floating_point<R>
+        requires (std::integral<R> || std::floating_point<R>)
         Slice_view& operator/=(const R val)
         {
             method::broadcast(*this, val, Operation::divide);
@@ -167,7 +199,7 @@ class Slice_view : public Matrix_base<T>
         }
 
         template <typename U = T>
-        requires std::is_same_v<U, boolean>
+        requires (std::is_same_v<U, boolean>)
         Matrix<boolean> operator!()const
         {   
             Matrix<boolean> mask{*this};

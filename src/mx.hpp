@@ -7,9 +7,5 @@
 
 using sl = Slice;
 
-namespace mx
-{   
-    using mask = Matrix<boolean>;
-}
 
 

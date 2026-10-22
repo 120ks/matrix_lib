@@ -63,8 +63,6 @@ auto operator*(const Matrix_base<T> &mxb1, const R &val)
     using common_type = std::common_type_t<T, R>;
     Matrix<common_type>mx{mxb1};
     mx *= val;
-
-
     return mx;
 }
 
