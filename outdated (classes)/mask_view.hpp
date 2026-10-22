@@ -1,5 +1,6 @@
 #pragma once
 #include "matrix_base.hpp"
+
 template<typename T>
 class Mask_view : public Matrix_base<T>
 {   

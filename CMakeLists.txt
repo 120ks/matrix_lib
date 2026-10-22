@@ -12,4 +12,5 @@ add_executable(${PROJECT_NAME}
     )
 target_include_directories(matrix_lib PRIVATE
     src
+    src/matrix_math
     )

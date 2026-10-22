@@ -1,28 +1,33 @@
 #pragma once
 #include "matrix_subtypes.hpp"
-#include "matrix_method.hpp"
 #include <type_traits>
 #include <cassert>
+#include "matrix_base.hpp"
+
+
 
 template <typename T>
 class Slice_view;
 
-template<typename T>
-class Mask_view;
+template<typename>
+class mask_flag;
 
 template<typename T>
 class Matrix : public Matrix_base<T>
 {   
+    friend class Slice_view<T>;
     private:
         std::vector<T> matrix{};
         size_t rows{};
         size_t cols{};
+    public:
+//
+//flag cababilities
+//
+    mask_flag<T> M(); //has to be defined in mask_flag
 //
 //CONSTRUCTORS
 //  
-    friend class Slice_view<T>;
-
-    public:
         explicit Matrix(const size_t row_count = 1, const size_t col_count = 1, T val = T{})
         : matrix(row_count * col_count, val)
         , rows{row_count}
@@ -63,13 +68,49 @@ class Matrix : public Matrix_base<T>
         {
             auto r1{mxb1.get_rows()};
             auto c1{mxb1.get_cols()};
-            for(size_t r{} ; r<r1 ; r++){
-                for(size_t c{} ; c<c1 ; c++){
+            for(size_t r{} ; r<r1 ; r++)
+            {
+                for(size_t c{} ; c<c1 ; c++)
+                {
                     (*this)(r, c) = static_cast<T>(mxb1(r, c));
                 }
             }
         }
         ~Matrix()override = default;
+
+        Matrix(std::vector<T> vec, const size_t row_count = 0, const size_t col_count = 0)
+        : matrix{std::move(vec)}
+        , rows{row_count}
+        , cols{col_count}
+        {   
+            if(rows*cols != matrix.size()){rows = 1 ; cols = matrix.size();}
+            
+        }
+
+        template<typename R>
+        Matrix(Matrix_base<R> &other, const Matrix_base<boolean> &mask)
+        : matrix{}
+        , rows{1}
+        , cols{}
+        {
+            assert(other.get_rows() == mask.get_rows());
+            assert(other.get_cols() == mask.get_cols());
+
+            auto r1{mask.get_rows()};
+            auto c1{mask.get_cols()};
+            matrix.reserve(r1*c1);
+
+            for(size_t r{} ; r<r1 ; r++)
+            {
+                for(size_t c{} ; c<c1 ; c++)
+                {
+                    if(mask(r, c) == true){
+                        matrix.push_back(mask_ref{other(r, c)});
+                    }
+                }
+            }
+            cols = matrix.size();
+        }
 //
 //SLICE AND MASK
 //
@@ -86,17 +127,17 @@ class Matrix : public Matrix_base<T>
             return {this, r_slice, c_slice};
         }
 
-        Mask_view<T> operator[](Matrix<boolean> mask){
+        Matrix<mask_ref<T>> operator[](const Matrix_base<boolean> &mask){
             return {*this, mask};
         }
 //
 // OVERRIDES
 //        
-        T& operator()(const size_t row, const size_t col)override{
+        inline T& operator()(const size_t row, const size_t col)override{
             return matrix[row*cols + col];
         }
         
-        const T& operator()(const size_t row, const size_t col)const override{
+        inline const T& operator()(const size_t row, const size_t col)const override{
             return matrix[row*cols + col];
         }
 
@@ -108,23 +149,13 @@ class Matrix : public Matrix_base<T>
 
 //
 // ASSIGN OPERATORS
-// 
-        Matrix& operator=(Matrix<T> other)
-        {   
-            rows = other.rows;
-            cols = other.cols;
-            std::swap(matrix, other.matrix);
-            return *this;
-        }
-
+//      
         template<typename R>
         Matrix& operator=(const Matrix_base<R> &mxb1)
-        {
-            Matrix<T> other{mxb1};
-            std::swap(*this, other);
+        {   
+            method::broadcast(*this, mxb1, Operation::equal);
             return *this;
         }
-
         template<typename R>
         requires std::integral<R> || std::floating_point<R>
         Matrix& operator=(R val)
@@ -135,12 +166,6 @@ class Matrix : public Matrix_base<T>
             return *this;
         }
 
-        Matrix& operator=(const Slice_view<T> &slice_view){
-            Matrix<T> other{slice_view};
-            std::swap(*this, other);
-            return *this;
-        }
-
 //
 //MEMBER ARITHMETIC OPERATORS
 //
@@ -148,7 +173,7 @@ class Matrix : public Matrix_base<T>
         Matrix& operator+=(const Matrix_base<R>& other)
         {   
             static_assert(!std::is_same_v<T, boolean>);
-            matrix_method::broadcast(*this, other, Operation::add);
+            method::broadcast(*this, other, Operation::add);
             return *this;
         }
 
@@ -156,14 +181,14 @@ class Matrix : public Matrix_base<T>
         requires std::integral<R> || std::floating_point<R>
         Matrix& operator+=(const R val)
         {   
-            matrix_method::broadcast(*this, val, Operation::add);
+            method::broadcast(*this, val, Operation::add);
             return *this;
         }
         
         template<typename R>
         Matrix& operator-=(const Matrix_base<R>& other)
         {
-            matrix_method::broadcast(*this, other, Operation::substract);
+            method::broadcast(*this, other, Operation::substract);
             return *this;
         }
 
@@ -171,14 +196,14 @@ class Matrix : public Matrix_base<T>
         requires std::integral<R> || std::floating_point<R>
         Matrix& operator-=(const R val)
         {
-            matrix_method::broadcast(*this, val, Operation::substract);
+            method::broadcast(*this, val, Operation::substract);
             return *this;
         }
 
         template<typename R>
         Matrix& operator*=(const Matrix_base<R>& other)
         {
-            matrix_method::broadcast(*this, other, Operation::multiply);
+            method::broadcast(*this, other, Operation::multiply);
             return *this;
         }
 
@@ -186,14 +211,14 @@ class Matrix : public Matrix_base<T>
         requires std::integral<R> || std::floating_point<R>
         Matrix& operator*=(const R val)
         {
-            matrix_method::broadcast(*this, val, Operation::multiply);
+            method::broadcast(*this, val, Operation::multiply);
             return *this;
         }
 
         template<typename R>
         Matrix& operator/=(const Matrix_base<R>& other)
         {
-            matrix_method::broadcast(*this, other, Operation::divide);
+            method::broadcast(*this, other, Operation::divide);
             return *this;
         }
 
@@ -201,10 +226,9 @@ class Matrix : public Matrix_base<T>
         requires std::integral<R> || std::floating_point<R>
         Matrix& operator/=(const R val)
         {
-            matrix_method::broadcast(*this, val, Operation::divide);
+            method::broadcast(*this, val, Operation::divide);
             return *this;
         }
-
 //
 //NOT OPERATOR
 //      
@@ -219,8 +243,6 @@ class Matrix : public Matrix_base<T>
             return mask;
         }
 };
-
-
 //
 //CREATING BOOLEANS
 //
@@ -228,7 +250,7 @@ namespace boolean_logic
 {   
     template<typename T, typename R>
     requires std::integral<R> || std::floating_point<R>
-    Matrix<boolean> make_mask(const Matrix_base<T> &mxb1, const Condition condition, const R threshold)
+    Matrix<boolean> make_mask(const Matrix_base<T> &mxb1, const Condition condition, const R &threshold)
     {
         size_t r1{mxb1.get_rows()};
         size_t c1{mxb1.get_cols()};
@@ -243,20 +265,19 @@ namespace boolean_logic
                 auto current_element = static_cast<common_type>(mxb1(r, c));
                 switch(condition)
                 {   
-                    case(Condition::is_true): mask(r, c) = true; break;
-                    case(Condition::is_false): mask(r, c) = false; break;
-                    case(Condition::over): mask(r, c) = (current_element > N_threshold); break;
-                    case(Condition::over_or): mask(r, c) = (current_element >= N_threshold); break;
-                    case(Condition::under): mask(r, c) = (current_element < N_threshold); break;
-                    case(Condition::under_or): mask(r, c) = (current_element <= N_threshold); break;
-                    case(Condition::is) : mask(r, c) = (current_element == N_threshold); break;
-                    case(Condition::is_not): mask(r, c) = (current_element != N_threshold); break;
+                case(Condition::is_true):   mask(r, c) = true; break;
+                case(Condition::is_false):  mask(r, c) = false; break;
+                case(Condition::over):      mask(r, c) = (current_element >  N_threshold); break;
+                case(Condition::over_or):   mask(r, c) = (current_element >= N_threshold); break;
+                case(Condition::under):     mask(r, c) = (current_element <  N_threshold); break;
+                case(Condition::under_or):  mask(r, c) = (current_element <= N_threshold); break;
+                case(Condition::is) :       mask(r, c) = (current_element == N_threshold); break;
+                case(Condition::is_not):    mask(r, c) = (current_element != N_threshold); break;
                 }
             }
         }
         return mask;
     }
-
     template<typename T, typename R>
     Matrix<boolean> make_mask(const Matrix_base<T> &mxb1, const Condition condition, const Matrix_base<R> &mxb2)
     {   
@@ -266,31 +287,122 @@ namespace boolean_logic
         if(mxb1.get_cols() != mxb2.get_cols()){
             std::cerr<<"make_mask col mismatch\n"; //change to throw
         }
-
         size_t r1{mxb1.get_rows()};
         size_t c1{mxb1.get_cols()};
         Matrix<boolean> mask{r1, c1, boolean{false}};
 
-        using common_type = std::common_type_t<T, R>;
-
         for(size_t r{} ; r<r1 ; r++){
             for(size_t c{} ; c<c1 ; c++){
 
-                auto mxb1_current = static_cast<common_type>(mxb1(r, c));
-                auto mxb2_current = static_cast<common_type>(mxb2(r, c));
+                auto mxb1_current = mxb1(r, c);
+                auto mxb2_current = mxb2(r, c);
                 switch(condition)
                 {   
-                    case(Condition::is_true): mask(r, c) = true; break;
-                    case(Condition::is_false): mask(r, c) = false; break;
-                    case(Condition::over): mask(r, c) = (mxb1_current > mxb2_current); break;
-                    case(Condition::over_or): mask(r, c) = (mxb1_current >= mxb2_current); break;
-                    case(Condition::under): mask(r, c) = (mxb1_current < mxb2_current); break;
-                    case(Condition::under_or): mask(r, c) = (mxb1_current <= mxb2_current); break;
-                    case(Condition::is) : mask(r, c) = (mxb1_current == mxb2_current); break;
-                    case(Condition::is_not): mask(r, c) = (mxb1_current != mxb2_current); break;
+                case(Condition::is_true):   mask(r, c) = true; break;
+                case(Condition::is_false):  mask(r, c) = false; break;
+                case(Condition::over):      mask(r, c) = (mxb1_current > mxb2_current); break;
+                case(Condition::over_or):   mask(r, c) = (mxb1_current >= mxb2_current); break;
+                case(Condition::under):     mask(r, c) = (mxb1_current < mxb2_current); break;
+                case(Condition::under_or):  mask(r, c) = (mxb1_current <= mxb2_current); break;
+                case(Condition::is) :       mask(r, c) = (mxb1_current == mxb2_current); break;
+                case(Condition::is_not):    mask(r, c) = (mxb1_current != mxb2_current); break;
                 }
             }
         }
         return mask;
     }
+}
+//
+//MASK_FLAG (NOTE route in some cleaner way)
+//
+template<typename T, typename R>
+requires std::integral<R> || std::floating_point<R>
+std::vector<mask_ref<T>> get_true_elements(Matrix_base<T> &mxb1, const Condition condition, const R &val)
+{   
+
+    size_t rows{mxb1.get_rows()};
+    size_t cols{mxb1.get_cols()};
+    std::vector<mask_ref<T>> vec;
+    vec.reserve(rows*cols);
+
+    for(size_t r{} ; r<rows ; r++){
+        for(size_t c{} ; c<cols ; c++)
+        {
+            auto& mx_val = mxb1(r, c);
+            switch(condition)
+            {
+            case(Condition::over):      if(mx_val >  val){vec.push_back(mx_val);} break;
+            case(Condition::over_or):   if(mx_val >= val){vec.push_back(mx_val);} break;
+            case(Condition::under):     if(mx_val <  val){vec.push_back(mx_val);} break;
+            case(Condition::under_or):  if(mx_val <= val){vec.push_back(mx_val);} break;
+            case(Condition::is) :       if(mx_val == val){vec.push_back(mx_val);} break;
+            case(Condition::is_not):    if(mx_val != val){vec.push_back(mx_val);} break;
+            }
+        }
+    }
+    return vec;
+}
+
+template<typename T, typename R>
+std::vector<mask_ref<T>> get_true_elements(Matrix_base<T> &mxb1, const Condition condition, const Matrix_base<R> &mxb2)
+{
+    size_t rows{mxb1.get_rows()};
+    size_t cols{mxb1.get_cols()};
+    std::vector<mask_ref<T>> vec;
+    vec.reserve(rows*cols);
+
+    for(size_t r{} ; r<rows ; r++){
+        for(size_t c{} ; c<cols ; c++)
+        {
+            auto& mx_val = mxb1(r, c);
+            const auto& mx2_val = mxb2(r, c);
+            switch(condition)
+            {
+            case(Condition::over):      if(mx_val >  mx2_val){vec.push_back(mx_val);} break;
+            case(Condition::over_or):   if(mx_val >= mx2_val){vec.push_back(mx_val);} break;
+            case(Condition::under):     if(mx_val <  mx2_val){vec.push_back(mx_val);} break;
+            case(Condition::under_or):  if(mx_val <= mx2_val){vec.push_back(mx_val);} break;
+            case(Condition::is) :       if(mx_val == mx2_val){vec.push_back(mx_val);} break;
+            case(Condition::is_not):    if(mx_val != mx2_val){vec.push_back(mx_val);} break;
+            }
+        }
+    }
+    return vec;
+}
+
+template<typename T, typename R>
+Matrix<mask_ref<T>> operator>(mask_flag<T> flag, const R &val) 
+{   
+    return {get_true_elements((*flag.ptr), Condition::over, val)};
+}
+template<typename T, typename R>
+Matrix<mask_ref<T>> operator<(mask_flag<T> flag, const R &val) 
+{   
+    return {get_true_elements((*flag.ptr), Condition::under, val)};
+}
+template<typename T, typename R>
+Matrix<mask_ref<T>> operator>=(mask_flag<T> flag, const R &val) 
+{   
+    return {get_true_elements((*flag.ptr), Condition::over_or, val)};
+}
+template<typename T, typename R>
+Matrix<mask_ref<T>> operator<=(mask_flag<T> flag, const R &val) 
+{   
+    return {get_true_elements((*flag.ptr), Condition::under_or, val)};
+}
+template<typename T, typename R>
+Matrix<mask_ref<T>> operator==(mask_flag<T> flag, const R &val) 
+{   
+    return {get_true_elements((*flag.ptr), Condition::is, val)};
+}
+template<typename T, typename R>
+Matrix<mask_ref<T>> operator!=(mask_flag<T> flag, const R &val) 
+{   
+    return {get_true_elements((*flag.ptr), Condition::is_not, val)};
+}
+
+template<typename T>
+mask_flag<T> Matrix<T>::M()
+{
+    return {*this};
 }

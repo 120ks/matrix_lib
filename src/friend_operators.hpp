@@ -1,7 +1,6 @@
 #pragma once
 #include "matrix.hpp"
 #include "slice_view.hpp"
-#include "mask_view.hpp"
 #include <iostream>
 #include <iomanip>
 #include "matrix_statistics.hpp"
@@ -87,87 +86,43 @@ auto operator/(const Matrix_base<T> &mxb1, const R &val)
     mx /= val;
     return mx;
 }
-
-
 //
 //NON MEMBER COMPARISON OPERATORS
 //
 template<typename T, typename R>
-requires std::integral<R> || std::floating_point<R>
 auto operator>(const Matrix_base<T> &mxb1, const R val)
 {   
     return boolean_logic::make_mask(mxb1, Condition::over, val);
 }
 
 template<typename T, typename R>
-requires std::integral<R> || std::floating_point<R>
 Matrix<boolean> operator<(const Matrix_base<T> &mxb1, const R val)
 {
     return boolean_logic::make_mask(mxb1, Condition::under, val);
 }
 
 template<typename T, typename R>
-requires std::integral<R> || std::floating_point<R>
 Matrix<boolean> operator>=(const Matrix_base<T> &mxb1, const R val)
 {
     return boolean_logic::make_mask(mxb1, Condition::over_or, val);
 }
 
 template<typename T, typename R>
-requires std::integral<R> || std::floating_point<R>
 Matrix<boolean> operator<=(const Matrix_base<T> &mxb1, const R val)
 {
     return boolean_logic::make_mask(mxb1, Condition::under_or, val);
 }
 
 template<typename T, typename R>
-requires std::integral<R> || std::floating_point<R>
 Matrix<boolean> operator==(const Matrix_base<T> &mxb1, const R val)
 {
     return boolean_logic::make_mask(mxb1, Condition::is, val);
 }
 
 template<typename T, typename R>
-requires std::integral<R> || std::floating_point<R>
 Matrix<boolean> operator!=(const Matrix_base<T> &mxb1, const R val)
 {
     return boolean_logic::make_mask(mxb1, Condition::is_not, val);
-}
-
-template<typename T, typename R>
-auto operator>(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-{   
-    return boolean_logic::make_mask(mxb1, Condition::over, mxb2);
-}
-
-template<typename T, typename R>
-Matrix<boolean> operator<(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-{
-    return boolean_logic::make_mask(mxb1, Condition::under, mxb2);
-}
-
-template<typename T, typename R>
-Matrix<boolean> operator>=(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-{
-    return boolean_logic::make_mask(mxb1, Condition::over_or, mxb2);
-}
-
-template<typename T, typename R>
-Matrix<boolean> operator<=(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-{
-    return boolean_logic::make_mask(mxb1, Condition::under_or, mxb2);
-}
-
-template<typename T, typename R>
-Matrix<boolean> operator==(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-{
-    return boolean_logic::make_mask(mxb1, Condition::is, mxb2);
-}
-
-template<typename T, typename R>
-Matrix<boolean> operator!=(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-{
-    return boolean_logic::make_mask(mxb1, Condition::is_not, mxb2);
 }
 
 Matrix<boolean> operator&&(const Matrix<boolean> &mask1, const Matrix<boolean> &mask2)
@@ -209,9 +164,6 @@ Matrix<boolean> operator||(const Matrix<boolean> &mask1, const Matrix<boolean> &
     }
     return mask3;
 }
-
-
-
 
 template<typename T>
 requires std::is_arithmetic_v<T>

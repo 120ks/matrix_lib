@@ -2,12 +2,12 @@
 
 #include "matrix_base.hpp"
 #include "matrix_statistics.hpp"
-#include "matrix_method.hpp"
+#include "matrix_lin.hpp"
 
 template<typename T>
 class Matrix;
 
-namespace matrix_learn
+namespace matrix_math
 {   
     static const double E{2.718281828459};
 
@@ -15,8 +15,8 @@ namespace matrix_learn
     Matrix<T> softmax(const Matrix_base<T> &mxb1)
     {   
         
-        Matrix<T> probabilities{matrix_method::broadcast(mxb1, E, Operation::equal)};
-        probabilities /= matrix_statistics::sum(probabilities);
+        Matrix<T> probabilities{method::broadcast(mxb1, E, Operation::equal)};
+        probabilities /= matrix_math::sum(probabilities);
         
         return probabilities;
     }
@@ -24,8 +24,8 @@ namespace matrix_learn
     template<typename T>
     Matrix<T> softmax(const Matrix_base<T> &mxb1, const bool row_wise)
     {   
-        Matrix<T> probabilities{matrix_method::broadcast(mxb1, E, Operation::equal)};
-        probabilities /= matrix_statistics::sum(probabilities, row_wise);
+        Matrix<T> probabilities{method::broadcast(mxb1, E, Operation::equal)};
+        probabilities /= matrix_math::sum(probabilities, row_wise);
 
         return probabilities;
     }
@@ -46,7 +46,8 @@ namespace matrix_learn
     template<typename T, typename R>
     auto gradients(const Matrix_base<T> &mxb1, const Matrix_base<R> &loss)
     {
-        return matrix_method::dot(mxb1, loss);
+        return matrix_math::dot(mxb1, loss);
     }
-
 }
+
+

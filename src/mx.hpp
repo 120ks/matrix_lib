@@ -9,9 +9,6 @@ using sl = Slice;
 
 namespace mx
 {   
-    namespace method = matrix_method;
-    namespace learn = matrix_learn;
-    namespace statistics = matrix_statistics;
     using mask = Matrix<boolean>;
 }
 

@@ -2,6 +2,7 @@
 
 #include<cstddef>
 #include<iostream>
+#include<cassert>
 
 enum class Condition
 {   
@@ -22,7 +23,7 @@ class Slice
         size_t end{};
         explicit Slice() : begin{0}, end{0}{}
         explicit Slice(const size_t bgn) : begin{bgn}, end{bgn+1}{}
-        Slice(const size_t bgn, const size_t ending) : begin{bgn}, end{ending}{} //ADD INDEXING ERROR IF BEGIN >= END
+        Slice(const size_t bgn, const size_t ending) : begin{bgn}, end{ending}{} //DO MOT ADD ANY VALID CHECKING 0 = ALL COLS / ROWS
         Slice(const Slice &other) : begin{other.begin} , end{other.end}{}
         ~Slice() = default;
 
@@ -41,23 +42,42 @@ class boolean //works like bool
         inline boolean(const bool val = false) : value{val}{}
         inline boolean(const boolean &other) : value{other.value}{}
         ~boolean() = default;
-
         operator bool() const {
             return value;
         }
-
-
         inline boolean& operator=(bool val){
             value = val;
             return *this;
         }
-
         inline boolean& operator=(const boolean &other){
             value = other;
             return *this;
         }
-
         inline bool operator!(){return !value;}
 };
 
+template<typename T>
+class mask_ref
+{   
+    private:
+        T* ptr{};
+    public: 
+        mask_ref(T& value) : ptr{&value}{}
 
+        mask_ref(const mask_ref<T> &other) 
+        : ptr{const_cast<T*> (other.ptr)}{}
+
+        mask_ref(mask_ref<T> &&other) : ptr{other.ptr}{}
+        ~mask_ref() = default;
+
+        mask_ref<T>& operator=(mask_ref<T> other)
+        {
+            ptr = other.ptr ; other.ptr = nullptr ; return *this;
+        }
+
+        template<typename R>
+        mask_ref<T>& operator=(R &&value) {*ptr = value; return *this;}
+
+
+        operator T& ()const noexcept {return *ptr;}
+};

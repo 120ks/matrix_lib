@@ -69,19 +69,28 @@ mask && mask2           //returns mask where both masks had true in same index n
 mask || mask2           //returns a mask atleast one mask had true in index n
 
 
-    //important note on arithmetic operations. To enable statistics (avg, std, normalization, etc) and ml operations like sliding multiplication,
-        the broadcast (function behind arit operations) only checks for empty rows / cols, this means that if you pass in matrix 4x4 and 2X2
-        the 4x4 gets multiplied in four different places by 2x2. So for row 0, cols 0, 1, 2, 3 the 2x2 uses cols 0, 1, 0, 1 and same for rows.
-        make sure you do dimension checking before hand if it is important that they match
+matrix = 1              //makes all values in matrix 1
+matrix<T> = matrix<T>2  //basic copy / assign swap, matrix 1 becomes identical to matrix2
+matrix<T> = matrix<R>2  //matrix<R2> is broadcast on matrix<T>, so every value in matrix<T> gets assigned a new // search "broadcast info for more information on this"
 
 
-syntax tips...
+//flags
 
-//even though multioperational syntax is allowed matrix(sl{2}, sl{2, 10})((matrix(sl{1, 10}, sl{2, 24})(sl{3, 4}, sl{2,10})>0)) = 1;" will compile and work
-    because view_object are treated as matrices the slice and mask applies to the "apparent matrix" and not the actual one. Therefore it is less error
-    prone to just do per line operations. for example making a mask out of a mask_view is allowed, however this returns a true_elements x 1 mask, which will 
-    not work with something like matrix(mask_from mask_view);
-    
+    //flags are a tool to make syntax on complex operations more user friendly, take matrix(sl{1, 5}, sl{})(sl{2}, sl[3, 5]) to accurately mask this you need
+    //"matrix(sl{1, 5}, sl{})(sl{2}, sl[3, 5])[matrix(sl{1, 5}, sl{})(sl{2}, sl[3, 5])<0] = 0;"
+
+    //with flag you can tell the matrix that you dont need to do any logical operations with the mask, and would like it directly
+    //so the previous becomes
+
+    //"matrix(sl{1, 5}, sl{})(sl{2}, sl[3, 5]).M <0" //way easier and in most cases what you would wanted
+
+
+
+matrix.M <0 = 10                        //directly creates a ptr array of all values of matrix under 0, and assigns them as 10
+(matrix.M !=0) /=(matrix.M !=0)         //divide all non 0 elements of matrix by all elements of matrix that are not zero (safe matrix division)
+matrix(sl, sl).M() < 0 = 0              //makes all values under 0  = 0
+matrix.M == (Matrix.M <1)
+                                        //using flag (mask_flag) to mask is under the hood faster than matrix[mask], as this requires 2x less iterating (no mask needed)
     
 
 
@@ -102,6 +111,22 @@ where the second array has both row and col match the max of 8rows and 8cols. Th
 the cols of the first get indexed twice in this example so the first col (0) get values from mx(n, 0) and (n, 4)
 
 this is used to calculate sums, statistics, section multiplication etc.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //
 //ideas
@@ -172,6 +197,11 @@ ideas on how to make masking more dynamic,
         //all solutions must have this, must be able to return T& when indexed, must be sliceable, and when matrix = mask_view, the mask_view is copied into matrix.
 
         //std::reference or second array is likely cleanest solution, best case scenario is that new members would only be added to base (flags)
+
+
+        //// DONE by converting matrix to handle mask_view using mask_ref<T> objects, and using .M() to route the mask directly into same matrix / slice
+
+        matrix_slice.M() > 0 = 1 //works
 
 //
 //5 

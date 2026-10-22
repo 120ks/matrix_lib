@@ -44,11 +44,14 @@ int main()
     auto matrix3 = matrix1*(matrix2[matrix2<2]=1.5);
     std::cout<<matrix3<<'\n';
 
-    std::cout<<"- lets actually try something little bit more common -"<<std::endl;
     std::cout<<"- when multiplying in place, we usually want to keep the leftenmost type, we dont want that to change, so by multiplying matrix1 with matrix3-"<<std::endl;
     std::cout<<"- matrix1 should be integers -"<<std::endl;
     matrix1 *= matrix3;
     std::cout<<matrix1<<'\n';
+
+    std::cout<<"- arithmetic numbers and common types- "<<std::endl;
+    std::cout<<"- <int> * <double> should return a matrix of doubles- "<<std::endl;
+    std::cout<< matrix1 * matrix2;
     
     std::cout<<"- lets use every operator on matrix3 with matrix1 -"<<std::endl;
 
@@ -67,7 +70,7 @@ int main()
     std::cout<<mask<<'\n';
 
     std::cout<<"lets shave the last row off"<<std::endl;
-    mx::mask sliced_mask = mask(sl{0, 3});
+    mx::mask sliced_mask = mask(sl{0, 3}); //mx::mask alias for Matrix<boolean>
     std::cout<<sliced_mask<<'\n';
 
     std::cout<<"- now that it is correct shape, lets use it on matrix2, however lets reverse it with ! - "<<std::endl;
@@ -82,6 +85,41 @@ int main()
     matrix2[(matrix2>5) || (matrix2<1)] *= 3;
     std::cout<<matrix2<<'\n';
 
+    std::cout<<"- stress testing - "<<std::endl;
 
+    std::cout<<"- very large combination masking, slicing assigning, multiplying etc - "<<std::endl;
+    Matrix<double> matrix4{20, 20, 1.5};
+    (((matrix4(sl{0, 15}, sl{3, 7})*=2)[((matrix4(sl{}, sl{10, 0})+= 5)({0, 15}, sl{2, 7}) /=3 > 0)(sl{}, sl{0, 4})] = 9))(sl{0}, sl{13, 0}) /= -5;
+    std::cout<<matrix4;
+
+    std::cout<<"- chaining - "<<std::endl;
+    ((matrix1 -= matrix2) *=matrix3) += matrix4;
+    std::cout<<matrix1;
+
+    std::cout<<"- lets do this, well make a small 2x2 matrix and have it multiply our 4x4 matrix 4 times, each in different place- "<<std::endl;
+    std::cout<<"- lets make our 4x4 matrix 3 all ones to visualize better and lets make the 2x2 matrix be 1, 2, 3 ,4- "<<std::endl;
+    matrix3 = 1;
+    Matrix<double> small_matrix{2, 2, 1};
+    small_matrix(0, 1) = 2 ; small_matrix(1, 0) = 3 ; small_matrix(1, 1) = 4;
+    auto matrix5 {(matrix3 *= small_matrix)};
+    std::cout<<matrix5;
+
+
+    std::cout<<"-   FLAGS   - "<<std::endl;
+    std::cout<<"- ========= - "<<std::endl;
+
+    std::cout<<"flag object is a special class that is used to make syntax more user friendly in some cases, flags are temp objects, so they exist only in statements"<<std::endl;
+    std::cout<<"the .M() returns a proxy object that is basically a ptr to the underlying, this allows us to 'overload it so that we can bypass othwise akward syntax"<<std::endl;
+    std::cout<<"for example slicing and masking the slice is very error prone as the same slice is needed, inside multiple loops this might be close to impossible"<<std::endl;
+    std::cout<<"also: because direct mask creates 'true array' directly without a mask, if the mask changes a lot in iteration prefer .M()"<<std::endl;
+    std::cout<<"- use .M() when you are finished slicing and want to make a direct mask - "<<std::endl;
+    matrix5(sl{}, {2, 4}).M() == matrix5(sl{}, {2, 4}) = 0; //should have all values over 2 from previous matrix be 0, if they are on columns index 2, 3
+    std::cout<<matrix5;
+
+    std::cout<<"-   works with multislicing   - "<<std::endl;
+
+    matrix1(sl{}, sl{0, 3})(sl{2, 4}, sl{}).M() >0 = 1;
+    std::cout<<matrix1;
     return 0;
+
 }

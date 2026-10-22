@@ -4,12 +4,11 @@
 CMakeFiles/matrix_lib.dir/main.cpp.obj
  C:/Users/ppako/Documents/projects/matrix_lib/main.cpp
  C:/Users/ppako/Documents/projects/matrix_lib/src/friend_operators.hpp
- C:/Users/ppako/Documents/projects/matrix_lib/src/mask_view.hpp
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix.hpp
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_base.hpp
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_learn.hpp
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_method.hpp
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_statistics.hpp
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math/matrix_learn.hpp
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math/matrix_lin.hpp
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math/matrix_statistics.hpp
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_subtypes.hpp
  C:/Users/ppako/Documents/projects/matrix_lib/src/mx.hpp
  C:/Users/ppako/Documents/projects/matrix_lib/src/slice_view.hpp

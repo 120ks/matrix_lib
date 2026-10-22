@@ -58,6 +58,10 @@
 				{
 					"backtrace" : 2,
 					"path" : "C:/Users/ppako/Documents/projects/matrix_lib/src"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math"
 				}
 			],
 			"language" : "CXX",

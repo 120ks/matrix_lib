@@ -162,15 +162,14 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/bits/ostream.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/istream \
  C:/msys64/mingw64/include/c++/16.1.0/bits/istream.tcc \
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_method.hpp \
+ C:/msys64/mingw64/include/c++/16.1.0/cassert \
+ C:/msys64/mingw64/include/assert.h \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_base.hpp \
  C:/msys64/mingw64/include/c++/16.1.0/vector \
  C:/msys64/mingw64/include/c++/16.1.0/bits/stl_uninitialized.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/stl_vector.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/stl_bvector.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/vector.tcc \
- C:/msys64/mingw64/include/c++/16.1.0/cassert \
- C:/msys64/mingw64/include/assert.h \
  C:/msys64/mingw64/include/c++/16.1.0/cmath \
  C:/msys64/mingw64/include/math.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/specfun.h \
@@ -187,7 +186,6 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/poly_laguerre.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/riemann_zeta.tcc \
  C:/Users/ppako/Documents/projects/matrix_lib/src/slice_view.hpp \
- C:/Users/ppako/Documents/projects/matrix_lib/src/mask_view.hpp \
  C:/msys64/mingw64/include/c++/16.1.0/iomanip \
  C:/msys64/mingw64/include/c++/16.1.0/locale \
  C:/msys64/mingw64/include/c++/16.1.0/bits/locale_facets_nonio.h \
@@ -200,5 +198,6 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/bits/quoted_string.h \
  C:/msys64/mingw64/include/c++/16.1.0/sstream \
  C:/msys64/mingw64/include/c++/16.1.0/bits/sstream.tcc \
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_statistics.hpp \
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_learn.hpp
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math/matrix_statistics.hpp \
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math/matrix_learn.hpp \
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math/matrix_lin.hpp
