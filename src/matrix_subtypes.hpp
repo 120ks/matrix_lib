@@ -85,3 +85,31 @@ class mask_ref
         mask_ref<T>& operator=(R &&value) {*ptr = value; return *this;}
         operator T& ()const noexcept {return *ptr;}
 };
+
+//
+//mask_ref common type 
+//
+namespace std{
+
+    template<typename T, typename R>
+    struct common_type<mask_ref<T>, R>{
+        using type = std::common_type_t<T, R>;
+    };
+    template<typename T, typename R>
+    struct common_type<T, mask_ref<R>>{
+        using type = std::common_type_t<T, R>;
+    };
+    template<typename T, typename R>
+    struct common_type<mask_ref<T>, mask_ref<R>>{
+        using type = std::common_type_t<T, R>;
+    };
+
+    template<>
+    struct common_type<boolean, bool>{
+        using type = bool;
+    };
+    template<>
+    struct common_type<bool, boolean>{
+        using type = bool;
+    };
+}

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "friend_operators.hpp"
-#include "matrix_statistics.hpp"
-#include "matrix_learn.hpp"
+#include "matrix_math.hpp"
+
+
 
 
 using sl = Slice;

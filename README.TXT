@@ -101,14 +101,14 @@ matrix.A() = func()             //makes the matrix be same as the returned value
 
 //other member functions for both view and matrix
 
-copy()              //returns a copy of the slice / matrix
-transpose()         //returns a transposed version of the matrix / slice
-matrix(sl{})        //slices only rows
+copy()                          //returns a copy of the slice / matrix
+transpose()                     //returns a transposed version of the matrix / slice
+matrix(sl{})                    //slices only rows
+concat(matrix1, matrix2, axis)  //stacks rows by cols or rows, if axis = axis::Y stacks rows, if axis::Y, cols
 
 
 
 //matrix_math library
-
 //exists in the matrix_math namespace
 //includes statistics, machine learning, and linear algebra for matrices
 

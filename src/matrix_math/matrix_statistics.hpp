@@ -1,5 +1,5 @@
 #pragma once
-
+#include "non_member_functions.hpp"
 #include "matrix_base.hpp"
 template<typename T>
 class Matrix;
@@ -37,9 +37,9 @@ namespace mx_math
     }
 
     template<typename T>
-    Matrix<T> sum(const Matrix_base<T> &mxb1, bool row_wise)
+    Matrix<T> sum(const Matrix_base<T> &mxb1, const axis ax)
     {   
-        Matrix<T> mx = (row_wise)? Matrix<T>{mxb1.get_rows(), 1} : Matrix<T>{1, mxb1.get_cols()};
+        Matrix<T> mx = (ax == axis::X)? Matrix<T>{mxb1.get_rows(), 1} : Matrix<T>{1, mxb1.get_cols()};
         method::broadcast(mx, mxb1, Operation::add);
         return mx;
     }
@@ -55,13 +55,13 @@ namespace mx_math
     }
 
     template<typename T>
-    Matrix<T> avarage(const Matrix_base<T> &mxb1, bool row_wise)
+    Matrix<T> avarage(const Matrix_base<T> &mxb1, const axis ax)
     {
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
 
-        Matrix<T> avarage{sum(mxb1, (row_wise)? true : false)};
-        method::broadcast(avarage, (row_wise)? c1 : r1, Operation::divide);
+        Matrix<T> avarage{sum(mxb1, (ax==axis::X)? axis::X : axis::Y)};
+        method::broadcast(avarage, (ax==axis::X)? c1 : r1, Operation::divide);
         return avarage;
     }
 
@@ -80,16 +80,16 @@ namespace mx_math
     }
 
     template<typename T>
-    Matrix<T> variance(const Matrix_base<T> &mxb1, const bool row_wise, double degree = 0)
+    Matrix<T> variance(const Matrix_base<T> &mxb1, const axis ax, double degree = 0)
     {   
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
-        Matrix<T> mean{avarage(mxb1, row_wise)};
+        Matrix<T> mean{avarage(mxb1, ax)};
         Matrix<T> var{mxb1};
         var -= mean;
         method::broadcast(var, 2, Operation::power);
-        Matrix<T> var_out {sum(var, row_wise)};
-        method::broadcast(var_out, (row_wise)? c1-degree : r1-degree, Operation::divide);
+        Matrix<T> var_out {sum(var, ax)};
+        method::broadcast(var_out, (ax == axis::X)? c1-degree : r1-degree, Operation::divide);
         return var_out;
     }
 
@@ -100,21 +100,21 @@ namespace mx_math
     }
 
     template<typename T>
-    Matrix<T> standard_dev(const Matrix_base<T> &mxb1, const bool row_wise, double degree = 0)
+    Matrix<T> standard_dev(const Matrix_base<T> &mxb1, const axis ax, double degree = 0)
     {   
-        Matrix<T> standard_deviation{variance(mxb1, row_wise, degree)};
+        Matrix<T> standard_deviation{variance(mxb1, ax, degree)};
         method::broadcast(standard_deviation, 2.0, Operation::root);
         return standard_deviation;
     }
 
     template<typename T>
-    Matrix<T> normal_distribution(const Matrix_base<T> &mxb1, const bool row_wise)
+    Matrix<T> normal_distribution(const Matrix_base<T> &mxb1, const axis ax)
     {   
         double small_num {0.001};
-        Matrix<T> n_dist{mxb1 - avarage(mxb1, row_wise)};
+        Matrix<T> n_dist{mxb1 - avarage(mxb1, ax)};
 
         Matrix<T> variance_squared{
-            method::broadcast(variance(mxb1, row_wise) + small_num, 2.0, Operation::root)
+            method::broadcast(variance(mxb1, ax) + small_num, 2.0, Operation::root)
         };
 
         return n_dist / variance_squared;
@@ -131,15 +131,33 @@ namespace mx_math
     }
 
     template<typename T>
-    Matrix<T> normal_distribution(const Matrix_base<T> &mxb1, const bool row_wise);
-
-    template<typename T>
-    Matrix<T> min_max_norm(const Matrix_base<T> &mxb1); //not yet
-
-    template<typename T>
-    Matrix<T> min_max_norm(const Matrix_base<T> &mxb1, const bool row_wise); //not yet
+    Matrix<T> normal_distribution(const Matrix_base<T> &mxb1, const axis ax);
 
     template<typename T>
     Matrix<T> robust_scale();
+
+    template<typename T>
+    void randomize(Matrix_base<T> &mxb1, const T min, const T max){
+        auto r1{mxb1.get_rows()};
+        auto c1{mxb1.get_cols()};
+
+        for(size_t r{} ; r<r1 ; r++){
+            for(size_t c{} ; c<c1 ; c++)
+            {   
+                if constexpr(std::is_integral_v<T>){
+                    std::uniform_int_distribution distrib(min, max);
+                    mxb1(r, c) = distrib(generator);
+                }
+                else
+                {
+                    std::uniform_real_distribution<T> distrib(min, max);
+                    mxb1(r, c) = distrib(generator);
+                }
+            }
+        }
+    }
+
 };
+
+
 

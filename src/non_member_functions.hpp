@@ -3,7 +3,7 @@
 #include "slice_view.hpp"
 #include <iostream>
 #include <iomanip>
-#include "matrix_statistics.hpp"
+#include <type_traits>
 
 template<typename T> class Matrix;
 //
@@ -62,6 +62,8 @@ auto operator*(const Matrix_base<T> &mxb1, const R &val)
 {   
     using common_type = std::common_type_t<T, R>;
     Matrix<common_type>mx{mxb1};
+    
+    
     mx *= val;
     return mx;
 }
@@ -71,6 +73,7 @@ auto operator/(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
 {   
     using common_type = std::common_type_t<T, R>;
     Matrix<common_type>mx{mxb1};
+    
     mx /= mxb2;
     return mx;
 }
@@ -199,4 +202,56 @@ std::ostream& operator<<(std::ostream& os, const Matrix_base<T> &mxb1)
     }
     os<<'\n';
     return os;
+}
+
+namespace mx_math
+{   
+    template<typename T, typename R>
+    auto concat(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2, const axis ax)
+    {   
+        auto mxb1_rows{mxb1.get_rows()};
+        auto mxb1_cols{mxb1.get_cols()};
+        auto mxb2_rows{mxb2.get_rows()};
+        auto mxb2_cols{mxb2.get_cols()};
+
+        if(ax==axis::Y){
+            if(mxb1_cols != mxb2_cols){
+                throw dimension_mismatch(std::format("stacking_rows = true, cols must match, mxb1: {}, mxb2: {}", mxb1_cols, mxb2_cols));
+            }
+        }
+        else{
+            if(mxb1_rows != mxb2_rows){
+                throw dimension_mismatch(std::format("stacking_rows = false, rows must match, mxb1: {}, mxb2: {}", mxb1_rows, mxb2_rows));
+            }
+        }
+
+        using common_type = std::common_type_t<T, R>;
+        Matrix<common_type> mx{(ax == axis::Y)? Matrix<common_type>{mxb1_rows+mxb2_rows, mxb1_cols} : Matrix<common_type>{mxb1_rows, mxb1_cols+mxb2_cols}};
+
+        if(ax == axis::Y)
+        {
+            
+            for(size_t c{} ; c<mxb1_cols ; c++)
+            {   
+                size_t iter_row{0};
+                for(size_t r{} ; r<mxb1_rows+mxb2_rows ; r++)
+                {
+                    mx(r, c) = (r<mxb1_rows) ?  mxb1(r, c) : mxb2(iter_row++, c);
+                }
+            }
+        }
+        else
+        {   
+            
+            for(size_t r{} ; r<mxb1_rows ; r++)
+            {
+                size_t iter_col{0};
+                for(size_t c{} ; c<mxb1_cols+mxb2_cols ; c++)
+                {
+                    mx(r, c) = (c<mxb1_cols) ? mxb1(r, c) : mxb2(r, iter_col++);
+                }
+            }
+        }
+        return mx;
+    }
 }

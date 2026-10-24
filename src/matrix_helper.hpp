@@ -1,9 +1,6 @@
 #pragma once
 #include "matrix_base.hpp"
 
-
-
-
 namespace matrix_math
 {
     template<typename T, typename R>

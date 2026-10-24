@@ -2,11 +2,6 @@
 #include <iomanip>
 
 
-
-
-
-
-
 void test()
 {
 //creating a matrix
@@ -144,16 +139,20 @@ void test()
     std::cout<<matrix2;
     std::cout<<"-   statistics   - "<<std::endl;
     std::cout<<"-sum of matrix2 : "<<mx_math::sum(matrix2)<<'\n'<<std::endl;
-    std::cout<<"-sums of matrix2 col_wise : "<<mx_math::sum(matrix2, false);
-    std::cout<<"-sums of matrix2 slice row_wise :\n"<<mx_math::sum(matrix2(sl{0, 2}, {1, 3}), true);
+    std::cout<<"-sums of matrix2 col_wise : "<<mx_math::sum(matrix2, axis::Y);
+    std::cout<<"-sums of matrix2 slice row_wise :\n"<<mx_math::sum(matrix2(sl{0, 2}, {1, 3}), axis::X);
 
-    std::cout<<"-avg of matrix2 row_wise :\n"<< mx_math::avarage(matrix2, true);
+    std::cout<<"-avg of matrix2 row_wise :\n"<< mx_math::avarage(matrix2, axis::X);
 
     std::cout<<"-variance of matrix2 : "<<mx_math::variance(matrix2)<<std::endl;
-    std::cout<<"-variance of matrix2 row_wise :\n"<<mx_math::variance(matrix2, true);
+    std::cout<<"-variance of matrix2 row_wise :\n"<<mx_math::variance(matrix2, axis::X);
 
     std::cout<<"-std of matrix2 : "<<mx_math::standard_dev(matrix2)<<std::endl;
-    std::cout<<"-std of matrix2 row_wise :\n"<<mx_math::standard_dev(matrix2, true);
+    std::cout<<"-std of matrix2 row_wise :\n"<<mx_math::standard_dev(matrix2, axis::X);
+
+    std::cout<<mx_math::euclidean_distance(matrix1, matrix2(sl{0, 2}, sl{2, 0}))<<std::endl;
+    std::cout<<matrix3(sl{1, 0})<<matrix2;
+    std::cout<<mx_math::concat(matrix3(sl{1, 0}), matrix2, axis::Y);
 }
 
 
@@ -168,16 +167,19 @@ int main()
     {
         std::cout<<"dimension mismatch\n";
         std::cout<<e.what();
+        return 1;
     }
     catch(indexing_mismatch &e)
     {
         std::cout<<"indexing mismatch\n";
         std::cout<<e.what();
+        return 1;
     }
     catch(slicing_mismatch &e)
     {
         std::cout<<"slicing mismatch\n";
         std::cout<<e.what();
+        return 1;
     }
     catch(std::exception &e)
     {   
@@ -185,9 +187,6 @@ int main()
         std::cout<<e.what();
         return 1;
     };
-
-
-
     return 0;
 
 }

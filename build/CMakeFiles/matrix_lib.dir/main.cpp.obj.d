@@ -1,7 +1,9 @@
 CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:\Users\ppako\Documents\projects\matrix_lib\main.cpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/mx.hpp \
- C:/Users/ppako/Documents/projects/matrix_lib/src/friend_operators.hpp \
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math/matrix_math.hpp \
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math/matrix_statistics.hpp \
+ C:/Users/ppako/Documents/projects/matrix_lib/src/non_member_functions.hpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix.hpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_subtypes.hpp \
  C:/msys64/mingw64/include/c++/16.1.0/cstddef \
@@ -186,6 +188,23 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/poly_hermite.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/poly_laguerre.tcc \
  C:/msys64/mingw64/include/c++/16.1.0/tr1/riemann_zeta.tcc \
+ C:/msys64/mingw64/include/c++/16.1.0/random \
+ C:/msys64/mingw64/include/c++/16.1.0/cstdint \
+ C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/stdint.h \
+ C:/msys64/mingw64/include/stdint.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/random.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/uniform_int_dist.h \
+ C:/msys64/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/opt_random.h \
+ C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/pmmintrin.h \
+ C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/emmintrin.h \
+ C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/xmmintrin.h \
+ C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/mmintrin.h \
+ C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/mwaitintrin.h \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/random.tcc \
+ C:/msys64/mingw64/include/c++/16.1.0/numeric \
+ C:/msys64/mingw64/include/c++/16.1.0/bits/stl_numeric.h \
+ C:/msys64/mingw64/include/c++/16.1.0/pstl/glue_numeric_defs.h \
+ C:/msys64/mingw64/include/c++/16.1.0/pstl/execution_defs.h \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_exceptions.hpp \
  C:/msys64/mingw64/include/c++/16.1.0/format \
  C:/msys64/mingw64/include/c++/16.1.0/array \
@@ -205,13 +224,9 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/bits/formatfwd.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/ranges_algobase.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/unicode.h \
- C:/msys64/mingw64/include/c++/16.1.0/cstdint \
- C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/stdint.h \
- C:/msys64/mingw64/include/stdint.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/stl_algo.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/algorithmfwd.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/stl_heap.h \
- C:/msys64/mingw64/include/c++/16.1.0/bits/uniform_int_dist.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/stl_tempbuf.h \
  C:/msys64/mingw64/include/c++/16.1.0/bits/unicode-data.h \
  C:/msys64/mingw64/include/c++/16.1.0/utility \
@@ -222,6 +237,5 @@ CMakeFiles/matrix_lib.dir/main.cpp.obj: \
  C:/msys64/mingw64/include/c++/16.1.0/bits/quoted_string.h \
  C:/msys64/mingw64/include/c++/16.1.0/sstream \
  C:/msys64/mingw64/include/c++/16.1.0/bits/sstream.tcc \
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math/matrix_statistics.hpp \
  C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math/matrix_learn.hpp \
- C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math/matrix_lin.hpp
+ C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math/matrix_linear.hpp

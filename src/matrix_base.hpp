@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cassert>
 #include <cmath>
+#include <random>
 #include "matrix_exceptions.hpp"
 
 template<typename T>
@@ -12,16 +13,6 @@ template<typename T>
 class Slice_view;
 
 
-enum class Operation{
-    multiply,
-    divide,
-    add,
-    substract,
-    modulo,
-    equal,
-    power,
-    root
-};
 template<typename T>
 class Matrix_base
 {   
@@ -36,10 +27,38 @@ class Matrix_base
 
         virtual inline size_t get_rows()const = 0;
         virtual inline size_t get_cols()const = 0;
-        virtual inline Matrix<T> transpose()const = 0;
-        virtual inline Matrix<T> copy()const = 0;
+        virtual Matrix<T> transpose()const = 0;
+        virtual Matrix<T> copy()const = 0;
 
 };
+
+//
+//enums and statics
+//
+enum class Operation{
+    multiply,
+    divide,
+    add,
+    substract,
+    modulo,
+    equal,
+    power,
+    root
+};
+
+enum class axis
+{
+    X,
+    Y
+};
+namespace mx_math
+{
+    static std::random_device random_device;
+    static std::mt19937 generator(random_device());
+}
+
+
+
 //
 //FLAG SKELETONS
 //
@@ -110,7 +129,7 @@ namespace method
         auto total_cols1{mxb1.get_cols()}, total_cols2{mxb2.get_cols()};
 
         if(op == Operation::divide || op == Operation::root){
-            if(has_zero(mxb2)){return;}
+            if(has_zero(mxb2)){throw std::runtime_error("division/root of mxb1 with mxb2-> contains 0");}
         }
 
         size_t max_row{std::max(total_rows1, total_rows2)};
@@ -141,12 +160,12 @@ namespace method
     }
     template<typename T, typename R>
     requires (std::integral<R> || std::floating_point<R>)
-    void broadcast(Matrix_base<T> &mxb1, R value, const Operation op)
+    void broadcast(Matrix_base<T> &mxb1, const R &value, const Operation op)
     {
         if((mxb1.get_rows() == 0) || (mxb1.get_cols() == 0)) {return;}
 
         if(op == Operation::divide || op == Operation::root){
-            if(value == 0) {return;}
+            if(value == 0) {throw std::runtime_error("division/root by 0");}
         }
         for(size_t r{0} ; r<mxb1.get_rows(); r++)
         {   
@@ -163,5 +182,21 @@ namespace method
                 }
             }
         }
+    }
+    //
+    //R value broadcasting
+    //
+    template<typename T, typename R>
+    Matrix<T> broadcast(Matrix_base<T> &&mxb1, const Matrix_base<R> &mxb2, const Operation op)
+    {
+        broadcast(mxb1, mxb2, op);
+        return {std::move(mxb1)};
+    }
+
+    template<typename T, typename R>
+    Matrix<T> broadcast(Matrix_base<T> &&mxb1, const R &value, const Operation op)
+    {
+        broadcast(mxb1, value, op);
+        return {std::move(mxb1)};
     }
 }

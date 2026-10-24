@@ -5,7 +5,7 @@
 #include "matrix_helper.hpp"
 #include "matrix_base.hpp"
 #include <utility>
-#include "matrix_helper.hpp"
+
 
 
 template <typename T>
@@ -13,6 +13,7 @@ class Slice_view;
 
 template<typename>
 class mask_flag;
+
 
 template<typename T>
 class Matrix : public Matrix_base<T>
@@ -204,7 +205,7 @@ class Matrix : public Matrix_base<T>
                 return *this;
             }
             else
-            {   
+            {     
                 method::broadcast(*this, mx, Operation::equal);
                 return *this;
             }
@@ -230,61 +231,28 @@ class Matrix : public Matrix_base<T>
 //MEMBER ARITHMETIC OPERATORS
 //
         template<typename R>
-        Matrix<T>& operator+=(const Matrix_base<R>& other)
-        {   
-            static_assert(!std::is_same_v<T, boolean>);
-            method::broadcast(*this, other, Operation::add);
-            return *this;
-        }
-
-        template<typename R>
-        requires (std::integral<R> || std::floating_point<R>)
-        Matrix<T>& operator+=(const R val)
+        Matrix<T>& operator+=(const R &val)//handles both nums and base<T>
         {   
             method::broadcast(*this, val, Operation::add);
             return *this;
         }
-        
         template<typename R>
-        Matrix<T>& operator-=(const Matrix_base<R>& other)
-        {
-            method::broadcast(*this, other, Operation::substract);
-            return *this;
-        }
-
-        template<typename R>
-        requires (std::integral<R> || std::floating_point<R>)
-        Matrix<T>& operator-=(const R val)
+        Matrix<T>& operator-=(const R &val)
         {
             method::broadcast(*this, val, Operation::substract);
             return *this;
         }
 
         template<typename R>
-        Matrix<T>& operator*=(const Matrix_base<R>& other)
-        {
-            method::broadcast(*this, other, Operation::multiply);
-            return *this;
-        }
-
-        template<typename R>
-        requires (std::integral<R> || std::floating_point<R>)
-        Matrix<T>& operator*=(const R val)
+        Matrix<T>& operator*=(const R &val)
         {
             method::broadcast(*this, val, Operation::multiply);
             return *this;
         }
 
-        template<typename R>
-        Matrix<T>& operator/=(const Matrix_base<R>& other)
-        {
-            method::broadcast(*this, other, Operation::divide);
-            return *this;
-        }
 
         template<typename R>
-        requires (std::integral<R> || std::floating_point<R>)
-        Matrix<T>& operator/=(const R val)
+        Matrix<T>& operator/=(const R &val)
         {
             method::broadcast(*this, val, Operation::divide);
             return *this;
@@ -468,20 +436,17 @@ mask_flag<T> Matrix<T>::M()
 {
     return {*this};
 }
-
 //
-//COPY FLAG
+//Assign
 //
 template<typename T>
 assign_flag<T>::assign_flag(Matrix<T> &matrix) : ptr{&matrix}{}
 
-
 template<typename T>
-assign_flag<T> Matrix<T>::A() //assign flag
+assign_flag<T> Matrix<T>::A()
 {
     return {*this};
 }
-
 template<typename T>
 template<typename R>
 Matrix<T>&  assign_flag<T>::operator=(const Matrix_base<R> &mxb1){
@@ -491,7 +456,6 @@ Matrix<T>&  assign_flag<T>::operator=(const Matrix_base<R> &mxb1){
     ptr->cols = copy.cols;
     return *ptr;
 }
-
 template<typename T>
 Matrix<T>&  assign_flag<T>::operator=(Matrix<T> &&mx){
     ptr->get_matrix() = std::move(mx.matrix);

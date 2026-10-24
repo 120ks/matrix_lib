@@ -2,8 +2,9 @@
 
 #include "matrix_base.hpp"
 #include "matrix_statistics.hpp"
-#include "matrix_lin.hpp"
+#include "matrix_linear.hpp"
 #include "matrix_helper.hpp"
+
 
 template<typename T>
 class Matrix;
@@ -23,10 +24,10 @@ namespace mx_math
     }
 
     template<typename T>
-    Matrix<T> softmax(const Matrix_base<T> &mxb1, const bool row_wise)
+    Matrix<T> softmax(const Matrix_base<T> &mxb1, const axis ax)
     {   
         Matrix<T> probabilities{method::broadcast(mxb1, E, Operation::equal)};
-        probabilities /= mx_math::sum(probabilities, row_wise);
+        probabilities /= mx_math::sum(probabilities, ax);
 
         return probabilities;
     }
@@ -45,28 +46,25 @@ namespace mx_math
     }
 
     template<typename T, typename R>
-    auto gradients(const Matrix_base<T> &mxb1, const Matrix_base<R> &loss)
-    {
-        return mx_math::dot(mxb1, loss);
-    }
-
-    template<typename T, typename R>
     double cross_entropy_loss(const Matrix_base<T> &prediction, const Matrix_base<R> &hot_encoded)
     {
-        if(!(prediction.get_rows()==1 || prediction.get_cols()==1))
-        {
-            std::cerr<<"either cols or rows must be 1";
-        }
-        if(!(hot_encoded.get_rows()==1 || hot_encoded.get_cols()==1))
-        {
-            std::cerr<<"either cols or rows must be 1";
-        }
         if(!matrix_math::same_dims(prediction, hot_encoded))
         {
-            std::cerr<<"prediction dimensions do not match with hot encoded";
+            throw dimension_mismatch(std::format(
+                "prediction({}x{}), must match hot_encoded({},{})", 
+                prediction.get_rows(), prediction.get_cols(), hot_encoded.get_rows(), hot_encoded.get_cols()
+                ));
         }
-        return -std::log((prediction[hot_encoded>=0.99])(0,0));
+        if((prediction.get_rows() != 1) && (prediction.get_cols() != 1))
+        {
+            throw dimension_mismatch(std::format("one of prediction and hot encoded ({}x{}) must be 1", prediction.get_rows(), prediction.get_rows()));
+        }
+        return -std::log((prediction[hot_encoded>=0.98])(0,0));
     }
+
+    
+    
+
 }
 
 
