@@ -3,6 +3,7 @@
 #include<cstddef>
 #include<iostream>
 #include<cassert>
+#include<type_traits>
 
 enum class Condition
 {   
@@ -85,6 +86,19 @@ class mask_ref
         mask_ref<T>& operator=(R &&value) {*ptr = value; return *this;}
         operator T& ()const noexcept {return *ptr;}
 };
+//
+//check if is type mask_ref
+//
+template <typename T>
+struct is_mask_ref : std::false_type {};
+
+template <typename U>
+struct is_mask_ref<mask_ref<U>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool is_mask_ref_v = is_mask_ref<T>::value;
+
+
 
 //
 //mask_ref common type 

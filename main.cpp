@@ -25,7 +25,7 @@ void test()
     std::cout<<matrix2<<'\n'; 
 
     //testing basic masking
-    std::cout<<"- testing basic slicing -"<<std::endl;
+    std::cout<<"- testing basic masking -"<<std::endl;
 
     std::cout<<"- matrix1 values under 2 will be 3 -"<<std::endl;
     matrix1[matrix1<2] = 3;
@@ -125,13 +125,14 @@ void test()
 
     std::cout<<"-   transpose works with slices aswell   - "<<std::endl;
     std::cout<<matrix1(sl{}, sl{1, 3}).transpose();
+
     std::cout<<"-   ASSIGN FLAG is used to copy the second matrix(no broadcasting), with its dimensions   - "<<std::endl;
     std::cout<<"-   assigning matrix1 with a smaller slice without assign_flag .A(), will keep its original dimensions   - "<<std::endl;
     matrix1 = matrix1(sl{0, 2}, sl{1, 3}).copy(); //using copy so already assigned elements dont get used (note that its the same matrix)
     std::cout<<matrix1;
 
     std::cout<<"-   with assign flag, matrix1 becomes a copy of the slice, no ptrs, no views it will copy it as it   - "<<std::endl;
-    matrix1.A() = matrix1(sl{2, 0}, sl{1, 3}).copy();
+    matrix1.A() = matrix1.copy();
     std::cout<<matrix1;
 
     std::cout<<"-   matrix_math   - "<<std::endl;
@@ -153,6 +154,10 @@ void test()
     std::cout<<mx_math::euclidean_distance(matrix1, matrix2(sl{0, 2}, sl{2, 0}))<<std::endl;
     std::cout<<matrix3(sl{1, 0})<<matrix2;
     std::cout<<mx_math::concat(matrix3(sl{1, 0}), matrix2, axis::Y);
+
+    std::cout<<matrix1<<matrix2;
+    method::broadcast(matrix1, 3, Operation::power); //tarkista tämä siinä, missä se käyttää toista mxb2
+    std::cout<<matrix1;
 }
 
 

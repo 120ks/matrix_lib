@@ -12,25 +12,29 @@ class Matrix;
 template<typename T>
 class Slice_view;
 
+namespace machine
+{
 
-template<typename T>
-class Matrix_base
-{   
+    
+}
+    template<typename T>
+    class Matrix_base
+    {   
 
-    protected:
-        Matrix_base() = default;
-        virtual ~Matrix_base() = default;
+        protected:
+            Matrix_base() = default;
+            virtual ~Matrix_base() = default;
 
-    public:
-        virtual T& operator()(const size_t, const size_t) = 0;
-        virtual const T& operator()(const size_t, const size_t) const = 0;
+        public:
+            virtual T& operator()(const size_t, const size_t) = 0;
+            virtual const T& operator()(const size_t, const size_t) const = 0;
 
-        virtual inline size_t get_rows()const = 0;
-        virtual inline size_t get_cols()const = 0;
-        virtual Matrix<T> transpose()const = 0;
-        virtual Matrix<T> copy()const = 0;
+            virtual inline size_t get_rows()const = 0;
+            virtual inline size_t get_cols()const = 0;
+            virtual Matrix<T> transpose()const = 0;
+            virtual Matrix<T> copy()const = 0;
+    };
 
-};
 
 //
 //enums and statics
@@ -56,9 +60,6 @@ namespace mx_math
     static std::random_device random_device;
     static std::mt19937 generator(random_device());
 }
-
-
-
 //
 //FLAG SKELETONS
 //

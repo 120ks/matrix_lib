@@ -68,10 +68,15 @@ matrix = matrix[mask]   //copies all true elements to matrix
 mask && mask2           //returns mask where both masks had true in same index n
 mask || mask2           //returns a mask atleast one mask had true in index n
 
+//ASSIGN OPERATOR
 
 matrix = 1                  //makes all values in matrix 1
-matrix = matrix2            //matrix2 is broadcast on matrix, so every value in matrix gets assigned a new // search "broadcast info for more information on this"
-                            //matrix1 uses
+matrix<T> = matrix2<R>      //matrix becomes like matrix2 however the datatype of matrix is still the same.
+matrix<ref> = matrix<T>     //makes the references the same as val T, does not copy dims and keeps the datatype of ref
+matrix<ref> = matrix2<ref>  //copies all of the refs from matrix2, note that this means that matrix wont own its data.
+
+
+
 
 
 
@@ -92,11 +97,9 @@ matrix.M <0 = 10                //directly creates a ptr array of all values of 
 matrix(sl, sl).M() < 0 = 0      //makes all values under 0  = 0 inside the slice
 matrix.M()<0;
                                 //using flag (mask_flag) to mask is under the hood faster than matrix[mask], as this requires 2x less iterating (no mask needed)
+                                //with mask_flag, doing mx = smaller mx works, but does not record its dimensions.
 
-//assign_flag
-matrix.A() = matrix2            //copies the matrix2 into matrix1, this bypasses the broadcasting and allows you to directly make matrix have same dims and vals as matrix2
-matrix.A() = matrix2(sl, sl)    //copies the slice, so matrix becomes the slice of matrix 2.
-matrix.A() = func()             //makes the matrix be same as the returned value of the func() with move semantics
+
 
 
 //other member functions for both view and matrix

@@ -98,7 +98,7 @@ auto operator>(const Matrix_base<T> &mxb1, const R val)
 
 template<typename T, typename R>
 Matrix<boolean> operator<(const Matrix_base<T> &mxb1, const R val)
-{
+{  
     return boolean_logic::make_mask(mxb1, Condition::under, val);
 }
 

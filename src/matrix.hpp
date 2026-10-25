@@ -190,41 +190,39 @@ class Matrix : public Matrix_base<T>
 //
 // ASSIGN OPERATORS
 //      
-        Matrix<T>& operator=(const Matrix<T> &mx)
+        
+        Matrix<T>& operator=(Matrix<T> mx)
         {   
-            method::broadcast(*this, mx, Operation::equal);
+            std::swap(this->matrix, mx.matrix);
+            this->rows = mx.rows;
+            this->cols = mx.cols;
             return *this;
         }
 
-        Matrix<T>& operator=(Matrix<T> &&mx)
-        {   
-            if(&mx == this){return *this;}
-            if((mx.rows == rows) && (mx.cols == cols))
-            {   
-                std::swap(this->matrix, mx.matrix);
-                return *this;
-            }
-            else
-            {     
-                method::broadcast(*this, mx, Operation::equal);
-                return *this;
-            }
-        }
-
-        template<typename R>
+        template<typename R, typename U = T>
+        requires (!is_mask_ref_v<U>)
         Matrix<T>& operator=(const Matrix_base<R> &mxb1)
+        {   
+            Matrix<T> mx{mxb1};
+            this->matrix = std::move(mx.matrix);
+            this->rows = mx.rows;
+            this->cols = mx.cols;
+            return *this;
+        }
+        template<typename R>
+        Matrix<T>& operator=(const Matrix_base<mask_ref<R>> &mxb1)
         {   
             method::broadcast(*this, mxb1, Operation::equal);
             return *this;
         }
-
+        
         template<typename R>
         requires (std::integral<R> || std::floating_point<R>)
         Matrix<T>& operator=(R val)
-        {      
-            for(auto &value :  matrix){
+        {   
+            for(auto& value : this->matrix){
                 value = val;
-            }                                                                                                                       
+            }                                                                                                                
             return *this;
         }
 //
