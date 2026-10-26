@@ -1,8 +1,0 @@
-[
-{
-  "directory": "C:/Users/ppako/Desktop/projects/matrix_lib/build",
-  "command": "C:\\msys64\\ucrt64\\bin\\g++.exe  @CMakeFiles\\matrix.dir\\includes_CXX.rsp -g -o CMakeFiles\\matrix.dir\\main.cpp.obj -c C:\\Users\\ppako\\Desktop\\projects\\matrix_lib\\main.cpp",
-  "file": "C:/Users/ppako/Desktop/projects/matrix_lib/main.cpp",
-  "output": "CMakeFiles/matrix.dir/main.cpp.obj"
-}
-]

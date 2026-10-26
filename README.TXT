@@ -221,3 +221,9 @@ ideas on how to make masking more dynamic,
         //// DONE by converting matrix to handle mask_view using mask_ref<T> objects, and using .M() to route the mask directly into same matrix / slice
 
         matrix_slice.M() > 0 = 1 //works
+
+
+4. to fully utilize slice_view, make it be a construcatable object, a lightweight and movable that has access to data.
+    - allow creating it from other slice_view.
+    - monitoring if the undelying matrix it points at exists.
+        - matrix -> true table, the table will destruct the object

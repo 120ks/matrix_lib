@@ -1,3 +1,0 @@
-C:/Users/ppako/Desktop/projects/matrix_lib/build/CMakeFiles/matrix.dir
-C:/Users/ppako/Desktop/projects/matrix_lib/build/CMakeFiles/edit_cache.dir
-C:/Users/ppako/Desktop/projects/matrix_lib/build/CMakeFiles/rebuild_cache.dir
