@@ -29,11 +29,9 @@ class Matrix : public Matrix_base<T>
     public:
 //
 //flag cababilities
-//  
-    friend class assign_flag<T>;
+//
     friend class mask_flag<T>;
     mask_flag<T> M();
-    assign_flag<T> A();
 //
 //CONSTRUCTORS
 //  
@@ -433,31 +431,4 @@ template<typename T>
 mask_flag<T> Matrix<T>::M()
 {
     return {*this};
-}
-//
-//Assign
-//
-template<typename T>
-assign_flag<T>::assign_flag(Matrix<T> &matrix) : ptr{&matrix}{}
-
-template<typename T>
-assign_flag<T> Matrix<T>::A()
-{
-    return {*this};
-}
-template<typename T>
-template<typename R>
-Matrix<T>&  assign_flag<T>::operator=(const Matrix_base<R> &mxb1){
-    Matrix<T> copy{mxb1};
-    ptr->get_matrix() = std::move(copy.matrix);
-    ptr->rows = copy.rows;
-    ptr->cols = copy.cols;
-    return *ptr;
-}
-template<typename T>
-Matrix<T>&  assign_flag<T>::operator=(Matrix<T> &&mx){
-    ptr->get_matrix() = std::move(mx.matrix);
-    ptr->rows = mx.rows;
-    ptr->cols = mx.cols;
-    return *ptr;
 }

@@ -13,7 +13,7 @@ void test()
     std::cout<<"- matrix2 is 3x4 all 2.5's -"<<std::endl;
     std::cout<<matrix2<<'\n';
 
-    //testing slicing 
+    //testing slicing
     std::cout<<"- testing basic slicing -"<<std::endl;
 
     std::cout<<"- matrix1 center to be 2 -"<<std::endl;

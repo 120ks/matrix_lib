@@ -56,10 +56,10 @@ RM = "C:\Program Files\CMake\bin\cmake.exe" -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = C:\Users\ppako\Documents\projects\matrix_lib
+CMAKE_SOURCE_DIR = C:\Users\ppako\Desktop\projects\matrix_lib
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = C:\Users\ppako\Documents\projects\matrix_lib\build
+CMAKE_BINARY_DIR = C:\Users\ppako\Desktop\projects\matrix_lib\build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -86,9 +86,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles C:\Users\ppako\Documents\projects\matrix_lib\build\\CMakeFiles\progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\ppako\Desktop\projects\matrix_lib\build\CMakeFiles C:\Users\ppako\Desktop\projects\matrix_lib\build\\CMakeFiles\progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\ppako\Desktop\projects\matrix_lib\build\CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -116,24 +116,24 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named matrix_lib
+# Target rules for targets named matrix
 
 # Build rule for target.
-matrix_lib: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 matrix_lib
-.PHONY : matrix_lib
+matrix: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 matrix
+.PHONY : matrix
 
 # fast build rule for target.
-matrix_lib/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/build
-.PHONY : matrix_lib/fast
+matrix/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix.dir\build.make CMakeFiles/matrix.dir/build
+.PHONY : matrix/fast
 
 main.obj: main.cpp.obj
 .PHONY : main.obj
 
 # target to build an object file
 main.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/main.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix.dir\build.make CMakeFiles/matrix.dir/main.cpp.obj
 .PHONY : main.cpp.obj
 
 main.i: main.cpp.i
@@ -141,7 +141,7 @@ main.i: main.cpp.i
 
 # target to preprocess a source file
 main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/main.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix.dir\build.make CMakeFiles/matrix.dir/main.cpp.i
 .PHONY : main.cpp.i
 
 main.s: main.cpp.s
@@ -149,7 +149,7 @@ main.s: main.cpp.s
 
 # target to generate assembly for a file
 main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/main.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix.dir\build.make CMakeFiles/matrix.dir/main.cpp.s
 .PHONY : main.cpp.s
 
 # Help Target
@@ -160,7 +160,7 @@ help:
 	@echo ... depend
 	@echo ... edit_cache
 	@echo ... rebuild_cache
-	@echo ... matrix_lib
+	@echo ... matrix
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s

@@ -2,10 +2,10 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "matrix_lib.exe"
+			"path" : "matrix.exe"
 		},
 		{
-			"path" : "matrix_lib.pdb"
+			"path" : "matrix.pdb"
 		}
 	],
 	"backtrace" : 1,
@@ -57,11 +57,11 @@
 			[
 				{
 					"backtrace" : 2,
-					"path" : "C:/Users/ppako/Documents/projects/matrix_lib/src"
+					"path" : "C:/Users/ppako/Desktop/projects/matrix_lib/src"
 				},
 				{
 					"backtrace" : 2,
-					"path" : "C:/Users/ppako/Documents/projects/matrix_lib/src/matrix_math"
+					"path" : "C:/Users/ppako/Desktop/projects/matrix_lib/src/matrix_math"
 				}
 			],
 			"language" : "CXX",
@@ -71,7 +71,7 @@
 			]
 		}
 	],
-	"id" : "matrix_lib::@6890427a1f51a3e7e1df",
+	"id" : "matrix::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -87,8 +87,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "matrix_lib",
-	"nameOnDisk" : "matrix_lib.exe",
+	"name" : "matrix",
+	"nameOnDisk" : "matrix.exe",
 	"paths" : 
 	{
 		"build" : ".",

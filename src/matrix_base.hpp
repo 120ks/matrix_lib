@@ -85,24 +85,6 @@ class mask_flag
 
 };
 
-template<typename T>
-class assign_flag
-{
-    friend class Matrix<T>;
-
-    public:
-        Matrix<T>* ptr{};
-        assign_flag(Matrix<T> &mrx);
-        assign_flag(const assign_flag<T>&) = delete;
-        assign_flag(assign_flag<T> &&other) : ptr{other.ptr} {other.ptr = nullptr;}
-        operator=(assign_flag<T>&&) = delete;
-        operator=(const assign_flag<T>&) = delete;
-
-        template<typename R>
-        Matrix<T>& operator=(const Matrix_base<R> &mxb1);
-        Matrix<T>& operator=(Matrix<T> &&mx);
-};
-
 //
 //BROADCAST OPERATIONS
 //
@@ -124,13 +106,23 @@ namespace method
     template<typename T, typename R>
     void broadcast(Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2, const Operation op)
     {   
-        if((mxb1.get_rows() == 0) || (mxb1.get_cols() == 0)) {return;}
-        
+
         auto total_rows1{mxb1.get_rows()}, total_rows2{mxb2.get_rows()};
         auto total_cols1{mxb1.get_cols()}, total_cols2{mxb2.get_cols()};
 
+        if((total_rows1 == 0) || (total_cols1 == 0)) {return;}
+        if((total_rows2 == 0) || (total_cols2 == 0)) {return;}
+        
         if(op == Operation::divide || op == Operation::root){
             if(has_zero(mxb2)){throw std::runtime_error("division/root of mxb1 with mxb2-> contains 0");}
+        }
+
+        //check that dims are divisible
+        if((total_cols1 % total_cols2 != 0) && (total_cols2%total_cols1 != 0)){
+            throw(dimension_mismatch(std::format("columns must be divisible by each other mxb1({}), mxb2({})", total_cols1, total_cols2)));
+        }
+        if((total_rows1 % total_rows2 != 0) && (total_cols2%total_cols1 != 0)){
+            throw(dimension_mismatch(std::format("rows must be divisible by each other mxb1({}), mxb2({})", total_rows1, total_rows2)));
         }
 
         size_t max_row{std::max(total_rows1, total_rows2)};

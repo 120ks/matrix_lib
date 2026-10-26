@@ -137,6 +137,9 @@ where the second array has both row and col match the max of 8rows and 8cols. Th
 the cols of the first get indexed twice in this example so the first col (0) get values from mx(n, 0) and (n, 4)
 
 this is used to calculate sums, statistics, section multiplication etc.
+the rows / cols in operation with  matrix =/*+-= matrix2 must be divisible, so doing (3x3) * (4x6) is not allowed 3%4 or 4%3 != 0,
+but (3x3) * (6*18) is allowed, this design is meant as a a way to better debug semantic errors, with the cost of slight loss of functionality.
+allowing the user to catch errors that would not trigger an exception normally.
 
 
 

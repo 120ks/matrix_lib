@@ -28,7 +28,7 @@
 					[
 						0
 					],
-					"name" : "matrix_lib",
+					"name" : "matrix",
 					"targetIndexes" : 
 					[
 						0
@@ -39,9 +39,9 @@
 			[
 				{
 					"directoryIndex" : 0,
-					"id" : "matrix_lib::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-matrix_lib-Debug-3b8e49ac986d9e0bdbc4.json",
-					"name" : "matrix_lib",
+					"id" : "matrix::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-matrix-Debug-7c1789ea172c0839a27f.json",
+					"name" : "matrix",
 					"projectIndex" : 0
 				}
 			]
@@ -50,8 +50,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "C:/Users/ppako/Documents/projects/matrix_lib/build",
-		"source" : "C:/Users/ppako/Documents/projects/matrix_lib"
+		"build" : "C:/Users/ppako/Desktop/projects/matrix_lib/build",
+		"source" : "C:/Users/ppako/Desktop/projects/matrix_lib"
 	},
 	"version" : 
 	{

@@ -53,20 +53,20 @@ RM = "C:\Program Files\CMake\bin\cmake.exe" -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = C:\Users\ppako\Documents\projects\matrix_lib
+CMAKE_SOURCE_DIR = C:\Users\ppako\Desktop\projects\matrix_lib
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = C:\Users\ppako\Documents\projects\matrix_lib\build
+CMAKE_BINARY_DIR = C:\Users\ppako\Desktop\projects\matrix_lib\build
 
 #=============================================================================
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/matrix_lib.dir/all
+all: CMakeFiles/matrix.dir/all
 .PHONY : all
 
 # The main recursive "codegen" target.
-codegen: CMakeFiles/matrix_lib.dir/codegen
+codegen: CMakeFiles/matrix.dir/codegen
 .PHONY : codegen
 
 # The main recursive "preinstall" target.
@@ -74,40 +74,40 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/matrix_lib.dir/clean
+clean: CMakeFiles/matrix.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/matrix_lib.dir
+# Target rules for target CMakeFiles/matrix.dir
 
 # All Build rule for target.
-CMakeFiles/matrix_lib.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles --progress-num=1,2 "Built target matrix_lib"
-.PHONY : CMakeFiles/matrix_lib.dir/all
+CMakeFiles/matrix.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix.dir\build.make CMakeFiles/matrix.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix.dir\build.make CMakeFiles/matrix.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=C:\Users\ppako\Desktop\projects\matrix_lib\build\CMakeFiles --progress-num=1,2 "Built target matrix"
+.PHONY : CMakeFiles/matrix.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/matrix_lib.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles 2
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/matrix_lib.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles 0
-.PHONY : CMakeFiles/matrix_lib.dir/rule
+CMakeFiles/matrix.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\ppako\Desktop\projects\matrix_lib\build\CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/matrix.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\ppako\Desktop\projects\matrix_lib\build\CMakeFiles 0
+.PHONY : CMakeFiles/matrix.dir/rule
 
 # Convenience name for target.
-matrix_lib: CMakeFiles/matrix_lib.dir/rule
-.PHONY : matrix_lib
+matrix: CMakeFiles/matrix.dir/rule
+.PHONY : matrix
 
 # codegen rule for target.
-CMakeFiles/matrix_lib.dir/codegen:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=C:\Users\ppako\Documents\projects\matrix_lib\build\CMakeFiles --progress-num=1,2 "Finished codegen for target matrix_lib"
-.PHONY : CMakeFiles/matrix_lib.dir/codegen
+CMakeFiles/matrix.dir/codegen:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix.dir\build.make CMakeFiles/matrix.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=C:\Users\ppako\Desktop\projects\matrix_lib\build\CMakeFiles --progress-num=1,2 "Finished codegen for target matrix"
+.PHONY : CMakeFiles/matrix.dir/codegen
 
 # clean rule for target.
-CMakeFiles/matrix_lib.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix_lib.dir\build.make CMakeFiles/matrix_lib.dir/clean
-.PHONY : CMakeFiles/matrix_lib.dir/clean
+CMakeFiles/matrix.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\matrix.dir\build.make CMakeFiles/matrix.dir/clean
+.PHONY : CMakeFiles/matrix.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

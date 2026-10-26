@@ -27,6 +27,25 @@ namespace mx_math
         }
         return max;
     }
+    template<typename T>
+    Matrix<T> argmax(const Matrix_base<T> &mxb1, const axis ax)
+    {   
+        auto rows_1{mxb1.get_rows()};
+        auto cols_1{mxb1.get_cols()};
+
+        Matrix<T> mx{ (ax == axis::X) ? Matrix<T>{rows_1, 1} : Matrix{1, cols_1}};
+        auto mx_rows{mx.get_rows()};
+        auto mx_cols{mx.get_cols()};
+        
+        for(size_t r{} ; rows_1 ; r++){
+            for(size_t c{} ; c<cols_1 ; c++){
+                if(mxb1(r, c) > mx(r%mx_rows, c%mx_cols)){
+                    mx(r%mx_rows, c%mx_cols) = mxb1(r, c);
+                }
+            }
+        }
+        return mx;
+    }
 
     template<typename T>
     double sum(const Matrix_base<T> &mxb1)
