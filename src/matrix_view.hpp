@@ -3,8 +3,14 @@
 #include "matrix_base.hpp"
 #include "matrix_subtypes.hpp"
 
+
+namespace machine
+{
+
+
+
 template<typename T>
-class Slice_view : public Matrix_base<T>
+class Matrix_view : public Matrix_base<T>
 {   
     template<typename>
     friend class Matrix;
@@ -18,7 +24,14 @@ class Slice_view : public Matrix_base<T>
 //
 //CONSTRUCTORS
 //
-        Slice_view(Matrix<T> *matrix, Slice r_slice, Slice c_slice)
+        Matrix_view(Matrix<T> *matrix)
+        : view_ptr{matrix}
+        , row_slice{0, matrix->get_rows()}
+        , col_slice{0, matrix->get_cols()}
+        {
+            
+        }
+        Matrix_view(Matrix<T> *matrix, Slice r_slice, Slice c_slice)
         : view_ptr{matrix}
         , row_slice{r_slice}
         , col_slice{c_slice}
@@ -27,22 +40,22 @@ class Slice_view : public Matrix_base<T>
             col_slice.end = (col_slice.end == 0) ? matrix->get_cols() : col_slice.end; 
         }
         
-        Slice_view(const Slice_view &other)
+        Matrix_view(const Matrix_view &other)
         : view_ptr{other.view_ptr}
         , row_slice{other.row_slice}
         , col_slice{other.col_slice}
         {}
 
-        Slice_view(Slice_view &&other)noexcept
+        Matrix_view(Matrix_view &&other)noexcept
         : view_ptr{other.view_ptr}
         , row_slice{other.row_slice}
         , col_slice{other.col_slice}
         {other.view_ptr = nullptr;}
 
     public:
-        ~Slice_view()override = default;
-        Slice_view& operator=(const Slice_view &other) = delete;
-        Slice_view& operator=(Slice_view&& other) = delete;
+        ~Matrix_view()override = default;
+        Matrix_view& operator=(const Matrix_view &other) = delete;
+        Matrix_view& operator=(Matrix_view&& other) = delete;
 //  
 // OVERRIDES
 //        
@@ -85,24 +98,19 @@ class Slice_view : public Matrix_base<T>
 //
 //SLICING AND MASKING
 //      
-        Slice_view& operator()(const Slice r_slice, const Slice c_slice)
+        Matrix_view<T> operator()(const Slice r_slice, const Slice c_slice)
         {   
             if((r_slice.end>this->get_rows()) || (c_slice.end>this->get_cols()))
             {
                 throw slicing_mismatch(std::format("sl({}, {}) sl({}, {}) view({}x{})", r_slice.begin, r_slice.end, c_slice.begin, c_slice.end , this->get_rows(), this->get_cols()));
             }
-
-            row_slice = row_slice+r_slice;
-            col_slice = col_slice+c_slice;
-
-            return{*this};
+            return{view_ptr, row_slice+r_slice, col_slice+c_slice};
         }
 
-        Slice_view<T>& operator()(const Slice r_slice)
+        Matrix_view<T> operator()(const Slice r_slice)
         {   if(r_slice.end>this->get_rows())
             throw slicing_mismatch(std::format("row_sl({}, {}) view({}x{})", r_slice.begin, r_slice.end, this->get_rows()));
-            row_slice = row_slice+r_slice;
-            return {*this};
+            return {view_ptr, row_slice+r_slice, col_slice};
         }
 
         Matrix<mask_ref<T>> operator[](const Matrix<boolean> &mask){ //note the  []
@@ -112,24 +120,17 @@ class Slice_view : public Matrix_base<T>
 // ASSIGN OPERATORS
 //  
         template<typename R>
-        Slice_view& operator=(const Matrix_base<R> &mxb1)
+        Matrix_view& operator=(const Matrix_base<R> &mxb1)
         {
-            method::broadcast(*this, mxb1, Operation::equal);
+            broadcast(*this, mxb1, Operation::equal);
             return *this;
         }
 
         template<typename R>
         requires (std::integral<R> || std::floating_point<R>)
-        Slice_view& operator=(const R val)
+        Matrix_view& operator=(const R val)
         {
-            method::broadcast(*this, val, Operation::equal);
-            return *this;
-        }
-
-        template<typename R>
-        Slice_view& operator=(const Slice_view<R> &mxv1)
-        {
-            method::broadcast(*this, mxv1, Operation::equal);
+            broadcast(*this, val, Operation::equal);
             return *this;
         }
 //
@@ -140,64 +141,66 @@ class Slice_view : public Matrix_base<T>
 //MEMBER ARITHMETIC OPERATORS
 //      
         template<typename R>
-        Slice_view& operator+=(const Matrix_base<R>& other)
+        Matrix_view& operator+=(const Matrix_base<R>& other)
         {
-            method::broadcast(*this, other, Operation::add);
+            broadcast(*this, other, Operation::add);
             return *this;
         }
         
         template<typename R>
         requires (std::integral<R> || std::floating_point<R>)
-        Slice_view& operator+=(const R val)
+        Matrix_view& operator+=(const R val)
         {
-            method::broadcast(*this, val, Operation::add);
+            broadcast(*this, val, Operation::add);
             return *this;
         }
 
         template<typename R>
-        Slice_view& operator-=(const Matrix_base<R>& other)
+        Matrix_view& operator-=(const Matrix_base<R>& other)
         {
-            method::broadcast(*this, other, Operation::substract);
-            return *this;
-        }
-
-        template<typename R>
-        requires (std::integral<R> || std::floating_point<R>)
-        Slice_view& operator-=(const R val)
-        {
-            method::broadcast(*this, val, Operation::substract);
-            return *this;
-        }
-        template<typename R>
-        Slice_view& operator*=(const Matrix_base<R>& other)
-        {
-            method::broadcast(*this, other, Operation::multiply);
+            broadcast(*this, other, Operation::substract);
             return *this;
         }
 
         template<typename R>
         requires (std::integral<R> || std::floating_point<R>)
-        Slice_view& operator*=(const R val)
+        Matrix_view& operator-=(const R val)
         {
-            method::broadcast(*this, val, Operation::multiply);
+            broadcast(*this, val, Operation::substract);
             return *this;
         }
-
         template<typename R>
-        Slice_view& operator/=(const Matrix_base<R>& other)
+        Matrix_view& operator*=(const Matrix_base<R>& other)
         {
-            method::broadcast(*this, other, Operation::divide);
+            broadcast(*this, other, Operation::multiply);
             return *this;
         }
 
         template<typename R>
         requires (std::integral<R> || std::floating_point<R>)
-        Slice_view& operator/=(const R val)
+        Matrix_view& operator*=(const R val)
         {
-            method::broadcast(*this, val, Operation::divide);
+            broadcast(*this, val, Operation::multiply);
             return *this;
         }
 
+        template<typename R>
+        Matrix_view& operator/=(const Matrix_base<R>& other)
+        {
+            broadcast(*this, other, Operation::divide);
+            return *this;
+        }
+
+        template<typename R>
+        requires (std::integral<R> || std::floating_point<R>)
+        Matrix_view& operator/=(const R val)
+        {
+            broadcast(*this, val, Operation::divide);
+            return *this;
+        }
+//
+//not operator
+//
         template <typename U = T>
         requires (std::is_same_v<U, boolean>)
         Matrix<boolean> operator!()const
@@ -208,13 +211,26 @@ class Slice_view : public Matrix_base<T>
             }
             return mask;
         }
-};
 
 //
-//FLAG FUNCTIONS FOR CIRCULAR DEPENCY
+//VIEW SPECIFIC
 //
-
-template<typename T>
-mask_flag<T> Slice_view<T>::M(){
+        void reset_slice()
+        {
+            row_slice.begin = 0;
+            row_slice.end = view_ptr->get_rows();
+            col_slice.begin = 0;
+            col_slice.end = view_ptr->get_cols();
+        }
+    };
+}
+//
+//FLAG FUNCTIONS
+//
+namespace machine
+{
+    template<typename T>
+    mask_flag<T> Matrix_view<T>::M(){
         return {*this};
     }
+}

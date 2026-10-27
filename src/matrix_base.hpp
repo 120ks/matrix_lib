@@ -5,22 +5,20 @@
 #include <cmath>
 #include <random>
 #include "matrix_exceptions.hpp"
+#include<memory>
 
-template<typename T>
-class Matrix;
-
-template<typename T>
-class Slice_view;
 
 namespace machine
-{
+{   
+    template<typename T>
+    class Matrix;
 
-    
-}
+    template<typename T>
+    class Matrix_view;
+
     template<typename T>
     class Matrix_base
     {   
-
         protected:
             Matrix_base() = default;
             virtual ~Matrix_base() = default;
@@ -31,65 +29,66 @@ namespace machine
 
             virtual inline size_t get_rows()const = 0;
             virtual inline size_t get_cols()const = 0;
-            virtual Matrix<T> transpose()const = 0;
-            virtual Matrix<T> copy()const = 0;
+            virtual inline Matrix<T> transpose()const = 0;
+            virtual inline Matrix<T> copy()const = 0;
     };
-
-
+}
 //
 //enums and statics
 //
-enum class Operation{
-    multiply,
-    divide,
-    add,
-    substract,
-    modulo,
-    equal,
-    power,
-    root
-};
+    enum class Operation
+    {
+        multiply,
+        divide,
+        add,
+        substract,
+        modulo,
+        equal,
+        power,
+        root
+    };
 
-enum class axis
-{
-    X,
-    Y
-};
-namespace mx_math
-{
+    enum axis
+    {
+        X,
+        Y
+    };
+    
     static std::random_device random_device;
     static std::mt19937 generator(random_device());
-}
+
 //
 //FLAG SKELETONS
 //
-template<typename T>
-class mask_flag
-{   
-    friend class Matrix<T>;
-    friend class Slice_view<T>;
-    public:
-        Matrix_base<T>* ptr{};
-        mask_flag(Matrix_base<T> &mxb1) : ptr{&mxb1}{}
-        mask_flag(const mask_flag<T>&) = delete;
-        mask_flag(mask_flag<T> &&other) : ptr{other.ptr} {other.ptr = nullptr;}
-        operator=(mask_flag<T>&&) = delete;
-        operator=(const mask_flag<T>&) = delete;
-    public:
-        ~mask_flag() = default;
-    //
-    //comparison operators
-    //  
-        friend mask_flag<T> Matrix<T>::M();
-        friend mask_flag<T> Slice_view<T>::M();
-
-};
-
+namespace machine
+{
+    template<typename T>
+    class mask_flag
+    {   
+        friend class Matrix<T>;
+        friend class Matrix_view<T>;
+        public:
+            Matrix_base<T>* ptr{};
+            mask_flag(Matrix_base<T> &mxb1) : ptr{&mxb1}{}
+            mask_flag(const mask_flag<T>&) = delete;
+            mask_flag(mask_flag<T> &&other) : ptr{other.ptr} {other.ptr = nullptr;}
+            operator=(mask_flag<T>&&) = delete;
+            operator=(const mask_flag<T>&) = delete;
+        public:
+            ~mask_flag() = default;
+        //
+        //comparison operators
+        //  
+            friend mask_flag<T> Matrix<T>::M();
+            friend mask_flag<T> Matrix_view<T>::M();
+    };
+}
 //
 //BROADCAST OPERATIONS
 //
-namespace method
+namespace machine
 {
+
     template<typename T>
     bool has_zero(const Matrix_base<T> &mxb1)
     {   
@@ -193,3 +192,5 @@ namespace method
         return {std::move(mxb1)};
     }
 }
+
+//namespace end

@@ -1,7 +1,7 @@
 #pragma once
 #include "matrix_base.hpp"
 
-namespace matrix_math
+namespace machine
 {
     template<typename T, typename R>
     bool same_dims(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)

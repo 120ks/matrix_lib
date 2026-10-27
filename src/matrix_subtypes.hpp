@@ -4,6 +4,7 @@
 #include<iostream>
 #include<cassert>
 #include<type_traits>
+#include<set>
 
 enum class Condition
 {   
@@ -97,9 +98,6 @@ struct is_mask_ref<mask_ref<U>> : std::true_type {};
 
 template <typename T>
 inline constexpr bool is_mask_ref_v = is_mask_ref<T>::value;
-
-
-
 //
 //mask_ref common type 
 //
@@ -127,3 +125,15 @@ namespace std{
         using type = bool;
     };
 }
+//
+//check that view is pointing at valid matrix
+//
+
+class lifetime_table
+{
+    inline static std::set<size_t> matrix_ids;
+    inline static bool has_id(size_t id)
+    {   
+        return matrix_ids.find(id) != matrix_ids.end();
+    }
+};

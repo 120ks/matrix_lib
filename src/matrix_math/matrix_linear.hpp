@@ -1,7 +1,7 @@
 #pragma once
 #include "matrix_statistics.hpp"
 
-namespace mx_math
+namespace machine
 {
     template<typename T, typename R>
     auto dot(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
@@ -14,7 +14,7 @@ namespace mx_math
         
         if(cols_1 != rows_2)
         {
-            throw dimension_mismatch(std::format("mxb1({}x{}) cols must match mxb2({}x{}) rows", rows_1, cols_1, rows_2, cols_2));
+            throw dimension_mismatch(mxb1, mxb2, "dot product, mxb1 cols must match mxb2 rows");
         }
         auto common_rc{mxb2.get_rows()};
 
@@ -39,11 +39,11 @@ namespace mx_math
         auto rows_2{point2.get_rows()};
         auto cols_2{point2.get_cols()};
 
-        if(!matrix_math::same_dims(point1, point2)){
-            throw dimension_mismatch(std::format("point1({}x{}) point2({}x{}) not same", rows_1, cols_1, rows_2, cols_2));
+        if(!machine::same_dims(point1, point2)){
+            throw dimension_mismatch(point1, point2, "euclidean distance");
         }
 
-        auto distance = method::broadcast(point1-point2, 2, Operation::power);
-        return std::sqrt(mx_math::sum(distance));
+        auto distance = machine::broadcast(point1-point2, 2, Operation::power);
+        return std::sqrt(machine::sum(distance));
     }
 }

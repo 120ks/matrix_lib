@@ -5,6 +5,8 @@
 void test()
 {
 //creating a matrix
+    using machine::Matrix;
+
     Matrix<int> matrix1{4, 4, 1};
     Matrix<double> matrix2{3, 4, 2.5};
     std::cout<<"- matrix1 is 4x4 all 1's -"<<std::endl;
@@ -17,7 +19,7 @@ void test()
     std::cout<<"- testing basic slicing -"<<std::endl;
 
     std::cout<<"- matrix1 center to be 2 -"<<std::endl;
-    matrix1(sl{1, 3}, sl{1, 3}) = 2;
+    matrix1(sl{1, 3}, sl{1, 3}) = matrix2(sl{0, 2}, sl{1, 3});
     std::cout<<matrix1<<'\n'; 
 
     std::cout<<"- matrix2 bottom row be *3 (=7.5) -"<<std::endl;
@@ -69,7 +71,7 @@ void test()
     std::cout<<mask<<'\n';
 
     std::cout<<"lets shave the last row off"<<std::endl;
-    Matrix<boolean> sliced_mask = mask(sl{0, 3}); //mx::mask alias for Matrix<boolean>
+    machine::Matrix<boolean> sliced_mask = mask(sl{0, 3}); //mx::mask alias for Matrix<boolean>
     std::cout<<sliced_mask<<'\n';
 
     std::cout<<"- now that it is correct shape, lets use it on matrix2, however lets reverse it with ! - "<<std::endl;
@@ -109,7 +111,7 @@ void test()
 
     std::cout<<"flag object is a special class that is used to make syntax more user friendly in some cases, flags are temp objects, so they exist only in statements"<<std::endl;
     std::cout<<"the .M() returns a proxy object that is basically a ptr to the underlying, this allows us to 'overload it so that we can bypass othwise akward syntax"<<std::endl;
-    std::cout<<"for example slicing and masking the slice is very error prone as the same slice is needed, inside multiple loops this might be close to impossible"<<std::endl;
+    std::cout<<"for example slicing and masking the slice is very error prone as the same slice is needed, inside multiple loops this might be difficult to maintain"<<std::endl;
     std::cout<<"also: because direct mask creates 'true array' directly without a mask, if the mask changes a lot in iteration prefer .M()"<<std::endl;
     std::cout<<"- use .M() when you are finished slicing and want to make a direct mask - "<<std::endl;
     matrix5(sl{}, {2, 4}).M() == matrix5(sl{}, {2, 4}) = 0; //should have all values over 2 from previous matrix be 0, if they are on columns index 2, 3
@@ -126,61 +128,53 @@ void test()
     std::cout<<"-   transpose works with slices aswell   - "<<std::endl;
     std::cout<<matrix1(sl{}, sl{1, 3}).transpose();
 
-    std::cout<<"-   ASSIGN FLAG is used to copy the second matrix(no broadcasting), with its dimensions   - "<<std::endl;
-    std::cout<<"-   assigning matrix1 with a smaller slice without assign_flag .A(), will keep its original dimensions   - "<<std::endl;
-    matrix1 = matrix1(sl{0, 2}, sl{1, 3}).copy(); //using copy so already assigned elements dont get used (note that its the same matrix)
-    std::cout<<matrix1;
-
-    std::cout<<"-   with assign flag, matrix1 becomes a copy of the slice, no ptrs, no views it will copy it as it   - "<<std::endl;
-    matrix1.A() = matrix1.copy();
-    std::cout<<matrix1;
-
     std::cout<<"-   matrix_math   - "<<std::endl;
     std::cout<<"-   lets print matrix2 for memory   - "<<std::endl;
     std::cout<<matrix2;
     std::cout<<"-   statistics   - "<<std::endl;
-    std::cout<<"-sum of matrix2 : "<<mx_math::sum(matrix2)<<'\n'<<std::endl;
-    std::cout<<"-sums of matrix2 col_wise : "<<mx_math::sum(matrix2, axis::Y);
-    std::cout<<"-sums of matrix2 slice row_wise :\n"<<mx_math::sum(matrix2(sl{0, 2}, {1, 3}), axis::X);
+    std::cout<<"-sum of matrix2 : "<<machine::sum(matrix2)<<'\n'<<std::endl;
+    std::cout<<"-sums of matrix2 col_wise : "<<machine::sum(matrix2, axis::Y);
+    std::cout<<"-sums of matrix2 slice row_wise :\n"<<machine::sum(matrix2(sl{0, 2}, {1, 3}), axis::X);
 
-    std::cout<<"-avg of matrix2 row_wise :\n"<< mx_math::avarage(matrix2, axis::X);
+    std::cout<<"-avg of matrix2 row_wise :\n"<< machine::avarage(matrix2, axis::X);
 
-    std::cout<<"-variance of matrix2 : "<<mx_math::variance(matrix2)<<std::endl;
-    std::cout<<"-variance of matrix2 row_wise :\n"<<mx_math::variance(matrix2, axis::X);
+    std::cout<<"-variance of matrix2 : "<<machine::variance(matrix2)<<std::endl;
+    std::cout<<"-variance of matrix2 row_wise :\n"<<machine::variance(matrix2, axis::X);
 
-    std::cout<<"-std of matrix2 : "<<mx_math::standard_dev(matrix2)<<std::endl;
-    std::cout<<"-std of matrix2 row_wise :\n"<<mx_math::standard_dev(matrix2, axis::X);
+    std::cout<<"-std of matrix2 : "<<machine::standard_dev(matrix2)<<std::endl;
+    std::cout<<"-std of matrix2 row_wise :\n"<<machine::standard_dev(matrix2, axis::X);
 
-    std::cout<<mx_math::euclidean_distance(matrix1, matrix2(sl{0, 2}, sl{2, 0}))<<std::endl;
+    std::cout<<machine::euclidean_distance(matrix1(sl{1, 0}), matrix2)<<std::endl;
     std::cout<<matrix3(sl{1, 0})<<matrix2;
-    std::cout<<mx_math::concat(matrix3(sl{1, 0}), matrix2, axis::Y);
+    std::cout<<machine::concat(matrix3(sl{1, 0}), matrix2, axis::Y);
 
     std::cout<<matrix1<<matrix2;
-    method::broadcast(matrix1, 3, Operation::power); //tarkista tämä siinä, missä se käyttää toista mxb2
+    machine::broadcast(matrix1, 3, Operation::power); //tarkista tämä siinä, missä se käyttää toista mxb2
     std::cout<<matrix1;
 }
 
 
 
 int main()
-{
+{   
+    namespace mxn = machine;
     try
     {
         test();
     }
-    catch(dimension_mismatch &e)
+    catch(mxn::dimension_mismatch &e)
     {
         std::cout<<"dimension mismatch\n";
         std::cout<<e.what();
         return 1;
     }
-    catch(indexing_mismatch &e)
+    catch(mxn::indexing_mismatch &e)
     {
         std::cout<<"indexing mismatch\n";
         std::cout<<e.what();
         return 1;
     }
-    catch(slicing_mismatch &e)
+    catch(mxn::slicing_mismatch &e)
     {
         std::cout<<"slicing mismatch\n";
         std::cout<<e.what();
@@ -192,6 +186,7 @@ int main()
         std::cout<<e.what();
         return 1;
     };
+
     return 0;
 
 }

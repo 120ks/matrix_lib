@@ -4,7 +4,7 @@
 template<typename T>
 class Matrix;
 
-namespace mx_math
+namespace machine
 {   template<typename T>
     T minimum(const Matrix_base<T>& mxb1)
     {   
@@ -51,7 +51,7 @@ namespace mx_math
     double sum(const Matrix_base<T> &mxb1)
     {
         Matrix<T> mx{1, 1, 0};
-        method::broadcast(mx, mxb1, Operation::add);
+        machine::broadcast(mx, mxb1, Operation::add);
         return mx(0,0);
     }
 
@@ -59,7 +59,7 @@ namespace mx_math
     Matrix<T> sum(const Matrix_base<T> &mxb1, const axis ax)
     {   
         Matrix<T> mx = (ax == axis::X)? Matrix<T>{mxb1.get_rows(), 1} : Matrix<T>{1, mxb1.get_cols()};
-        method::broadcast(mx, mxb1, Operation::add);
+        machine::broadcast(mx, mxb1, Operation::add);
         return mx;
     }
 
@@ -80,7 +80,7 @@ namespace mx_math
         auto c1{mxb1.get_cols()};
 
         Matrix<T> avarage{sum(mxb1, (ax==axis::X)? axis::X : axis::Y)};
-        method::broadcast(avarage, (ax==axis::X)? c1 : r1, Operation::divide);
+        machine::broadcast(avarage, (ax==axis::X)? c1 : r1, Operation::divide);
         return avarage;
     }
 
@@ -93,7 +93,7 @@ namespace mx_math
 
         Matrix<T> var{mxb1};
         var -= mean;
-        method::broadcast(var, 2, Operation::power);
+        machine::broadcast(var, 2, Operation::power);
         double var_out{sum(var)};
         return  var_out / (r1*c1-degree);
     }
@@ -106,9 +106,9 @@ namespace mx_math
         Matrix<T> mean{avarage(mxb1, ax)};
         Matrix<T> var{mxb1};
         var -= mean;
-        method::broadcast(var, 2, Operation::power);
+        machine::broadcast(var, 2, Operation::power);
         Matrix<T> var_out {sum(var, ax)};
-        method::broadcast(var_out, (ax == axis::X)? c1-degree : r1-degree, Operation::divide);
+        machine::broadcast(var_out, (ax == axis::X)? c1-degree : r1-degree, Operation::divide);
         return var_out;
     }
 
@@ -122,7 +122,7 @@ namespace mx_math
     Matrix<T> standard_dev(const Matrix_base<T> &mxb1, const axis ax, double degree = 0)
     {   
         Matrix<T> standard_deviation{variance(mxb1, ax, degree)};
-        method::broadcast(standard_deviation, 2.0, Operation::root);
+        machine::broadcast(standard_deviation, 2.0, Operation::root);
         return standard_deviation;
     }
 
@@ -133,7 +133,7 @@ namespace mx_math
         Matrix<T> n_dist{mxb1 - avarage(mxb1, ax)};
 
         Matrix<T> variance_squared{
-            method::broadcast(variance(mxb1, ax) + small_num, 2.0, Operation::root)
+            machine::broadcast(variance(mxb1, ax) + small_num, 2.0, Operation::root)
         };
 
         return n_dist / variance_squared;
@@ -145,8 +145,6 @@ namespace mx_math
     template<typename T>
     Matrix<T> normal_distribution(const Matrix_base<T> &mxb1)//not yet
     {
-        
-    
     }
 
     template<typename T>
