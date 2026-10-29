@@ -21,6 +21,8 @@ namespace machine
         }
         return false;
     }
+
+    
     template<typename T, typename R>
     void broadcast(Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2, const Operation op)
     {   

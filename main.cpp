@@ -11,7 +11,7 @@ int main()
         //mxn::test_view();
         //mxn::test_view_safety();
         //mxn::test_operators();
-        mxn::speed_test();
+        //mxn::speed_test();
     }
     catch(mxn::dimension_mismatch &e)
     {

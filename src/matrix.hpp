@@ -27,7 +27,7 @@ class Matrix : public Matrix_base<T>
         size_t cols{};
 
         const size_t id{lifetime_table::get_id()};
-        std::vector<T>& get_matrix(){return matrix;}
+        
 //
 //flags
 //
@@ -40,6 +40,15 @@ class Matrix : public Matrix_base<T>
 
         friend class Matrix_view<T>;
         Matrix_view<T> V(){return *this;}
+
+        std::vector<T>& get_matrix()
+        {
+            return matrix;
+        }
+        const std::vector<T>& get_matrix() const
+        {
+            return matrix;
+        }
 //
 //CONSTRUCTORS
 //  
@@ -280,6 +289,7 @@ class Matrix : public Matrix_base<T>
             }
             return mask;
         }
+
 };
 }
 //

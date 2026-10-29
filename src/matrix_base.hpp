@@ -21,21 +21,21 @@ namespace machine
     template<typename T>
     class Matrix_base
     {   
-        protected:
-            Matrix_base() = default;
-            virtual ~Matrix_base() = default;
+    protected:
+        Matrix_base() = default;
+        virtual ~Matrix_base() = default;
 
-        public:
-            virtual T& operator()(const size_t, const size_t) = 0;
-            virtual const T& operator()(const size_t, const size_t) const = 0;
+    public:
+        virtual T& operator()(const size_t, const size_t) = 0;
+        virtual const T& operator()(const size_t, const size_t) const = 0;
 
-            virtual inline size_t get_rows()const = 0;
-            virtual inline size_t get_cols()const = 0;
-            virtual inline Matrix<T> transpose()const = 0;
-            virtual inline Matrix<T> copy()const = 0;
-            virtual inline operator bool() const = 0;
-            virtual inline size_t get_id()const = 0;
-            virtual inline long long get_gen()const = 0;
+        virtual inline size_t get_rows()const = 0;
+        virtual inline size_t get_cols()const = 0;
+        virtual inline Matrix<T> transpose()const = 0;
+        virtual inline Matrix<T> copy()const = 0;
+        virtual inline operator bool() const = 0;
+        virtual inline size_t get_id()const = 0;
+        virtual inline long long get_gen()const = 0;
     };
 }
 //
@@ -74,19 +74,19 @@ namespace machine
     {   
         friend class Matrix<T>;
         friend class Matrix_view<T>;
-        public:
-            Matrix_base<T>* ptr{};
-            mask_flag(Matrix_base<T> &mxb1) : ptr{&mxb1}{}
-            mask_flag(const mask_flag<T>&) = delete;
-            mask_flag(mask_flag<T> &&other) : ptr{other.ptr} {other.ptr = nullptr;}
-            operator=(mask_flag<T>&&) = delete;
-            operator=(const mask_flag<T>&) = delete;
-            ~mask_flag() = default;
-        //
-        //comparison operators
-        //  
-            friend mask_flag<T> Matrix<T>::M();
-            friend mask_flag<T> Matrix_view<T>::M();
+    public:
+        Matrix_base<T>* ptr{};
+        mask_flag(Matrix_base<T> &mxb1) : ptr{&mxb1}{}
+        mask_flag(const mask_flag<T>&) = delete;
+        mask_flag(mask_flag<T> &&other) : ptr{other.ptr} {other.ptr = nullptr;}
+        operator=(mask_flag<T>&&) = delete;
+        operator=(const mask_flag<T>&) = delete;
+        ~mask_flag() = default;
+    //
+    //comparison operators
+    //  
+        friend mask_flag<T> Matrix<T>::M();
+        friend mask_flag<T> Matrix_view<T>::M();
     };
 
     
@@ -115,9 +115,9 @@ namespace machine
         Matrix_view<T>* ptr{};
     public:
         
-        view_assign_flag(Matrix_view<T> &mxv) : ptr{&mxv}{}
-        view_assign_flag(const Matrix_view<T> &mx) = delete;
-        view_assign_flag(Matrix_view<T> &&mx) = delete;
+        view_assign_flag(Matrix_view<T> &mxv1) : ptr{&mxv1}{}
+        view_assign_flag(const view_assign_flag<T>&) = delete;
+        view_assign_flag(view_assign_flag<T>&&) = delete;
         operator= (const view_assign_flag<T>&) = delete;
         operator= (view_assign_flag<T>&&) = delete;
         
