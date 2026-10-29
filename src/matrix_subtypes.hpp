@@ -6,18 +6,20 @@
 #include<type_traits>
 #include<set>
 
-enum class Condition
-{   
-    is_true,
-    is_false,
-    under,
-    over,
-    over_or,
-    under_or,
-    is,
-    is_not
-};
-
+namespace machine
+{
+    enum class Condition
+    {   
+        is_true,
+        is_false,
+        under,
+        over,
+        over_or,
+        under_or,
+        is,
+        is_not
+    };
+}
 class Slice
 {   
     public:
@@ -125,15 +127,3 @@ namespace std{
         using type = bool;
     };
 }
-//
-//check that view is pointing at valid matrix
-//
-
-class lifetime_table
-{
-    inline static std::set<size_t> matrix_ids;
-    inline static bool has_id(size_t id)
-    {   
-        return matrix_ids.find(id) != matrix_ids.end();
-    }
-};

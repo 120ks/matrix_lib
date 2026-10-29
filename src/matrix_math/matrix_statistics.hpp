@@ -1,6 +1,9 @@
 #pragma once
+
 #include "non_member_functions.hpp"
 #include "matrix_base.hpp"
+
+
 template<typename T>
 class Matrix;
 
@@ -64,24 +67,24 @@ namespace machine
     }
 
     template<typename T>
-    double avarage(const Matrix_base<T> &mxb1)
+    double average(const Matrix_base<T> &mxb1)
     {   
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
 
-        double avarage{sum(mxb1)};
-        return avarage / (r1*c1);
+        double average{sum(mxb1)};
+        return average / (r1*c1);
     }
 
     template<typename T>
-    Matrix<T> avarage(const Matrix_base<T> &mxb1, const axis ax)
+    Matrix<T> average(const Matrix_base<T> &mxb1, const axis ax)
     {
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
 
-        Matrix<T> avarage{sum(mxb1, (ax==axis::X)? axis::X : axis::Y)};
-        machine::broadcast(avarage, (ax==axis::X)? c1 : r1, Operation::divide);
-        return avarage;
+        Matrix<T> average{sum(mxb1, (ax==axis::X)? axis::X : axis::Y)};
+        machine::broadcast(average, (ax==axis::X)? c1 : r1, Operation::divide);
+        return average;
     }
 
     template<typename T>
@@ -89,7 +92,7 @@ namespace machine
     {   
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
-        double mean{avarage(mxb1)};
+        double mean{average(mxb1)};
 
         Matrix<T> var{mxb1};
         var -= mean;
@@ -103,7 +106,7 @@ namespace machine
     {   
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
-        Matrix<T> mean{avarage(mxb1, ax)};
+        Matrix<T> mean{average(mxb1, ax)};
         Matrix<T> var{mxb1};
         var -= mean;
         machine::broadcast(var, 2, Operation::power);
@@ -130,7 +133,7 @@ namespace machine
     Matrix<T> normal_distribution(const Matrix_base<T> &mxb1, const axis ax)
     {   
         double small_num {0.001};
-        Matrix<T> n_dist{mxb1 - avarage(mxb1, ax)};
+        Matrix<T> n_dist{mxb1 - average(mxb1, ax)};
 
         Matrix<T> variance_squared{
             machine::broadcast(variance(mxb1, ax) + small_num, 2.0, Operation::root)

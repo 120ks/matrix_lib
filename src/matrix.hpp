@@ -1,10 +1,12 @@
 #pragma once
-#include "matrix_subtypes.hpp"
+
+#include <utility>
 #include <type_traits>
 #include <cassert>
+
+#include "matrix_subtypes.hpp"
 #include "matrix_helper.hpp"
 #include "matrix_base.hpp"
-#include <utility>
 
 
 
@@ -19,21 +21,25 @@ namespace machine
 template<typename T>
 class Matrix : public Matrix_base<T>
 {   
-    inline static size_t id_count{};
-
-    friend class Matrix_view<T>;
     private:
         std::vector<T> matrix{};
         size_t rows{};
         size_t cols{};
-        size_t matrix_id{};
+
+        const size_t id{lifetime_table::get_id()};
         std::vector<T>& get_matrix(){return matrix;}
 //
-//flag cababilities
+//flags
 //
     public:
         friend class mask_flag<T>;
         mask_flag<T> M();
+
+        friend class assign_flag<T>;
+        assign_flag<T> A();
+
+        friend class Matrix_view<T>;
+        Matrix_view<T> V(){return *this;}
 //
 //CONSTRUCTORS
 //  
@@ -41,41 +47,40 @@ class Matrix : public Matrix_base<T>
         : matrix(row_count * col_count, val)
         , rows{row_count}
         , cols{col_count}
-        {}
+        {
+            lifetime_table::has_data(id);
+        }
 
         Matrix(const Matrix<T> &other)
         : matrix{other.matrix}
         , rows{other.rows}
         , cols{other.cols}
-        {}  
+        {
+            quick_throw::throw_if_no_data(other);
+
+            lifetime_table::has_data(id);
+        }  
 
         Matrix(Matrix<T> &&other) noexcept
         : matrix{std::move(other.matrix)}
         , rows{other.rows}
         , cols{other.cols}
-        {
+        {   
+            quick_throw::throw_if_no_data(other);
+
+            lifetime_table::has_data(id);
+            lifetime_table::no_data(other.id);
         }
         
-        Matrix(const Matrix_base<T> &mxb1)
-        : matrix(mxb1.get_rows() * mxb1.get_cols())
-        , rows{mxb1.get_rows()}
-        , cols{mxb1.get_cols()}
-        {   
-            auto r1{mxb1.get_rows()};
-            auto c1{mxb1.get_cols()};
-            for(size_t r{} ; r<r1 ; r++){
-                for(size_t c{} ; c<c1 ; c++){
-                    (*this)(r, c) = mxb1(r, c);
-                }
-            }
-        }
-
         template<typename R>
         Matrix(const Matrix_base<R> &mxb1)
         : matrix(mxb1.get_rows() * mxb1.get_cols())
         , rows{mxb1.get_rows()}
         , cols{mxb1.get_cols()}
-        {
+        {   
+            quick_throw::throw_if_no_data(mxb1);    
+            lifetime_table::has_data(id);
+
             auto r1{mxb1.get_rows()};
             auto c1{mxb1.get_cols()};
             for(size_t r{} ; r<r1 ; r++)
@@ -88,12 +93,14 @@ class Matrix : public Matrix_base<T>
         }
         ~Matrix()override
         {
+            lifetime_table::no_data(this->id);
         }
         Matrix(std::vector<T> vec, const size_t row_count = 0, const size_t col_count = 0)
         : matrix{std::move(vec)}
         , rows{row_count}
         , cols{col_count}
         {   
+            lifetime_table::has_data(id);
             if(rows*cols != matrix.size()){rows = 1 ; cols = matrix.size();}
         }
 
@@ -103,13 +110,12 @@ class Matrix : public Matrix_base<T>
         , rows{1}
         , cols{}
         {   
+            lifetime_table::has_data(id);
+
             auto r1{mask.get_rows()};
             auto c1{mask.get_cols()};
             
-            if(!machine::same_dims(other, mask))
-            {
-                throw dimension_mismatch(other, mask, "mxb1 must match mask (mxb2)");
-            }
+            quick_throw::throw_if_dimension_mismatch(other, mask, "mxb2 = mask");
             matrix.reserve(r1*c1);
 
             for(size_t r{} ; r<r1 ; r++)
@@ -129,25 +135,21 @@ class Matrix : public Matrix_base<T>
         Matrix_view<T> operator()(Slice r_slice, Slice c_slice)
         {   
             
-            if((r_slice.end>rows) || (c_slice.end>cols)){
-                throw slicing_mismatch(*this, r_slice, c_slice);
-            }
+            quick_throw::throw_if_slice_mismatch(*this, r_slice, c_slice);
 
             r_slice.end = (r_slice.end == 0) ? rows : r_slice.end;
             c_slice.end = (c_slice.end == 0) ? cols : c_slice.end;
-            return {this, r_slice, c_slice};
+            return {*this, r_slice, c_slice};
         }   
         Matrix_view<T> operator()(Slice r_slice)
         {   
             
-            if(r_slice.end>rows)
-            {
-                throw slicing_mismatch(*this, r_slice, sl{}, "row slicing, row_slice cant have end be more than mxb1 rows");
-            }
+            quick_throw::throw_if_slice_mismatch(*this, r_slice, Slice{}, "row slice");
 
             r_slice.end = (r_slice.end == 0) ? rows : r_slice.end;
             Slice c_slice{0, cols};
-            return {this, r_slice, c_slice};
+            
+            return {*this, r_slice, c_slice};
         }
 
         Matrix<mask_ref<T>> operator[](const Matrix_base<boolean> &mask){
@@ -157,16 +159,12 @@ class Matrix : public Matrix_base<T>
 // OVERRIDES
 //        
         inline T& operator()(const size_t row, const size_t col)override{
-            if((row>=rows) || (col>=cols)){
-                throw indexing_mismatch(std::format("index ({}, {}), matrix({}x{})", row, col, rows, cols));
-            }
+            
             return matrix[row*cols + col];
         }
         
         inline const T& operator()(const size_t row, const size_t col)const override{
-            if((row>=rows) || (col>=cols)){
-                throw indexing_mismatch(std::format("index ({}, {}), matrix({}x{})", row, col, rows, cols));
-            }
+            
             return matrix[row*cols + col];
         }
 
@@ -185,18 +183,30 @@ class Matrix : public Matrix_base<T>
         }
 
         inline Matrix<T> copy()const override
-        {
+        {   
             return Matrix<T>{*this};
         }
+
+        inline operator bool() const override{
+            return lifetime_table::check_id(id);
+        }
+
+        inline size_t get_id()const{return id;}
+
+        long long get_gen()const{return lifetime_table::get_gen(id);}
+
 //
 // ASSIGN OPERATORS
 //      
-        
         Matrix<T>& operator=(Matrix<T> mx)
         {   
+            quick_throw::throw_if_no_data(*this);
+            quick_throw::throw_if_dimension_mismatch(*this, mx);
+
             std::swap(this->matrix, mx.matrix);
             this->rows = mx.rows;
             this->cols = mx.cols;
+
             return *this;
         }
 
@@ -204,12 +214,14 @@ class Matrix : public Matrix_base<T>
         requires (!is_mask_ref_v<U>)
         Matrix<T>& operator=(const Matrix_base<R> &mxb1)
         {   
+            
+            quick_throw::throw_if_dimension_mismatch(*this, mxb1);
             Matrix<T> mx{mxb1};
             this->matrix = std::move(mx.matrix);
-            this->rows = mx.rows;
-            this->cols = mx.cols;
+
             return *this;
         }
+        
         template<typename R>
         Matrix<T>& operator=(const Matrix_base<mask_ref<R>> &mxb1)
         {   
@@ -220,9 +232,10 @@ class Matrix : public Matrix_base<T>
         requires (std::integral<R> || std::floating_point<R>)
         Matrix<T>& operator=(R val)
         {   
+            quick_throw::throw_if_no_data(*this);
             for(auto& value : this->matrix){
                 value = val;
-            }                                                                                                                
+            }
             return *this;
         }
 //
@@ -277,7 +290,9 @@ namespace machine
     template<typename T, typename R>
     requires (std::integral<R> || std::floating_point<R>)
     Matrix<boolean> make_mask(const Matrix_base<T> &mxb1, const Condition condition, const R &threshold)
-    {
+    {   
+        quick_throw::throw_if_no_data(mxb1);
+
         size_t r1{mxb1.get_rows()};
         size_t c1{mxb1.get_cols()};
         Matrix<boolean> mask{r1, c1, boolean{false}};
@@ -307,11 +322,12 @@ namespace machine
     template<typename T, typename R>
     Matrix<boolean> make_mask(const Matrix_base<T> &mxb1, const Condition condition, const Matrix_base<R> &mxb2)
     {   
+        quick_throw::throw_if_dimension_mismatch(mxb1, mxb2, "in make_mask()");
+        quick_throw::throw_if_no_data(mxb1);
+        quick_throw::throw_if_no_data(mxb2);
+
         size_t r1{mxb1.get_rows()};
         size_t c1{mxb1.get_cols()};
-        if(!machine::same_dims(mxb1, mxb2)){
-            throw dimension_mismatch(std::format("masking mxb1({}x{}), with mxb2({}x{})", r1, c1, mxb2.get_rows(), mxb2.get_cols()));
-        }
         
         Matrix<boolean> mask{r1, c1, boolean{false}};
 
@@ -335,13 +351,14 @@ namespace machine
         }
         return mask;
     }
-    //
-    //MASK_FLAG (NOTE route in some cleaner way)
-    //
+//
+//MASK_FLAG
+//
     template<typename T, typename R>
     requires (std::integral<R> || std::floating_point<R>)
     std::vector<mask_ref<T>> get_true_elements(Matrix_base<T> &mxb1, const Condition condition, const R &val)
     {   
+        quick_throw::throw_if_no_data(mxb1);
 
         size_t rows{mxb1.get_rows()};
         size_t cols{mxb1.get_cols()};
@@ -368,13 +385,15 @@ namespace machine
 
     template<typename T, typename R>
     std::vector<mask_ref<T>> get_true_elements(Matrix_base<T> &mxb1, const Condition condition, const Matrix_base<R> &mxb2)
-    {
+    {   
+        quick_throw::throw_if_dimension_mismatch(mxb1, mxb2, "in get_true_element()");
+        quick_throw::throw_if_no_data(mxb1);
+        quick_throw::throw_if_no_data(mxb2);
+
+
         size_t rows{mxb1.get_rows()};
         size_t cols{mxb1.get_cols()};
 
-        if(!machine::same_dims(mxb1, mxb2)){
-            throw dimension_mismatch(std::format("comparing mxb1({}x{}), with mxb2({}x{})", rows, cols, mxb2.get_rows(), mxb2.get_cols()));
-        }
         std::vector<mask_ref<T>> vec;
         vec.reserve(rows*cols);
         
@@ -397,8 +416,9 @@ namespace machine
         return vec;
     }
 }
-
-
+//
+//MASK FLAG COMPARISON OPERATORS
+//
 namespace machine
 {
     template<typename T, typename R>
@@ -432,11 +452,46 @@ namespace machine
         return {get_true_elements((*flag.ptr), Condition::is_not, val)};
     }
     //
-    //Make mask_flag
+    //MAKE MASK FLAG
     //
     template<typename T>
     mask_flag<T> Matrix<T>::M()
     {
+        return {*this};
+    }
+}
+//
+//ASSIGN FLAG
+//
+namespace machine
+{
+    template<typename T>
+    template<typename R>
+    Matrix<T>& assign_flag<T>::operator=(const Matrix_base<R>& mxb1)
+    {   
+        Matrix<T> temp{mxb1};
+        std::swap(ptr->matrix, temp.matrix);
+        ptr->rows = temp.rows;
+        ptr->cols = temp.cols;
+
+        lifetime_table::new_generation(ptr->id);
+        return *ptr;
+    }
+
+    template<typename T>
+    Matrix<T>& assign_flag<T>::operator=(Matrix<T> other)
+    {
+        std::swap(ptr->matrix, other.matrix);
+        ptr->rows = other.rows;
+        ptr->cols = other.cols;
+        
+        lifetime_table::new_generation(ptr->id);
+        return *ptr;
+    }
+
+    template<typename T>
+    assign_flag<T> Matrix<T>::A()
+    {   
         return {*this};
     }
 }

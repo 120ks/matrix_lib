@@ -1,6 +1,5 @@
 #pragma once
 #include "matrix_base.hpp"
-#include "matrix_base.hpp"
 #include "matrix_subtypes.hpp"
 
 
@@ -16,46 +15,65 @@ class Matrix_view : public Matrix_base<T>
     friend class Matrix;
 
     friend class mask_flag<T>;
+    friend class view_assign_flag<T>;
 
     private:
-        Matrix<T>* view_ptr{};
+        Matrix<T> *view_ptr{};
         Slice row_slice{};
         Slice col_slice{};
+        mutable size_t matrix_id{};
+        mutable long long generation{};
 //
 //CONSTRUCTORS
 //
-        Matrix_view(Matrix<T> *matrix)
-        : view_ptr{matrix}
-        , row_slice{0, matrix->get_rows()}
-        , col_slice{0, matrix->get_cols()}
+    public:
+//
+//FLAGS
+//          
+        mask_flag<T> M();
+        view_assign_flag<T> A();
+
+
+        Matrix_view(Matrix<T> &matrix)
+        : view_ptr{&matrix}
+        , row_slice{0, matrix.get_rows()}
+        , col_slice{0, matrix.get_cols()}
+        , matrix_id{matrix.id}
+        , generation{lifetime_table::get_gen(matrix.id)}
         {
-            
+            quick_throw::throw_if_no_data(matrix, " binding view to empty data");
         }
-        Matrix_view(Matrix<T> *matrix, Slice r_slice, Slice c_slice)
-        : view_ptr{matrix}
+        Matrix_view(Matrix<T> &matrix, Slice r_slice, Slice c_slice)
+        : view_ptr{&matrix}
         , row_slice{r_slice}
         , col_slice{c_slice}
+        , matrix_id{matrix.id}
+        , generation{lifetime_table::get_gen(matrix.id)}
         {
-            row_slice.end = (row_slice.end == 0) ? matrix->get_rows() : row_slice.end; 
-            col_slice.end = (col_slice.end == 0) ? matrix->get_cols() : col_slice.end; 
+            quick_throw::throw_if_no_data(matrix, " binding view to empty data");
+            row_slice.end = (row_slice.end == 0) ? matrix.get_rows() : row_slice.end; 
+            col_slice.end = (col_slice.end == 0) ? matrix.get_cols() : col_slice.end; 
+            
         }
         
         Matrix_view(const Matrix_view &other)
         : view_ptr{other.view_ptr}
         , row_slice{other.row_slice}
         , col_slice{other.col_slice}
+        , matrix_id{other.matrix_id}
+        , generation{other.generation}
         {}
 
         Matrix_view(Matrix_view &&other)noexcept
         : view_ptr{other.view_ptr}
         , row_slice{other.row_slice}
         , col_slice{other.col_slice}
+        , matrix_id{other.matrix_id}
+        , generation{other.generation}
         {other.view_ptr = nullptr;}
 
-    public:
+    
         ~Matrix_view()override = default;
-        Matrix_view& operator=(const Matrix_view &other) = delete;
-        Matrix_view& operator=(Matrix_view&& other) = delete;
 //  
 // OVERRIDES
 //        
@@ -64,22 +82,17 @@ class Matrix_view : public Matrix_base<T>
 
         inline T& operator()(const size_t row, const size_t col)override
         {   
-            if((row >= this->get_rows()) || (col >= this->get_cols())){
-                throw indexing_mismatch(std::format("index ({}, {}), matrix({}x{})", row, col, this->get_rows(), this->get_cols()));
-            }
             return (*view_ptr)(row+row_slice.begin, col+col_slice.begin);
         }
 
         inline const T& operator()(const size_t row, const size_t col)const override
         {   
-            if((row >= this->get_rows()) || (col >= this->get_cols())){
-                throw indexing_mismatch(std::format("index ({}, {}), matrix({}x{})", row, col, this->get_rows(), this->get_cols()));
-            }
             return (*view_ptr)(row+row_slice.begin, col+col_slice.begin);
         }
 
         Matrix<T> transpose()const override
         {   
+            quick_throw::throw_if_no_data(*this);
             auto rows{this->get_rows()};
             auto cols{this->get_cols()};
             Matrix<T> transposed{cols, rows};
@@ -95,33 +108,51 @@ class Matrix_view : public Matrix_base<T>
         {   
             return {*this};
         }
+
+        operator bool() const
+        {   
+            auto current_gen {lifetime_table::get_gen(matrix_id)};
+            return (current_gen == generation) && (current_gen>0);
+        }
+
+        inline size_t get_id()const{return matrix_id;}
+
+        long long get_gen()const{return generation;}
+
 //
 //SLICING AND MASKING
 //      
         Matrix_view<T> operator()(const Slice r_slice, const Slice c_slice)
         {   
-            if((r_slice.end>this->get_rows()) || (c_slice.end>this->get_cols()))
-            {
-                throw slicing_mismatch(std::format("sl({}, {}) sl({}, {}) view({}x{})", r_slice.begin, r_slice.end, c_slice.begin, c_slice.end , this->get_rows(), this->get_cols()));
-            }
-            return{view_ptr, row_slice+r_slice, col_slice+c_slice};
+            quick_throw::throw_if_slice_mismatch(*this, r_slice, c_slice);
+            return{*view_ptr, row_slice+r_slice, col_slice+c_slice};
         }
 
         Matrix_view<T> operator()(const Slice r_slice)
-        {   if(r_slice.end>this->get_rows())
-            throw slicing_mismatch(std::format("row_sl({}, {}) view({}x{})", r_slice.begin, r_slice.end, this->get_rows()));
-            return {view_ptr, row_slice+r_slice, col_slice};
+        {   
+            quick_throw::throw_if_slice_mismatch(*this, r_slice, Slice{}, "row slicing");
+            return {*view_ptr, row_slice+r_slice, col_slice};
         }
 
         Matrix<mask_ref<T>> operator[](const Matrix<boolean> &mask){ //note the  []
+            
             return{*this, mask};
         }
 //
 // ASSIGN OPERATORS
-//  
+//      
+        Matrix_view& operator=(const Matrix_view<T> &mxv){
+            broadcast(*this, mxv, Operation::equal);
+            return *this;
+        }
+        Matrix_view& operator=(Matrix_view<T> &&mxv){
+            broadcast(*this, mxv, Operation::equal);
+            return *this;
+        }
+
         template<typename R>
         Matrix_view& operator=(const Matrix_base<R> &mxb1)
-        {
+        {   
             broadcast(*this, mxb1, Operation::equal);
             return *this;
         }
@@ -133,10 +164,7 @@ class Matrix_view : public Matrix_base<T>
             broadcast(*this, val, Operation::equal);
             return *this;
         }
-//
-//FLAGS
-//          
-        mask_flag<T> M();
+
 //
 //MEMBER ARITHMETIC OPERATORS
 //      
@@ -215,14 +243,39 @@ class Matrix_view : public Matrix_base<T>
 //
 //VIEW SPECIFIC
 //
-        void reset_slice()
+        void reset_view()
         {
             row_slice.begin = 0;
             row_slice.end = view_ptr->get_rows();
             col_slice.begin = 0;
             col_slice.end = view_ptr->get_cols();
+
+            if(*view_ptr){
+                generation = lifetime_table::get_gen(matrix_id);
+                assert(generation>0); //DEBUG
+            }
         }
-    };
+
+        void force_update()
+        {
+            if(*view_ptr){
+                generation = lifetime_table::get_gen(matrix_id);
+                assert(generation>0); //DEBUG
+            }
+        }
+
+        Matrix_view& change_pointer(Matrix<T> &matrix)
+        {
+            quick_throw::throw_if_no_data(matrix);
+            view_ptr = &matrix;
+            matrix_id = matrix.id;
+            reset_view();
+            return *this;
+        }
+
+        
+
+};//class end
 }
 //
 //FLAG FUNCTIONS
@@ -233,4 +286,22 @@ namespace machine
     mask_flag<T> Matrix_view<T>::M(){
         return {*this};
     }
+
+    template<typename T>
+    view_assign_flag<T> Matrix_view<T>::A()
+    {
+        return {*this};
+    }
+
+    template<typename T>
+    Matrix_view<T>& view_assign_flag<T>::operator=(Matrix_view<T> mxv1)
+    {   
+        ptr->view_ptr = mxv1.view_ptr;
+        ptr->row_slice = mxv1.row_slice;
+        ptr->col_slice = mxv1.col_slice;
+        ptr->matrix_id = mxv1.matrix_id;
+        ptr->generation = mxv1.generation;
+
+        return *ptr;
+    }   
 }

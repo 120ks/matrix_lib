@@ -66,8 +66,9 @@ namespace machine
     {   
         using common_type = std::common_type_t<T, R>;
         Matrix<common_type>mx{mxb1};
-
+        
         mx *= val;
+        
         return mx;
     }
 

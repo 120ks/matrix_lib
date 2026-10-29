@@ -60,9 +60,7 @@ matrix *= matrix2       //modifies left side "matrix" by multiplying its element
 matrix * 2              //returns a new matrix that has all elements of matrix multiplied by 2
 matrix *= 2             //multiplies all matrix elements by 2
 
-matrix = matrix2        //copies / moves matrix2 into matrix (given that they are same type T)
-matrix<T> = matrix2<R>  //copies elements, elements will be of type The
-matrix = matrix[mask]   //copies all true elements to matrix
+matrix = matrix[mask]   //copies all true elements to matrix "makes a matrix from true elements"
 
 !mask                   //returns a opposite mask (mask is not altered) //use mask = !mask to save the opposite
 mask && mask2           //returns mask where both masks had true in same index n
@@ -100,6 +98,10 @@ matrix.M()<0;
                                 //with mask_flag, doing mx = smaller mx works, but does not record its dimensions.
 
 
+//assign_flag
+
+//view_flag
+
 
 
 //other member functions for both view and matrix
@@ -108,12 +110,43 @@ copy()                          //returns a copy of the slice / matrix
 transpose()                     //returns a transposed version of the matrix / slice
 matrix(sl{})                    //slices only rows
 concat(matrix1, matrix2, axis)  //stacks rows by cols or rows, if axis = axis::Y stacks rows, if axis::Y, cols
+if(matrix/mxv/mxb)              //if the matrix / view / derived base class obj, has a valid set of data, meaning it wont throw an exception
+
+
+//for slice only
+reset_view()                    //resets the slice so becomes a plain view of matrix
+force_update()                  //NOT RECOMMENDED, will update version to match current version of matrix, keeps slicing data.
 
 
 
-//matrix_math library
-//exists in the matrix_math namespace
-//includes statistics, machine learning, and linear algebra for matrices
+//about lifetime
+
+//for both matrix and matrix_view exists override virtual function, allowing the checking of the data with if(mx, mxv, mxb)
+//returning true if the data is valid and wont throw no data exceptions. 
+
+
+//few notes:
+    1. the flag becomes false in two scenarios:
+        - when the matrix is destructed
+        - when the matrix is moved.
+
+    2. the matrix can have its id be true when empty matrix is reconstructed, this means for example matrix = func(std::move(matrix));
+        - however all previous views lose their ability to connect to this, as the dims may have changed.
+
+    3. Every matrix has a generation or "version" where if the matrix dims change (mostly in assign flag), the generation count is upped.
+        if some matrix_view had generation = 2, and the current is 3, that view cant be used (almost always triggers exception)
+        however using mxv.reset_view() updates to current matrix, however loses all slice data.
+        if matrix is totally unusable ("no data") generation is negative
+
+    4. the assign flag matrix.A() = matrix2, is when the version changes. Otherwise the version stays the same.
+
+    5. if you are 100% sure, that the dimensions have not changed between version, you can use .force_update(); that automatically updates 
+    the version of view to match the matrix, this will only check that the version is not negative.
+
+
+
+
+
 
 
 
@@ -226,4 +259,5 @@ ideas on how to make masking more dynamic,
 4. to fully utilize slice_view, make it be a construcatable object, a lightweight and movable that has access to data.
     - allow creating it from other slice_view.
     - monitoring if the undelying matrix it points at exists.
-        - matrix -> true table, the table will destruct the object
+        - id system if a set has id that is unique for every matrix object, then if the set no longer has that id, it no longer points at anything.
+
