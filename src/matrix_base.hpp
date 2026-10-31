@@ -5,7 +5,7 @@
 #include <cmath>
 #include <random>
 #include<memory>
-
+#include <mutex>
 #include "matrix_exceptions.hpp"
 
 
@@ -122,14 +122,9 @@ namespace machine
         operator= (view_assign_flag<T>&&) = delete;
         
         Matrix_view<T>& operator=(Matrix_view<T>);
-        
+        Matrix_view<T>& operator=(Matrix<T> &matrix);
     };  
-
 }
-
-
-
-
 
 namespace machine
 {   
@@ -141,31 +136,45 @@ namespace machine
         template<typename>
         friend class assign_flag;
 
-        inline static std::vector<long long> matrix_ids{}; //make this cycle
-        inline static size_t count{};
-
-        inline static void has_data(size_t id)
-        {   
-            if(matrix_ids.size()<1000){
-                matrix_ids.resize(1000, -1);
-            }
-            if(id>=matrix_ids.size()){
-                matrix_ids.resize(matrix_ids.size()*2, -1);
-            }
-            matrix_ids[id] = 1;
-        }
+        inline static std::vector<long long> matrix_ids{0};
+        inline static std::mutex mxt;
 
         inline static void no_data(size_t id)
         {   
+            std::lock_guard<std::mutex> lock(mxt);
             matrix_ids[id] = -std::abs(matrix_ids[id]);
         }
 
-        inline static size_t get_id()
-        {
-            return count++;
+        inline static void remove_id(size_t id)
+        {   
+            std::lock_guard<std::mutex> lock(mxt);
+            matrix_ids[id] = 0;
+        }
+
+        inline static size_t get_id(const long long gen = 1)
+        {   
+            std::lock_guard<std::mutex> lock(mxt);
+            for(size_t i{} ; i<matrix_ids.size() ; i++)
+            {
+                if(matrix_ids[i] == 0){
+                    matrix_ids[i] = gen;
+                    return i;
+                }
+            }
+
+            auto i_size = matrix_ids.size();
+            matrix_ids.resize(i_size*2, 0);
+            matrix_ids[i_size] = gen;
+
+            return i_size;
         }
 
         inline static void new_generation(size_t id){
+            std::lock_guard<std::mutex> lock(mxt);
+            
+            if(id>= matrix_ids.size())
+                {throw indexing_mismatch("id index too large in new_generation()");
+            }
             if(matrix_ids[id]<0){
                 matrix_ids[id] = std::abs(matrix_ids[id]);
             }
@@ -175,11 +184,15 @@ namespace machine
         public:
             inline static bool check_id(size_t id)
             {   
+                std::lock_guard<std::mutex> lock(mxt);
+                if(id >= matrix_ids.size()){throw indexing_mismatch("id index too large in check_id()");}
                 return matrix_ids[id]>0;
             }
 
             inline static long long get_gen(size_t id)
-            {
+            {   
+                std::lock_guard<std::mutex> lock(mxt);
+                if(id >= matrix_ids.size()){throw indexing_mismatch("id index too large get_gen()");}
                 return matrix_ids[id];
             }
     };

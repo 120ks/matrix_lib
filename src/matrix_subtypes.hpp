@@ -43,7 +43,6 @@ class Slice
         }
 };
 
-
 class boolean //works like bool
 {   
     private:

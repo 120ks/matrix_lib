@@ -286,9 +286,9 @@ namespace machine
 
         std::getline(std::cin, s);
 
-        std::cout<<"move data to matrix and change view to it \n";
+        std::cout<<"move data to matrix and change view to it (can also use mxv1.A() = matrix1 to change what we are pointing at) \n";
         matrix1.A() = std::move(matrix_temp);
-        mxv1.change_pointer(matrix1);
+        mxv1.A() = (matrix1);
 
         std::getline(std::cin, s);
 

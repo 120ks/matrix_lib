@@ -21,8 +21,8 @@ class Matrix_view : public Matrix_base<T>
         Matrix<T> *view_ptr{};
         Slice row_slice{};
         Slice col_slice{};
-        mutable size_t matrix_id{};
-        mutable long long generation{};
+        size_t matrix_id{};
+        long long generation{};
 //
 //CONSTRUCTORS
 //
@@ -124,12 +124,14 @@ class Matrix_view : public Matrix_base<T>
 //      
         Matrix_view<T> operator()(const Slice r_slice, const Slice c_slice)
         {   
+            quick_throw::throw_if_no_data(*this);
             quick_throw::throw_if_slice_mismatch(*this, r_slice, c_slice);
             return{*view_ptr, row_slice+r_slice, col_slice+c_slice};
         }
 
         Matrix_view<T> operator()(const Slice r_slice)
         {   
+            quick_throw::throw_if_no_data(*this);
             quick_throw::throw_if_slice_mismatch(*this, r_slice, Slice{}, "row slicing");
             return {*view_ptr, row_slice+r_slice, col_slice};
         }
@@ -266,7 +268,7 @@ class Matrix_view : public Matrix_base<T>
 
         Matrix_view& change_pointer(Matrix<T> &matrix)
         {
-            quick_throw::throw_if_no_data(matrix);
+            quick_throw::throw_if_no_data(matrix, "cant view a matrix with no data");
             view_ptr = &matrix;
             matrix_id = matrix.id;
             reset_view();
@@ -304,4 +306,12 @@ namespace machine
 
         return *ptr;
     }   
+
+    template<typename T>
+    Matrix_view<T>& view_assign_flag<T>::operator=(Matrix<T> &matrix)
+    {   
+        ptr->change_pointer(matrix);
+        return *ptr;
+    }   
+
 }

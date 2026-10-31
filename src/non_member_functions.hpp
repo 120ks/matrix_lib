@@ -234,7 +234,6 @@ namespace machine
 
         if(ax == axis::Y)
         {
-            
             for(size_t c{} ; c<mxb1_cols ; c++)
             {   
                 size_t iter_row{0};
@@ -246,7 +245,6 @@ namespace machine
         }
         else
         {   
-            
             for(size_t r{} ; r<mxb1_rows ; r++)
             {
                 size_t iter_col{0};

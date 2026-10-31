@@ -3,6 +3,7 @@
 #include <utility>
 #include <type_traits>
 #include <cassert>
+#include <mutex>
 
 #include "matrix_subtypes.hpp"
 #include "matrix_helper.hpp"
@@ -25,7 +26,7 @@ class Matrix : public Matrix_base<T>
         std::vector<T> matrix{};
         size_t rows{};
         size_t cols{};
-
+        std::mutex;
         const size_t id{lifetime_table::get_id()};
         
 //
@@ -57,7 +58,6 @@ class Matrix : public Matrix_base<T>
         , rows{row_count}
         , cols{col_count}
         {
-            lifetime_table::has_data(id);
         }
 
         Matrix(const Matrix<T> &other)
@@ -66,8 +66,6 @@ class Matrix : public Matrix_base<T>
         , cols{other.cols}
         {
             quick_throw::throw_if_no_data(other);
-
-            lifetime_table::has_data(id);
         }  
 
         Matrix(Matrix<T> &&other) noexcept
@@ -76,8 +74,6 @@ class Matrix : public Matrix_base<T>
         , cols{other.cols}
         {   
             quick_throw::throw_if_no_data(other);
-
-            lifetime_table::has_data(id);
             lifetime_table::no_data(other.id);
         }
         
@@ -88,7 +84,6 @@ class Matrix : public Matrix_base<T>
         , cols{mxb1.get_cols()}
         {   
             quick_throw::throw_if_no_data(mxb1);    
-            lifetime_table::has_data(id);
 
             auto r1{mxb1.get_rows()};
             auto c1{mxb1.get_cols()};
@@ -102,14 +97,13 @@ class Matrix : public Matrix_base<T>
         }
         ~Matrix()override
         {
-            lifetime_table::no_data(this->id);
+            lifetime_table::remove_id(this->id);
         }
         Matrix(std::vector<T> vec, const size_t row_count = 0, const size_t col_count = 0)
         : matrix{std::move(vec)}
         , rows{row_count}
         , cols{col_count}
         {   
-            lifetime_table::has_data(id);
             if(rows*cols != matrix.size()){rows = 1 ; cols = matrix.size();}
         }
 
@@ -119,8 +113,6 @@ class Matrix : public Matrix_base<T>
         , rows{1}
         , cols{}
         {   
-            lifetime_table::has_data(id);
-
             auto r1{mask.get_rows()};
             auto c1{mask.get_cols()};
             

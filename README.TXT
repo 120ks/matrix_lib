@@ -3,7 +3,9 @@
 //
 
 Allow for dynamic operating, viewing, slicing and masking and all of these mixed and combined.
-the goal is to allows pretty much all that make semantically some sense (not always but enough to be realistically possible)
+User friendly and fast to produce syntax for quick and idiomatic developing
+automatic view safety management
+
 
 
 //
@@ -91,16 +93,43 @@ matrix<ref> = matrix2<ref>  //copies all of the refs from matrix2, note that thi
 
 
 //mask_flag
+
+    //used to "skip" the creation of mask object, when you have a simple condition of single comparison operator, use .M()
+
 matrix.M <0 = 10                //directly creates a ptr array of all values of matrix under 0, and assigns them as 10
 matrix(sl, sl).M() < 0 = 0      //makes all values under 0  = 0 inside the slice
-matrix.M()<0;
-                                //using flag (mask_flag) to mask is under the hood faster than matrix[mask], as this requires 2x less iterating (no mask needed)
-                                //with mask_flag, doing mx = smaller mx works, but does not record its dimensions.
+matrix_view.M()<matrix_view2 *=2 ;              //makes all the values covered by the slice that are under the second matrix_view under times 2.
+
+
+                                
 
 
 //assign_flag
 
+    //allows user to change dimensions of matrix or change the view to other view or, make it point at other matrix (must be non const)
+    //usage for saving different data into same matrix that has different dimensions
+    //or changing the view to other view or other matrix.
+
+    //the assign flag will change the version status of the matrix when it is used, this will make all views unable to access its data unless reset, or force updated
+
+matrix.A() = matrix2  //changes matrix to match matrix2 exactly
+matrix.A() = matrix_view //makes matrix same as the view and its slice
+matrix.A() = matrix_base(derived)  //makes matrix match matrix_base interface
+
+matrix_view.A() = matrix_view2 //makes matrix_view a copy or moves matrix_view2 to it
+matrix_view.A() = matrix   // matrix_view is now pointing at matrix
+
+
 //view_flag
+
+    //returns a view of matrix (this is matrix specific)
+    //used when want to move information of matrix to multiple functions or objects at same time
+    //also sometimes cleaner to do auto mxv = matrix.V();
+    
+func(matrix.V()) //gives the view as parameters, as most functions take either view or matrix, this allows keeping matrix actual data elsewhere
+
+
+
 
 
 
@@ -142,14 +171,6 @@ force_update()                  //NOT RECOMMENDED, will update version to match 
 
     5. if you are 100% sure, that the dimensions have not changed between version, you can use .force_update(); that automatically updates 
     the version of view to match the matrix, this will only check that the version is not negative.
-
-
-
-
-
-
-
-
 
 
 
