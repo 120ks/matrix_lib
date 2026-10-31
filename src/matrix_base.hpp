@@ -4,9 +4,9 @@
 #include <cassert>
 #include <cmath>
 #include <random>
-#include<memory>
+#include <memory>
 #include <mutex>
-#include "matrix_exceptions.hpp"
+
 
 
 
@@ -24,7 +24,6 @@ namespace machine
     protected:
         Matrix_base() = default;
         virtual ~Matrix_base() = default;
-
     public:
         virtual T& operator()(const size_t, const size_t) = 0;
         virtual const T& operator()(const size_t, const size_t) const = 0;
@@ -36,6 +35,8 @@ namespace machine
         virtual inline operator bool() const = 0;
         virtual inline size_t get_id()const = 0;
         virtual inline long long get_gen()const = 0;
+        virtual inline std::mutex &get_mutex() = 0;
+
     };
 }
 //
@@ -124,76 +125,38 @@ namespace machine
         Matrix_view<T>& operator=(Matrix_view<T>);
         Matrix_view<T>& operator=(Matrix<T> &matrix);
     };  
-}
-
-namespace machine
-{   
-    class lifetime_table
+    
+    template<typename T>
+    class expression_lock_matrix
     {   
-        template<typename>
-        friend class Matrix;
-
-        template<typename>
-        friend class assign_flag;
-
-        inline static std::vector<long long> matrix_ids{0};
-        inline static std::mutex mxt;
-
-        inline static void no_data(size_t id)
-        {   
-            std::lock_guard<std::mutex> lock(mxt);
-            matrix_ids[id] = -std::abs(matrix_ids[id]);
-        }
-
-        inline static void remove_id(size_t id)
-        {   
-            std::lock_guard<std::mutex> lock(mxt);
-            matrix_ids[id] = 0;
-        }
-
-        inline static size_t get_id(const long long gen = 1)
-        {   
-            std::lock_guard<std::mutex> lock(mxt);
-            for(size_t i{} ; i<matrix_ids.size() ; i++)
-            {
-                if(matrix_ids[i] == 0){
-                    matrix_ids[i] = gen;
-                    return i;
-                }
-            }
-
-            auto i_size = matrix_ids.size();
-            matrix_ids.resize(i_size*2, 0);
-            matrix_ids[i_size] = gen;
-
-            return i_size;
-        }
-
-        inline static void new_generation(size_t id){
-            std::lock_guard<std::mutex> lock(mxt);
-            
-            if(id>= matrix_ids.size())
-                {throw indexing_mismatch("id index too large in new_generation()");
-            }
-            if(matrix_ids[id]<0){
-                matrix_ids[id] = std::abs(matrix_ids[id]);
-            }
-            matrix_ids[id] = matrix_ids[id]+1;
-        };
-
+        Matrix<T>* ptr{};
         public:
-            inline static bool check_id(size_t id)
-            {   
-                std::lock_guard<std::mutex> lock(mxt);
-                if(id >= matrix_ids.size()){throw indexing_mismatch("id index too large in check_id()");}
-                return matrix_ids[id]>0;
-            }
-
-            inline static long long get_gen(size_t id)
-            {   
-                std::lock_guard<std::mutex> lock(mxt);
-                if(id >= matrix_ids.size()){throw indexing_mismatch("id index too large get_gen()");}
-                return matrix_ids[id];
-            }
+            expression_lock_matrix(Matrix<T> &matrix);
+            expression_lock_matrix(const expression_lock_matrix<T>&) = delete;
+            expression_lock_matrix(expression_lock_matrix<T>&&) = delete;
+            ~expression_lock_matrix();
+            operator= (const expression_lock_matrix<T>&) = delete;
+            operator= (expression_lock_matrix<T>&&) = delete;
+            inline Matrix<T>& L() {return *ptr;}
+        
     };
+
+    template<typename T>
+    class expression_lock_view
+    {   
+        Matrix_view<T>* ptr{};
+        public:
+            expression_lock_view(Matrix_view<T> &mxv);
+            expression_lock_view(const expression_lock_view<T>&) = delete;
+            expression_lock_view(expression_lock_view<T>&&) = delete;
+            ~expression_lock_view();
+            operator= (const expression_lock_view<T>&) = delete;
+            operator= (expression_lock_view<T>&&) = delete;
+            inline Matrix_view<T>& L() {return *ptr;}
+            operator Matrix_view<T>&() {return *ptr;}
+    };
+
+
 }
+
+

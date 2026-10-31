@@ -9,9 +9,10 @@ int main()
     {
         //mxn::test_masking();
         //mxn::test_view();
-        mxn::test_view_safety();
+        //mxn::test_view_safety();
         //mxn::test_operators();
         //mxn::speed_test();
+        mxn::test_expression_lock();
     }
     catch(mxn::dimension_mismatch &e)
     {

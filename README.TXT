@@ -199,6 +199,20 @@ allowing the user to catch errors that would not trigger an exception normally.
 
 
 
+//
+//OPTIMIZATION speed...
+//
+
+Checking validity and locking indexing operators would provide a huge bottleneck in speed, therefore the basic indexing operator() is free from this check
+
+//thread safe funktioita
+
+all broadcast operations
+all assign operators
+
+
+
+
 
 
 //
@@ -281,4 +295,6 @@ ideas on how to make masking more dynamic,
     - allow creating it from other slice_view.
     - monitoring if the undelying matrix it points at exists.
         - id system if a set has id that is unique for every matrix object, then if the set no longer has that id, it no longer points at anything.
+
+
 

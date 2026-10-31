@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <iostream>
+#include <thread>
 
 namespace machine
 {
@@ -517,29 +518,30 @@ namespace machine
         std::cout<<"one iter is is all arithmetic operatos, mx *= 1, mx *=mx, mx*1 mx*mx for all arithmetics"<<std::endl;
         std::cout<<"with assign on all binary operations"<<std::endl;
         matrix1 = 1;
+        auto mxb = matrix1.V();
         start = std::chrono::steady_clock::now();
 
         for(size_t i{} ; i<iterations ; i++)
         {   
-            matrix1 += 1;
-            matrix1 -= 1;
-            matrix1 *= 1;
-            matrix1 /= 1;
+            mxb += 1;
+            mxb -= 1;
+            mxb *= 1;
+            mxb /= 1;
 
-            matrix1 += matrix2;
-            matrix1 -= matrix2;
-            matrix1 *= matrix2;
-            matrix1 /= matrix2;
+            mxb += matrix2;
+            mxb -= matrix2;
+            mxb *= matrix2;
+            mxb /= matrix2;
 
-            matrix1 = matrix1 + 1;
-            matrix1 = matrix1 - 1;
-            matrix1 = matrix1 * 1;
-            matrix1 = matrix1 / 1;
+            mxb = matrix1 + 1;
+            mxb = matrix1 - 1;
+            mxb = matrix1 * 1;
+            mxb = matrix1 / 1;
 
-            matrix1 = matrix1 + matrix2;
-            matrix1 = matrix1 - matrix2;
-            matrix1 = matrix1 * matrix2;
-            matrix1 = matrix1 / matrix2;
+            mxb = matrix1 + matrix2;
+            mxb = matrix1 - matrix2;
+            mxb = matrix1 * matrix2;
+            mxb = matrix1 / matrix2;
 
             if(i % step == 0)
             {   
@@ -565,3 +567,73 @@ namespace machine
     }
 }
 
+
+namespace machine
+{
+    void test_expression_lock()
+    {   
+        std::cout<<"testing expression lock\n"<<std::endl;
+        std::cout<<"press enter to continue\n"<<std::endl;
+
+        std::string s{};
+
+        std::getline(std::cin, s);
+
+        Matrix<int> matrix1{10, 10, 0};
+        randomize(matrix1, 100, 1000);
+        std::cout<<matrix1;
+
+        std::cout<<"using expression lock flag .E() with .L(), we can lock the matrix/view from other functions that try to access it"<<std::endl;
+        std::cout<<"this allows the whole expression to evaluate without midpoint changes from other threads"<<std::endl;
+        std::cout<<"to test this we'll make them do different expressions thousand time that always evaluate to 1, if no data is mixed inbetween"<<std::endl;
+        std::getline(std::cin, s);
+        std::cout<<"if the next number is 0, the test is succesfull as both expressions evaluated in their own time"<<std::endl;
+        std::getline(std::cin, s);
+        auto mxv = matrix1.V();
+
+        
+        static int total{};
+        auto f_ptr1 = [&matrix1]()
+        {   
+            try
+            {
+                for(int i{} ; i<1000 ; i++)
+                {
+                    
+                    total += ((((matrix1.E().L()+=10))/=matrix1)(0,0));
+                }
+            }
+            catch(std::exception &e)
+            {
+                std::cout<<"f_ptr1\n";
+                std::cout<<e.what();
+            }
+        };
+
+        auto f_ptr2 =  [&mxv]()
+        {   
+            try
+            {
+                for(int i{} ; i<1000 ; i++)
+                {
+                    total -=(((mxv(sl{4, 0}, sl{4, 0}).E().L() += 1) /= mxv(sl{4, 0}, sl{4, 0}))(0,0));
+                }
+            }
+            catch(std::exception &e)
+            {   
+                std::cout<<"f_ptr2\n";
+                std::cout<<e.what();
+            }
+        };
+        
+        
+        std::thread t1(f_ptr1);
+        std::thread t2(f_ptr2);
+    
+        t1.join();
+        t2.join();
+        
+        std::cout<<'\n'<<total;
+    }
+
+}

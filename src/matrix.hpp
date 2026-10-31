@@ -26,9 +26,8 @@ class Matrix : public Matrix_base<T>
         std::vector<T> matrix{};
         size_t rows{};
         size_t cols{};
-        std::mutex;
         const size_t id{lifetime_table::get_id()};
-        
+        std::mutex mxt;
 //
 //flags
 //
@@ -41,6 +40,9 @@ class Matrix : public Matrix_base<T>
 
         friend class Matrix_view<T>;
         Matrix_view<T> V(){return *this;}
+
+        friend class expression_lock_matrix<T>;
+        expression_lock_matrix<T> E(){return *this;}
 
         std::vector<T>& get_matrix()
         {
@@ -165,7 +167,7 @@ class Matrix : public Matrix_base<T>
         }
         
         inline const T& operator()(const size_t row, const size_t col)const override{
-            
+
             return matrix[row*cols + col];
         }
 
@@ -195,6 +197,7 @@ class Matrix : public Matrix_base<T>
         inline size_t get_id()const{return id;}
 
         long long get_gen()const{return lifetime_table::get_gen(id);}
+        std::mutex& get_mutex() override{return mxt;}
 
 //
 // ASSIGN OPERATORS
@@ -495,5 +498,20 @@ namespace machine
     assign_flag<T> Matrix<T>::A()
     {   
         return {*this};
+    }
+}
+
+namespace machine
+{   
+    template<typename T>
+    expression_lock_matrix<T>::expression_lock_matrix(Matrix<T> &matrix)
+    : ptr{&matrix}
+    {
+        ptr->mxt.lock();
+    }
+    template<typename T>
+    expression_lock_matrix<T>::~expression_lock_matrix()
+    {
+        ptr->mxt.unlock();
     }
 }

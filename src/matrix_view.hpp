@@ -16,6 +16,7 @@ class Matrix_view : public Matrix_base<T>
 
     friend class mask_flag<T>;
     friend class view_assign_flag<T>;
+    friend class expression_lock_view<T>;
 
     private:
         Matrix<T> *view_ptr{};
@@ -32,7 +33,7 @@ class Matrix_view : public Matrix_base<T>
 //          
         mask_flag<T> M();
         view_assign_flag<T> A();
-
+        expression_lock_view<T> E();
 
         Matrix_view(Matrix<T> &matrix)
         : view_ptr{&matrix}
@@ -84,12 +85,10 @@ class Matrix_view : public Matrix_base<T>
         {   
             return (*view_ptr)(row+row_slice.begin, col+col_slice.begin);
         }
-
         inline const T& operator()(const size_t row, const size_t col)const override
         {   
             return (*view_ptr)(row+row_slice.begin, col+col_slice.begin);
         }
-
         Matrix<T> transpose()const override
         {   
             quick_throw::throw_if_no_data(*this);
@@ -108,16 +107,16 @@ class Matrix_view : public Matrix_base<T>
         {   
             return {*this};
         }
-
         operator bool() const
         {   
             auto current_gen {lifetime_table::get_gen(matrix_id)};
             return (current_gen == generation) && (current_gen>0);
         }
-
         inline size_t get_id()const{return matrix_id;}
 
         long long get_gen()const{return generation;}
+
+        std::mutex& get_mutex() override {return view_ptr->mxt;}
 
 //
 //SLICING AND MASKING
@@ -137,13 +136,13 @@ class Matrix_view : public Matrix_base<T>
         }
 
         Matrix<mask_ref<T>> operator[](const Matrix<boolean> &mask){ //note the  []
-            
             return{*this, mask};
         }
 //
 // ASSIGN OPERATORS
 //      
-        Matrix_view& operator=(const Matrix_view<T> &mxv){
+        Matrix_view& operator=(const Matrix_view<T> &mxv)
+        {
             broadcast(*this, mxv, Operation::equal);
             return *this;
         }
@@ -267,16 +266,13 @@ class Matrix_view : public Matrix_base<T>
         }
 
         Matrix_view& change_pointer(Matrix<T> &matrix)
-        {
+        {   
             quick_throw::throw_if_no_data(matrix, "cant view a matrix with no data");
             view_ptr = &matrix;
             matrix_id = matrix.id;
             reset_view();
             return *this;
         }
-
-        
-
 };//class end
 }
 //
@@ -291,6 +287,11 @@ namespace machine
 
     template<typename T>
     view_assign_flag<T> Matrix_view<T>::A()
+    {
+        return {*this};
+    }
+    template<typename T>
+    expression_lock_view<T> Matrix_view<T>::E()
     {
         return {*this};
     }
@@ -314,4 +315,16 @@ namespace machine
         return *ptr;
     }   
 
+    template<typename T>
+    expression_lock_view<T>::expression_lock_view(Matrix_view<T> &mxv)
+    : ptr{&mxv}
+    {
+        ptr->view_ptr->get_mutex().lock();
+    }
+
+    template<typename T>
+    expression_lock_view<T>::~expression_lock_view()
+    {
+        ptr->view_ptr->get_mutex().unlock();
+    }
 }

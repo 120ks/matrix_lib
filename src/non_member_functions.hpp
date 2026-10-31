@@ -195,12 +195,13 @@ namespace machine
     {
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
-
         for(size_t r{} ; r<r1 ; r++){
             os<<"| ";
             for(size_t c{} ; c<c1 ; c++){
-                if(c<c1-1){os<<std::fixed<<std::setprecision(2)<<mxb1(r, c)<<" | ";}
-                else{os<<mxb1(r, c);}
+                if(c<c1-1){
+                    os<<std::fixed<<std::setprecision(2)<<mxb1(r, c)<<" | ";
+                }
+                else{os<<std::fixed<<std::setprecision(2)<<mxb1(r, c);}
             }
             os<<" |\n";
         }

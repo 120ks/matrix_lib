@@ -53,15 +53,15 @@ namespace machine
     template<typename T>
     double sum(const Matrix_base<T> &mxb1)
     {
-        Matrix<T> mx{1, 1, 0};
+        Matrix<double> mx{1, 1, 0};
         machine::broadcast(mx, mxb1, Operation::add);
         return mx(0,0);
     }
 
     template<typename T>
-    Matrix<T> sum(const Matrix_base<T> &mxb1, const axis ax)
+    Matrix<double> sum(const Matrix_base<T> &mxb1, const axis ax)
     {   
-        Matrix<T> mx = (ax == axis::X)? Matrix<T>{mxb1.get_rows(), 1} : Matrix<T>{1, mxb1.get_cols()};
+        Matrix<double> mx = (ax == axis::X)? Matrix<double>{mxb1.get_rows(), 1} : Matrix<double>{1, mxb1.get_cols()};
         machine::broadcast(mx, mxb1, Operation::add);
         return mx;
     }
@@ -72,17 +72,21 @@ namespace machine
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
 
+        if(r1*c1 == 0){
+            throw std::runtime_error("cols or rows are 0 in average");
+        }
+
         double average{sum(mxb1)};
         return average / (r1*c1);
     }
 
     template<typename T>
-    Matrix<T> average(const Matrix_base<T> &mxb1, const axis ax)
+    Matrix<double> average(const Matrix_base<T> &mxb1, const axis ax)
     {
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
 
-        Matrix<T> average{sum(mxb1, (ax==axis::X)? axis::X : axis::Y)};
+        Matrix<double> average{sum(mxb1, (ax==axis::X)? axis::X : axis::Y)};
         machine::broadcast(average, (ax==axis::X)? c1 : r1, Operation::divide);
         return average;
     }
@@ -94,7 +98,7 @@ namespace machine
         auto c1{mxb1.get_cols()};
         double mean{average(mxb1)};
 
-        Matrix<T> var{mxb1};
+        Matrix<double> var{mxb1};
         var -= mean;
         machine::broadcast(var, 2, Operation::power);
         double var_out{sum(var)};
@@ -102,15 +106,15 @@ namespace machine
     }
 
     template<typename T>
-    Matrix<T> variance(const Matrix_base<T> &mxb1, const axis ax, double degree = 0)
+    Matrix<double> variance(const Matrix_base<T> &mxb1, const axis ax, double degree = 0)
     {   
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
-        Matrix<T> mean{average(mxb1, ax)};
-        Matrix<T> var{mxb1};
+        Matrix<double> mean{average(mxb1, ax)};
+        Matrix<double> var{mxb1};
         var -= mean;
         machine::broadcast(var, 2, Operation::power);
-        Matrix<T> var_out {sum(var, ax)};
+        Matrix<double> var_out {sum(var, ax)};
         machine::broadcast(var_out, (ax == axis::X)? c1-degree : r1-degree, Operation::divide);
         return var_out;
     }
@@ -122,9 +126,9 @@ namespace machine
     }
 
     template<typename T>
-    Matrix<T> standard_dev(const Matrix_base<T> &mxb1, const axis ax, double degree = 0)
+    Matrix<double> standard_dev(const Matrix_base<T> &mxb1, const axis ax, double degree = 0)
     {   
-        Matrix<T> standard_deviation{variance(mxb1, ax, degree)};
+        Matrix<double> standard_deviation{variance(mxb1, ax, degree)};
         machine::broadcast(standard_deviation, 2.0, Operation::root);
         return standard_deviation;
     }
@@ -133,9 +137,9 @@ namespace machine
     Matrix<T> normal_distribution(const Matrix_base<T> &mxb1, const axis ax)
     {   
         double small_num {0.001};
-        Matrix<T> n_dist{mxb1 - average(mxb1, ax)};
+        Matrix<double> n_dist{mxb1 - average(mxb1, ax)};
 
-        Matrix<T> variance_squared{
+        Matrix<double> variance_squared{
             machine::broadcast(variance(mxb1, ax) + small_num, 2.0, Operation::root)
         };
 
