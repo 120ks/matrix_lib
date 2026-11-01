@@ -4,7 +4,7 @@
 
 Allow for dynamic operating, viewing, slicing and masking and all of these mixed and combined.
 User friendly and fast to produce syntax for quick and idiomatic developing
-automatic view safety management
+view safety with version tracking system
 
 
 
@@ -101,9 +101,6 @@ matrix(sl, sl).M() < 0 = 0      //makes all values under 0  = 0 inside the slice
 matrix_view.M()<matrix_view2 *=2 ;              //makes all the values covered by the slice that are under the second matrix_view under times 2.
 
 
-                                
-
-
 //assign_flag
 
     //allows user to change dimensions of matrix or change the view to other view or, make it point at other matrix (must be non const)
@@ -127,6 +124,9 @@ matrix_view.A() = matrix   // matrix_view is now pointing at matrix
     //also sometimes cleaner to do auto mxv = matrix.V();
     
 func(matrix.V()) //gives the view as parameters, as most functions take either view or matrix, this allows keeping matrix actual data elsewhere
+//in multithread functions programs the dot(mxb, mxb) function it is recommended to given
+//dot(matrix.V(), matrix2.V()) as this will give the function two copies of the matrices, while slower, than normal
+//it frees the matrices for other places after this.
 
 
 

@@ -171,39 +171,38 @@ namespace machine
     }
 
     template<typename T>
-    requires std::is_arithmetic_v<T>
+    requires (std::is_arithmetic_v<T> || is_mask_ref_v<T> || std::is_same_v<T, boolean>) 
     std::ostream& operator<<(std::ostream& os, const Matrix_base<T> &mxb1)
     {   
         
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
         for(size_t r{} ; r<r1 ; r++){
-            os<<"| ";
             for(size_t c{} ; c<c1 ; c++){
                 //auto s = std::to_string(mxb1(r, c)); //make show only N chars for uniform view
                 if(c<c1-1){os<<std::fixed<<std::setprecision(2)<<mxb1(r, c)<<" | ";}
-                else{os<<mxb1(r, c);}
+                else{os<<std::fixed<<std::setprecision(2)<<mxb1(r, c);}
             }
-            os<<" |\n";
+            os<<'\n';
         }
         os<<'\n';
         return os;
     }
 
     template<typename T>
+    requires (!std::is_arithmetic_v<T> && !std::is_same_v<T, boolean> && !is_mask_ref_v<T>)
     std::ostream& operator<<(std::ostream& os, const Matrix_base<T> &mxb1)
     {
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
         for(size_t r{} ; r<r1 ; r++){
-            os<<"| ";
             for(size_t c{} ; c<c1 ; c++){
                 if(c<c1-1){
-                    os<<std::fixed<<std::setprecision(2)<<mxb1(r, c)<<" | ";
+                    os<<std::fixed<<std::setprecision(2)<<mxb1(r, c);
                 }
-                else{os<<std::fixed<<std::setprecision(2)<<mxb1(r, c);}
+                else{os<<mxb1(r, c);}
             }
-            os<<" |\n";
+            os<<'\n';
         }
         os<<'\n';
         return os;

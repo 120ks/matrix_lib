@@ -2,4 +2,5 @@
 #include "matrix_statistics.hpp"
 #include "matrix_learn.hpp"
 #include "matrix_linear.hpp"
+#include "matrix_threaded.hpp"
 

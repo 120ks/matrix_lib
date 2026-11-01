@@ -26,8 +26,6 @@ namespace machine
     template<typename T, typename R>
     void broadcast(Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2, const Operation op)
     {   
-        quick_throw::throw_if_no_data(mxb1);
-        quick_throw::throw_if_no_data(mxb2);
 
         auto total_rows1{mxb1.get_rows()}, total_rows2{mxb2.get_rows()};
         auto total_cols1{mxb1.get_cols()}, total_cols2{mxb2.get_cols()};
@@ -77,8 +75,7 @@ namespace machine
     requires (std::integral<R> || std::floating_point<R>)
     void broadcast(Matrix_base<T> &mxb1, const R &value, const Operation op)
     {   
-        quick_throw::throw_if_no_data(mxb1);
-
+        
         if((mxb1.get_rows() == 0) || (mxb1.get_cols() == 0)) {return;}
 
         if(op == Operation::divide || op == Operation::root){
@@ -110,10 +107,6 @@ namespace machine
     template<typename T, typename R>
     Matrix<T> broadcast(Matrix_base<T> &&mxb1, const Matrix_base<R> &mxb2, const Operation op)
     {   
-        if(!mxb1 || !mxb2) {
-            throw data_view_exception("in broadcast");
-        }   
-
         broadcast(mxb1, mxb2, op);
         return {std::move(mxb1)};
     }
@@ -121,8 +114,6 @@ namespace machine
     template<typename T, typename R>
     Matrix<T> broadcast(Matrix_base<T> &&mxb1, const R &value, const Operation op)
     {   
-        quick_throw::throw_if_no_data(mxb1);
-
         broadcast(mxb1, value, op);
         return {std::move(mxb1)};
     }
@@ -143,12 +134,18 @@ namespace machine
 
         inline static void no_data(size_t id)
         {   
+            if(id>= matrix_ids.size())
+                {throw indexing_mismatch("id index too large in no_data()");
+            }
             std::lock_guard<std::mutex> lock(mxt);
             matrix_ids[id] = -std::abs(matrix_ids[id]);
         }
 
         inline static void remove_id(size_t id)
         {   
+            if(id>= matrix_ids.size())
+                {throw indexing_mismatch("id index too large in remove_id()");
+            }
             std::lock_guard<std::mutex> lock(mxt);
             matrix_ids[id] = 0;
         }
@@ -167,7 +164,6 @@ namespace machine
             auto i_size = matrix_ids.size();
             matrix_ids.resize(i_size*2, 0);
             matrix_ids[i_size] = gen;
-
             return i_size;
         }
 

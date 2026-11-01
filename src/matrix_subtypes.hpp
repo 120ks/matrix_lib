@@ -6,6 +6,8 @@
 #include<type_traits>
 #include<set>
 
+#include "matrix_base.hpp"
+
 namespace machine
 {
     enum class Condition
@@ -43,28 +45,31 @@ class Slice
         }
 };
 
-class boolean //works like bool
-{   
-    private:
-        bool value{};
-    public:
-        inline boolean(const bool val = false) : value{val}{}
-        inline boolean(const boolean &other) : value{other.value}{}
-        ~boolean() = default;
-        operator bool() const {
-            return value;
-        }
-        inline boolean& operator=(bool val){
-            value = val;
-            return *this;
-        }
-        inline boolean& operator=(const boolean &other){
-            value = other;
-            return *this;
-        }
-        inline bool operator!(){return !value;}
-};
+namespace machine
+{
+    class boolean //works like bool
+    {   
+        private:
+            bool value{};
+        public:
+            inline boolean(const bool val = false) : value{val}{}
+            inline boolean(const boolean &other) : value{other.value}{}
+            ~boolean() = default;
+            operator bool() const {
+                return value;
+            }
+            inline boolean& operator=(bool val){
+                value = val;
+                return *this;
+            }
+            inline boolean& operator=(const boolean &other){
+                value = other;
+                return *this;
+            }
 
+            inline bool operator!(){return !value;}
+    };
+}
 template<typename T>
 class mask_ref
 {   
@@ -118,11 +123,11 @@ namespace std{
     };
 
     template<>
-    struct common_type<boolean, bool>{
+    struct common_type<machine::boolean, bool>{
         using type = bool;
     };
     template<>
-    struct common_type<bool, boolean>{
+    struct common_type<bool, machine::boolean>{
         using type = bool;
     };
 }

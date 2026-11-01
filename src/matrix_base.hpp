@@ -119,43 +119,30 @@ namespace machine
         view_assign_flag(Matrix_view<T> &mxv1) : ptr{&mxv1}{}
         view_assign_flag(const view_assign_flag<T>&) = delete;
         view_assign_flag(view_assign_flag<T>&&) = delete;
-        operator= (const view_assign_flag<T>&) = delete;
-        operator= (view_assign_flag<T>&&) = delete;
+        view_assign_flag<T>& operator= (const view_assign_flag<T>&) = delete;
+        view_assign_flag<T>& operator= (view_assign_flag<T>&&) = delete;
         
         Matrix_view<T>& operator=(Matrix_view<T>);
         Matrix_view<T>& operator=(Matrix<T> &matrix);
     };  
     
-    template<typename T>
-    class expression_lock_matrix
+    class matrix_lock
     {   
-        Matrix<T>* ptr{};
+        std::mutex* ptr{};
+        bool has_locked{};
         public:
-            expression_lock_matrix(Matrix<T> &matrix);
-            expression_lock_matrix(const expression_lock_matrix<T>&) = delete;
-            expression_lock_matrix(expression_lock_matrix<T>&&) = delete;
-            ~expression_lock_matrix();
-            operator= (const expression_lock_matrix<T>&) = delete;
-            operator= (expression_lock_matrix<T>&&) = delete;
-            inline Matrix<T>& L() {return *ptr;}
+            template<typename T>
+            matrix_lock(Matrix_base<T> &mxb);
+
+            matrix_lock(const matrix_lock&) = delete;
+            matrix_lock(matrix_lock&&) = delete;
+            ~matrix_lock();
+            matrix_lock& operator=(const matrix_lock&) = delete;
+            matrix_lock& operator=(matrix_lock&&) = delete;
+            void unlock();
+            void lock();
         
     };
-
-    template<typename T>
-    class expression_lock_view
-    {   
-        Matrix_view<T>* ptr{};
-        public:
-            expression_lock_view(Matrix_view<T> &mxv);
-            expression_lock_view(const expression_lock_view<T>&) = delete;
-            expression_lock_view(expression_lock_view<T>&&) = delete;
-            ~expression_lock_view();
-            operator= (const expression_lock_view<T>&) = delete;
-            operator= (expression_lock_view<T>&&) = delete;
-            inline Matrix_view<T>& L() {return *ptr;}
-            operator Matrix_view<T>&() {return *ptr;}
-    };
-
 
 }
 

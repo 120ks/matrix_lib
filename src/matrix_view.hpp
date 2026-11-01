@@ -16,7 +16,7 @@ class Matrix_view : public Matrix_base<T>
 
     friend class mask_flag<T>;
     friend class view_assign_flag<T>;
-    friend class expression_lock_view<T>;
+    friend class matrix_lock;
 
     private:
         Matrix<T> *view_ptr{};
@@ -31,9 +31,18 @@ class Matrix_view : public Matrix_base<T>
 //
 //FLAGS
 //          
-        mask_flag<T> M();
-        view_assign_flag<T> A();
-        expression_lock_view<T> E();
+        mask_flag<T> M()
+        {
+            return *this;
+        }
+        view_assign_flag<T> A()
+        {
+            return *this;
+        }
+        matrix_lock L()
+        {
+            return {this->view_ptr};
+        }
 
         Matrix_view(Matrix<T> &matrix)
         : view_ptr{&matrix}
@@ -280,21 +289,7 @@ class Matrix_view : public Matrix_base<T>
 //
 namespace machine
 {
-    template<typename T>
-    mask_flag<T> Matrix_view<T>::M(){
-        return {*this};
-    }
-
-    template<typename T>
-    view_assign_flag<T> Matrix_view<T>::A()
-    {
-        return {*this};
-    }
-    template<typename T>
-    expression_lock_view<T> Matrix_view<T>::E()
-    {
-        return {*this};
-    }
+   
 
     template<typename T>
     Matrix_view<T>& view_assign_flag<T>::operator=(Matrix_view<T> mxv1)
@@ -314,17 +309,4 @@ namespace machine
         ptr->change_pointer(matrix);
         return *ptr;
     }   
-
-    template<typename T>
-    expression_lock_view<T>::expression_lock_view(Matrix_view<T> &mxv)
-    : ptr{&mxv}
-    {
-        ptr->view_ptr->get_mutex().lock();
-    }
-
-    template<typename T>
-    expression_lock_view<T>::~expression_lock_view()
-    {
-        ptr->view_ptr->get_mutex().unlock();
-    }
 }

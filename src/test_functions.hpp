@@ -36,8 +36,8 @@ namespace machine
 
         std::getline(std::cin, s);
 
-        std::cout<<"matrix1 values under 2 will be 3"<<std::endl;
-        matrix1[matrix1<2] = 3;
+        std::cout<<"matrix1 values under 2.5 will be 3"<<std::endl;
+        matrix1[matrix1<2.5] = 3;
         std::cout<<matrix1<<'\n'; 
 
         std::getline(std::cin, s);
@@ -71,7 +71,7 @@ namespace machine
 
         std::cout<<"same but reversed should make all in matrix1 be 0 (!)"<<std::endl;
         matrix1[!((matrix1<matrix2) && (matrix1>3))] = 0;
-
+        std::cout<<matrix1;
         std::getline(std::cin, s);
 
         std::cout<<"gladly .copy() was used to create a copy of matrix1"<<std::endl;
@@ -479,13 +479,20 @@ namespace machine
     }
 
     void speed_test(size_t rows = 256, size_t cols = 256, size_t iterations = 50)
-    {
+    {   
+        std::cout<<"speed testing"<<std::endl;
+        std::cout<<"press enter to continue\n"<<std::endl;
+
+        std::string s{};
+
+        std::getline(std::cin, s);
+
         Matrix<double> matrix1{rows, cols, 1};
         Matrix<double> matrix2{matrix1};
         std::cout<<std::format("testing speed, matrix is ({}x{}), with {} iterations per course", rows, cols, iterations)<<std::endl<<std::endl;
         
         std::cout<<"one iter is dot product"<<std::endl;
-
+        std::getline(std::cin, s);
         auto step = std::max(size_t{1}, (iterations / 100));
         auto start = std::chrono::steady_clock::now();
 
@@ -513,10 +520,14 @@ namespace machine
         std::cout<<"progress: 100%\n";
         auto end_duration = std::chrono::steady_clock::now() - start;
         std::cout<<"avg per iteration -> "<< std::chrono::duration_cast<f_millis>(end_duration / iterations).count()<<"_ms\n"<<std::endl<<std::endl;
+        std::cout<<"press enter to continue\n"<<std::endl;
+        std::getline(std::cin, s);
 
         std::cout<<"operations +-/*"<<std::endl;
         std::cout<<"one iter is is all arithmetic operatos, mx *= 1, mx *=mx, mx*1 mx*mx for all arithmetics"<<std::endl;
         std::cout<<"with assign on all binary operations"<<std::endl;
+        std::getline(std::cin, s);
+        
         matrix1 = 1;
         auto mxb = matrix1.V();
         start = std::chrono::steady_clock::now();
@@ -564,76 +575,184 @@ namespace machine
         end_duration = std::chrono::steady_clock::now() - start;
         std::cout<<"avg per iteration -> "<< std::chrono::duration_cast<f_millis>(end_duration / iterations).count()<<"_ms\n";
         std::cout<<"avg per operation -> "<< std::chrono::duration_cast<f_millis>((end_duration / iterations)/16).count()<<"_ms\n"<<std::endl<<std::endl;
+        std::cout<<"press enter to continue\n"<<std::endl;
+
+        std::getline(std::cin, s);
+        
+        std::cout<<"there is also the threaded dot product that splits the workload"<<std::endl;
+        std::cout<<"one iter is dot product, with 3 threads"<<std::endl;
+        std::getline(std::cin, s);
+
+        start = std::chrono::steady_clock::now();
+
+        for(size_t i{} ; i<iterations ; i++)
+        {
+            matrix1 = machine::threaded::tr_dot(matrix1, matrix2, 3);
+
+            if(i % step == 0)
+            {   
+                if(i==0){
+                    continue;
+                }
+                if(i>step){
+                    std::cout<<"\033[A\033[2K\033[A\033[2K";
+                }
+                using f_millis = std::chrono::duration<double, std::milli>;
+                std::cout<<"progress: "<< 100 * (static_cast<double>(i)/iterations)<<"%\n";
+                auto duration = std::chrono::steady_clock::now() - start;
+                std::cout<<"avg per iteration -> "<< std::chrono::duration_cast<f_millis>(duration / i).count()<<"_ms\n";
+                
+            }
+        }
+        std::cout<<"\033[A\033[2K\033[A\033[2K";
+        std::cout<<"progress: 100%\n";
+        end_duration = std::chrono::steady_clock::now() - start;
+        std::cout<<"avg per iteration -> "<< std::chrono::duration_cast<f_millis>(end_duration / iterations).count()<<"_ms\n"<<std::endl<<std::endl;
+
     }
 }
+
 
 
 namespace machine
 {
-    void test_expression_lock()
+    void test_threads()
     {   
-        std::cout<<"testing expression lock\n"<<std::endl;
+        std::cout<<"thread testing\n"<<std::endl;
         std::cout<<"press enter to continue\n"<<std::endl;
-
         std::string s{};
-
         std::getline(std::cin, s);
 
-        Matrix<int> matrix1{10, 10, 0};
-        randomize(matrix1, 100, 1000);
-        std::cout<<matrix1;
+        Matrix<double> matrix1{10, 10, 1};
+        auto view1 = matrix1.V();
+        auto view2 = matrix1.V();
 
-        std::cout<<"using expression lock flag .E() with .L(), we can lock the matrix/view from other functions that try to access it"<<std::endl;
-        std::cout<<"this allows the whole expression to evaluate without midpoint changes from other threads"<<std::endl;
-        std::cout<<"to test this we'll make them do different expressions thousand time that always evaluate to 1, if no data is mixed inbetween"<<std::endl;
-        std::getline(std::cin, s);
-        std::cout<<"if the next number is 0, the test is succesfull as both expressions evaluated in their own time"<<std::endl;
-        std::getline(std::cin, s);
-        auto mxv = matrix1.V();
 
-        
-        static int total{};
-        auto f_ptr1 = [&matrix1]()
-        {   
-            try
-            {
-                for(int i{} ; i<1000 ; i++)
-                {
-                    
-                    total += ((((matrix1.E().L()+=10))/=matrix1)(0,0));
-                }
-            }
-            catch(std::exception &e)
-            {
-                std::cout<<"f_ptr1\n";
-                std::cout<<e.what();
+        std::cout<<"the matrix only uses locking in the view safety management to prevent id mismatches\n";
+        std::cout<<"otherwise the matrix lib does not lock any matrices for freedom to do a multitude of programs\n";
+        std::cout<<"it does however offer few tools to help locking the matrix/view for when needed\n"<<std::endl;
+        std::getline(std::cin, s);
+        std::cout<<"matrix.get_mutex() returns the lock of matrix \n";
+        std::cout<<"matrix_view.get_mutex() returns the lock of matrix view it is pointing at\n";
+        std::getline(std::cin, s);
+        std::cout<<"running two sets of different operations on the matrix 1000 times, if the matrix is all ones the test worked \n";
+        std::getline(std::cin, s);
+
+        auto f_ptr1 = [&view1](){
+            for(int i{} ; i<1000 ; i++){
+                std::lock_guard<std::mutex> lock(view1.get_mutex());
+                view1 *= 3;
+                view1 /= 3;
+                view1 += 10;
+                view1 -=10;
             }
         };
 
-        auto f_ptr2 =  [&mxv]()
-        {   
-            try
+        auto f_ptr2 = [&view1](){
+            for(int i{} ; i<1000 ; i++)
             {
-                for(int i{} ; i<1000 ; i++)
-                {
-                    total -=(((mxv(sl{4, 0}, sl{4, 0}).E().L() += 1) /= mxv(sl{4, 0}, sl{4, 0}))(0,0));
-                }
-            }
-            catch(std::exception &e)
-            {   
-                std::cout<<"f_ptr2\n";
-                std::cout<<e.what();
+                std::lock_guard<std::mutex> lock(view1.get_mutex());
+                view1 -=5;
+                view1 += 5;
+                view1 /= 6;
+                view1 *= 6;
             }
         };
-        
-        
+
         std::thread t1(f_ptr1);
         std::thread t2(f_ptr2);
-    
+
         t1.join();
         t2.join();
-        
-        std::cout<<'\n'<<total;
+
+        std::cout<<matrix1;
+
+        std::cout<<"also we can test what happens when we create multiple matrices at the same time\n";
+        std::cout<<"the id system should lock and allow id's to be unique\n";
+
+        std::getline(std::cin, s);
+
+        std::vector<Matrix<int>> v1;
+        std::vector<Matrix<int>> v2;
+        std::vector<Matrix<int>> v3;
+    
+        std::cout<<"the id system should lock and allow id's to be unique\n";
+        std::cout<<"if the id's are all different, the lock worked\n";
+
+        std::getline(std::cin, s);
+
+        auto f_ptr3 = [&](){
+             for(int i{} ; i<10 ; i++)
+            {   
+                v1.emplace_back(10,1,0);
+            }
+        };
+        auto f_ptr4 = [&](){
+             for(int i{} ; i<10 ; i++)
+            {
+                v2.emplace_back(1,1,0);
+            }
+        };
+        auto f_ptr5 = [&](){
+             for(int i{} ; i<10 ; i++)
+            {
+                v3.emplace_back(1,1,0);
+            }
+        };
+
+        std::thread t3(f_ptr3);
+        std::thread t4(f_ptr4);
+        std::thread t5(f_ptr5);
+
+        t3.join();
+        t4.join();
+        t5.join();
+
+        std::set<size_t> set{};
+
+        for(auto& m : v1){
+            
+            set.insert(m.get_id());
+            auto num = m.get_id();
+            std::cout<<num<<' ';
+            
+        }
+        std::cout<<'\n';
+        for(auto& m : v2){
+            set.insert(m.get_id());
+            auto num = m.get_id();
+            std::cout<<num<<' ';
+            
+        }
+
+        std::cout<<'\n';
+        for(auto& m : v3){
+            set.insert(m.get_id());
+            auto num = m.get_id();
+            std::cout<<num<<' ';
+        }
+        std::cout<<'\n';
+        std::cout<<"there are "<<set.size()<<" unique id's out of 30 matrices created";
     }
 
+
+    void devep_test_ground()
+    {
+        Matrix<float> matrix1{10, 10, 1};
+        Matrix<float> matrix2{10, 10, 2};
+
+        randomize(matrix1, 1, 10);
+        randomize(matrix2, 1, 5);
+
+        std::cout<<matrix1;
+        std::cout<<matrix2;
+
+        auto start = std::chrono::steady_clock::now();
+
+        
+
+    }
+
+
 }
+

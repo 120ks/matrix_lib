@@ -41,8 +41,8 @@ class Matrix : public Matrix_base<T>
         friend class Matrix_view<T>;
         Matrix_view<T> V(){return *this;}
 
-        friend class expression_lock_matrix<T>;
-        expression_lock_matrix<T> E(){return *this;}
+        friend class matrix_lock;
+        matrix_lock L(){return *this;}
 
         std::vector<T>& get_matrix()
         {
@@ -236,7 +236,6 @@ class Matrix : public Matrix_base<T>
         requires (std::integral<R> || std::floating_point<R>)
         Matrix<T>& operator=(R val)
         {   
-            quick_throw::throw_if_no_data(*this);
             for(auto& value : this->matrix){
                 value = val;
             }
@@ -285,7 +284,26 @@ class Matrix : public Matrix_base<T>
             return mask;
         }
 
+        T* begin(){
+            return &matrix[0];
+        }
+        T* end(){
+            return &matrix[0]+rows*cols;
+        }
+
 };
+}
+
+namespace machine
+{
+    template <typename T>
+    struct is_matrix : std::false_type {};
+
+    template <typename U>
+    struct is_matrix<Matrix<U>> : std::true_type {};
+
+    template <typename T>
+    inline constexpr bool is_matrix_v = is_matrix<T>::value;
 }
 //
 //CREATING BOOLEANS
@@ -301,14 +319,14 @@ namespace machine
         size_t r1{mxb1.get_rows()};
         size_t c1{mxb1.get_cols()};
         Matrix<boolean> mask{r1, c1, boolean{false}};
-
+        
         using common_type = std::common_type_t<T, R>;
-        auto N_threshold {static_cast<common_type> (threshold)};
+        auto N_threshold = threshold;
 
         for(size_t r{} ; r<r1 ; r++){
             for(size_t c{} ; c<c1 ; c++)
             {
-                auto current_element = static_cast<common_type>(mxb1(r, c));
+                const auto &current_element = (mxb1(r, c));
                 switch(condition)
                 {   
                 case(Condition::is_true):   mask(r, c) = true; break;
@@ -327,20 +345,21 @@ namespace machine
     template<typename T, typename R>
     Matrix<boolean> make_mask(const Matrix_base<T> &mxb1, const Condition condition, const Matrix_base<R> &mxb2)
     {   
+
         quick_throw::throw_if_dimension_mismatch(mxb1, mxb2, "in make_mask()");
         quick_throw::throw_if_no_data(mxb1);
         quick_throw::throw_if_no_data(mxb2);
 
         size_t r1{mxb1.get_rows()};
         size_t c1{mxb1.get_cols()};
-        
         Matrix<boolean> mask{r1, c1, boolean{false}};
 
         for(size_t r{} ; r<r1 ; r++){
             for(size_t c{} ; c<c1 ; c++){
 
-                auto mxb1_current = mxb1(r, c);
-                auto mxb2_current = mxb2(r, c);
+                const auto& mxb1_current = mxb1(r, c);
+                const auto& mxb2_current = mxb2(r, c);
+
                 switch(condition)
                 {   
                 case(Condition::is_true):   mask(r, c) = true; break;
@@ -356,6 +375,8 @@ namespace machine
         }
         return mask;
     }
+
+
 //
 //MASK_FLAG
 //
@@ -504,14 +525,24 @@ namespace machine
 namespace machine
 {   
     template<typename T>
-    expression_lock_matrix<T>::expression_lock_matrix(Matrix<T> &matrix)
-    : ptr{&matrix}
-    {
-        ptr->mxt.lock();
+    matrix_lock::matrix_lock(Matrix_base<T> &matrix)
+    : ptr{matrix.get_mutex()}
+    {   
+        has_locked = true;
+        ptr->lock();
     }
-    template<typename T>
-    expression_lock_matrix<T>::~expression_lock_matrix()
+    matrix_lock::~matrix_lock()
     {
-        ptr->mxt.unlock();
+        ptr->unlock();
+        has_locked = false;
+    }
+    void matrix_lock::lock()
+    {   
+        if(!has_locked){
+            ptr->lock();
+        }
+    }
+    void matrix_lock::unlock(){
+        ptr->unlock();
     }
 }

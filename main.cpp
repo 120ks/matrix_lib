@@ -11,8 +11,10 @@ int main()
         //mxn::test_view();
         //mxn::test_view_safety();
         //mxn::test_operators();
-        //mxn::speed_test();
-        mxn::test_expression_lock();
+        //mxn::speed_test(200, 200, 10);
+        mxn::test_threads();
+        //mxn::devep_test_ground();
+
     }
     catch(mxn::dimension_mismatch &e)
     {

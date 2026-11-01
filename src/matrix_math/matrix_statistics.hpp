@@ -160,25 +160,29 @@ namespace machine
     template<typename T>
     Matrix<T> robust_scale();
 
-    template<typename T>
-    void randomize(Matrix_base<T> &mxb1, const T min, const T max){
+    template<typename T, typename R, typename U>
+    void randomize(Matrix_base<T> &mxb1, const R min, const U max){
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
 
+        auto min_v = static_cast<T>(min);
+        auto max_v = static_cast<T>(max);
+        
         for(size_t r{} ; r<r1 ; r++){
             for(size_t c{} ; c<c1 ; c++)
             {   
                 if constexpr(std::is_integral_v<T>){
-                    std::uniform_int_distribution distrib(min, max);
+                    std::uniform_int_distribution distrib(min_v, max_v);
                     mxb1(r, c) = distrib(generator);
                 }
                 else
                 {
-                    std::uniform_real_distribution<T> distrib(min, max);
+                    std::uniform_real_distribution<T> distrib(min_v, max_v);
                     mxb1(r, c) = distrib(generator);
                 }
             }
         }
+        
     }
 
 };

@@ -1,6 +1,5 @@
 #pragma once
 #include "matrix_statistics.hpp"
-#include <mutex>
 
 namespace machine
 {   
