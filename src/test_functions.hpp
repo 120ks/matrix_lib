@@ -739,16 +739,16 @@ namespace machine
     void devep_test_ground()
     {
         Matrix<float> matrix1{10, 10, 1};
-        Matrix<float> matrix2{10, 10, 2};
+        Matrix<float> matrix2{10, 10, 1};
 
-        randomize(matrix1, 1, 10);
-        randomize(matrix2, 1, 5);
+        
 
         std::cout<<matrix1;
         std::cout<<matrix2;
 
-        auto start = std::chrono::steady_clock::now();
+        std::cout<<(matrix1 += matrix2);
 
+        
         
 
     }

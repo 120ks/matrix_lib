@@ -27,32 +27,56 @@ namespace machine
     void broadcast(Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2, const Operation op)
     {   
 
-        auto total_rows1{mxb1.get_rows()}, total_rows2{mxb2.get_rows()};
-        auto total_cols1{mxb1.get_cols()}, total_cols2{mxb2.get_cols()};
+        auto rows1{mxb1.get_rows()}, rows2{mxb2.get_rows()};
+        auto cols1{mxb1.get_cols()}, cols2{mxb2.get_cols()};
 
-        if((total_rows1 == 0) || (total_cols1 == 0)) {return;}
-        if((total_rows2 == 0) || (total_cols2 == 0)) {return;}
+        if((rows1 == 0) || (cols1 == 0)) {return;}
+        if((rows2 == 0) || (cols2 == 0)) {return;}
         
         if(op == Operation::divide || op == Operation::root){
             if(has_zero(mxb2)){throw std::runtime_error("division/root of mxb1 with mxb2-> contains 0");}
         }
 
         //check that dims are divisible
-        if((total_cols1 % total_cols2 != 0) && (total_cols2%total_cols1 != 0)){
+        if((cols1 % cols2 != 0) && (cols2%cols1 != 0)){
             throw dimension_mismatch(mxb1, mxb2, "cols must be divisible");
         }
-        if((total_rows1 % total_rows2 != 0) && (total_rows2%total_rows1 != 0)){
+        if((rows1 % rows2 != 0) && (rows2%rows1 != 0)){
             throw dimension_mismatch(mxb1, mxb2, "rows must be divisible");
         }
-        size_t max_row{std::max(total_rows1, total_rows2)};
-        size_t max_col{std::max(total_cols1, total_cols2)};
+        size_t max_row{std::max(rows1, rows2)};
+        size_t max_col{std::max(cols1, cols2)};
         
         size_t mxb1_row{}, mxb2_row{};
         size_t mxb1_col{}, mxb2_col{};
-        for(size_t r{0} ; r<max_row ; r++)
-        {   
-            for(size_t c{0} ; c<max_col ; c++)
-            {
+
+        if(same_dims(mxb1, mxb2)){
+            for(size_t r{0} ; r<max_row ; r++){  
+                for(size_t c{0} ; c<max_col ; c++){
+                    switch(op){
+                    case(Operation::multiply)   : mxb1(r, c) *= mxb2(r, c); break;
+                    case(Operation::divide)     : mxb1(r, c) /= mxb2(r, c); break;
+                    case(Operation::add)        : mxb1(r, c) += mxb2(r, c); break;
+                    case(Operation::substract)  : mxb1(r, c) -= mxb2(r, c); break;
+                    case(Operation::equal)      : mxb1(r, c) =  mxb2(r, c); break;
+
+
+                    case(Operation::power)      : mxb1(r, c) =  std::pow(static_cast<double>(mxb1(r, c)), mxb2(r, c)); break;
+                    case(Operation::root)       : mxb1(r, c) =  std::pow(static_cast<double>(mxb1(r, c)), 1.0 / mxb2(r, c)); break;
+                    }                
+                }
+            }
+            return;
+        }
+
+
+        for(size_t r{0} ; r<max_row ; r++){  
+            mxb1_row = r % rows1;
+            mxb2_row = r % rows2; 
+
+            for(size_t c{0} ; c<max_col ; c++){
+                mxb1_col = c % cols1;
+                mxb2_col = c % cols2;
                 switch(op){
                 case(Operation::multiply)   : mxb1(mxb1_row, mxb1_col) *= mxb2(mxb2_row, mxb2_col); break;
                 case(Operation::divide)     : mxb1(mxb1_row, mxb1_col) /= mxb2(mxb2_row, mxb2_col); break;
@@ -63,12 +87,8 @@ namespace machine
 
                 case(Operation::power)      : mxb1(mxb1_row, mxb1_col) =  std::pow(static_cast<double>(mxb1(mxb1_row, mxb1_col)), mxb2(mxb2_row, mxb2_col)); break;
                 case(Operation::root)       : mxb1(mxb1_row, mxb1_col) =  std::pow(static_cast<double>(mxb1(mxb1_row, mxb1_col)), 1.0 / mxb2(mxb2_row, mxb2_col)); break;
-                }
-                (mxb1_col < total_cols1 - 1) ? mxb1_col++ : mxb1_col = 0; 
-                (mxb2_col < total_cols2 - 1) ? mxb2_col++ : mxb2_col = 0;
+                }                
             }
-            (mxb1_row < total_rows1 - 1) ? mxb1_row++ : mxb1_row = 0;
-            (mxb2_row < total_rows2 - 1) ? mxb2_row++ : mxb2_row = 0;
         }
     }
     template<typename T, typename R>
