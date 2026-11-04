@@ -4,8 +4,9 @@
 namespace machine
 {   
     template<typename T>
-    Matrix<T> dot(const Matrix<T> &mx1, const Matrix<T> &mx2)
-    {   
+    Matrix<T> matmul(const Matrix<T> &mx1, const Matrix<T> &mx2)
+    {       
+        
         auto rows_1{mx1.get_rows()};
         auto cols_1{mx1.get_cols()};
 
@@ -14,7 +15,7 @@ namespace machine
         
         if(cols_1 != rows_2)
         {
-            throw dimension_mismatch(mx1, mx2, "dot product, mx1 cols must match mx2 rows");
+            throw dimension_mismatch(mx1, mx2, "matrix_multiplication (matmul), mx1 cols must match mx2 rows");
         }
         Matrix<T> mx3{rows_1, cols_2};
         
@@ -38,7 +39,7 @@ namespace machine
     }
 
     template<typename T, typename R>
-    auto dot(Matrix<T> mx1, Matrix<R> mx2) //copy for better cache when view / slice
+    auto matmul(Matrix<T> mx1, Matrix<R> mx2) //copy for better cache when view / slice
     {   
         auto rows_1{mx1.get_rows()};
         auto cols_1{mx1.get_cols()};
@@ -49,7 +50,7 @@ namespace machine
 
         if(cols_1 != rows_2)
         {
-            throw dimension_mismatch(mx1, mx2, "dot product, mxb1 cols must match mxb2 rows");
+            throw dimension_mismatch(mx1, mx2, "matrix_multiplication (matmul), mx1 cols must match mx2 rows");
         }
 
         Matrix<std::common_type_t<T, R>> mx3{rows_1, cols_2};

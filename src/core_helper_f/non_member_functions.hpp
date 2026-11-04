@@ -1,6 +1,7 @@
 #pragma once
-#include "matrix.hpp"
-#include "matrix_view.hpp"
+
+
+#include "mask.hpp"
 #include <iostream>
 #include <iomanip>
 #include <type_traits>
@@ -10,39 +11,16 @@
 namespace machine
 {
     template<typename T> class Matrix;
-    //
-    //NON MEMBER ARITHMETIC OPERATORS
-    //
+    
     template<typename T, typename R>
-    auto operator+(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-    {   
-        using common_type = std::common_type_t<T, R>;
-        Matrix<common_type>mx{mxb1};
-        mx += mxb2;
-        return mx;
-    }
-
-    template<typename T, typename R>
-    requires std::integral<R> || std::floating_point<R>
-    auto operator+(const Matrix_base<T> &mxb1, const R &val)
+    auto operator+(const Matrix_base<T> &mxb1, const R &val) //handles both 
     {   
         using common_type = std::common_type_t<T, R>;
         Matrix<common_type>mx{mxb1};
         mx += val;
         return mx;
     }
-
     template<typename T, typename R>
-    auto operator-(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-    {   
-        using common_type = std::common_type_t<T, R>;
-        Matrix<common_type>mx{mxb1};
-        mx -= mxb2;
-        return mx;
-    }
-
-    template<typename T, typename R>
-    requires std::integral<R> || std::floating_point<R>
     auto operator-(const Matrix_base<T> &mxb1, const R &val)
     {   
         using common_type = std::common_type_t<T, R>;
@@ -50,18 +28,7 @@ namespace machine
         mx -= val;
         return mx;
     }
-
     template<typename T, typename R>
-    auto operator*(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-    {   
-        using common_type = std::common_type_t<T, R>;
-        Matrix<common_type>mx{mxb1};
-        mx *= mxb2;
-        return mx;
-    }
-
-    template<typename T, typename R>
-    requires std::integral<R> || std::floating_point<R>
     auto operator*(const Matrix_base<T> &mxb1, const R &val)
     {   
         using common_type = std::common_type_t<T, R>;
@@ -71,19 +38,7 @@ namespace machine
         
         return mx;
     }
-
     template<typename T, typename R>
-    auto operator/(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
-    {   
-        using common_type = std::common_type_t<T, R>;
-        Matrix<common_type>mx{mxb1};
-        
-        mx /= mxb2;
-        return mx;
-    }
-
-    template<typename T, typename R>
-    requires std::integral<R> || std::floating_point<R>
     auto operator/(const Matrix_base<T> &mxb1, const R &val)
     {   
         using common_type = std::common_type_t<T, R>;

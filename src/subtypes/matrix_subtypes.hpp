@@ -1,12 +1,36 @@
 #pragma once
-
-#include<cstddef>
-#include<iostream>
-#include<cassert>
 #include<type_traits>
-#include<set>
 
-#include "matrix_base.hpp"
+
+//
+//enums and statics
+//
+namespace machine
+{
+    enum class Operation
+    {
+        multiply,
+        divide,
+        add,
+        substract,
+        modulo,
+        equal,
+        power,
+        root
+    };
+
+    enum axis
+    {
+        X, //0
+        Y //1
+    };
+    
+    static std::random_device random_device;
+    static std::mt19937 generator(random_device());
+
+    
+
+}
 
 namespace machine
 {
@@ -130,4 +154,15 @@ namespace std{
     struct common_type<bool, machine::boolean>{
         using type = bool;
     };
+}
+
+
+//
+//using for ease
+//
+namespace std{
+
+    using sl = Slice;
+
+
 }

@@ -5,7 +5,6 @@
 #include <format>
 
 #include "matrix_base.hpp"
-#include "matrix_subtypes.hpp"
 
 namespace machine
 {   
@@ -55,6 +54,7 @@ namespace machine
             data_view_exception(const size_t id, std::string message = "")
             : std::runtime_error(std::format("trying to access data that does not exist in matrix with id {}: ", id) + message){}
     };
+
 }
 
 namespace machine
@@ -70,6 +70,34 @@ namespace machine
     {
         return ((mxb1.get_rows() == rows) && mxb1.get_cols() == cols);
     }
+    
+    template<typename T, typename R>
+    bool divisible(const Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
+    {
+        if((mxb1.get_rows() % mxb2.get_rows() != 0) && (mxb2.get_rows() & mxb1.get_rows() != 0)){return false;}
+        if((mxb1.get_cols() % mxb2.get_cols() != 0) && (mxb2.get_cols() & mxb1.get_cols() != 0)){return false;}
+
+        return true;
+    }
+    template<typename T>
+    bool row_or_col_is(const Matrix_base<T> &mxb1){
+        return ((mxb1.get_rows() == 1) || (mxb1.get_cols() == 1));
+    }
+
+    template<typename T>
+    bool has_zero(const Matrix_base<T> &mxb1)
+    {   
+        auto r1{mxb1.get_rows()};
+        auto c1{mxb1.get_cols()};
+
+        for(size_t r{} ; r<r1 ; r++){
+            for(size_t c{} ; c<c1 ; c++){
+                if(mxb1(r, c) == 0){return true;}
+            }
+        }
+        return false;
+    }
+
 }
 
 namespace machine::quick_throw

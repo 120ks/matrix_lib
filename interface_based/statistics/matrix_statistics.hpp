@@ -2,6 +2,7 @@
 
 #include "non_member_functions.hpp"
 #include "matrix_base.hpp"
+#include "broadcast.hpp"
 
 
 template<typename T>
@@ -184,7 +185,6 @@ namespace machine
         }
         
     }
-
 };
 
 

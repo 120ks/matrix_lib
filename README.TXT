@@ -138,6 +138,8 @@ func(matrix.V()) //gives the view as parameters, as most functions take either v
 copy()                          //returns a copy of the slice / matrix
 transpose()                     //returns a transposed version of the matrix / slice
 matrix(sl{})                    //slices only rows
+matrix[sl{}]                    //slices only cols //note [] for cols and () for rows
+
 concat(matrix1, matrix2, axis)  //stacks rows by cols or rows, if axis = axis::Y stacks rows, if axis::Y, cols
 if(matrix/mxv/mxb)              //if the matrix / view / derived base class obj, has a valid set of data, meaning it wont throw an exception
 
@@ -194,107 +196,5 @@ this is used to calculate sums, statistics, section multiplication etc.
 the rows / cols in operation with  matrix =/*+-= matrix2 must be divisible, so doing (3x3) * (4x6) is not allowed 3%4 or 4%3 != 0,
 but (3x3) * (6*18) is allowed, this design is meant as a a way to better debug semantic errors, with the cost of slight loss of functionality.
 allowing the user to catch errors that would not trigger an exception normally.
-
-
-
-
-
-//
-//OPTIMIZATION speed...
-//
-
-Checking validity and locking indexing operators would provide a huge bottleneck in speed, therefore the basic indexing operator() is free from this check
-
-//thread safe funktioita
-
-all broadcast operations
-all assign operators
-
-
-
-
-
-
-//
-//ideas
-//
-
-//
-//1
-//
-to allow using a (bool loop)
-
-if true (by default false) it would instead of using the maximum possible row count, loop trough continuously its own index (if it is smaller than the maximum)
-
-for example
-
-
-2x2 + 4x4 assuming first has all 0 and second all 1
-
-would produce [1, 3][3, 9] with loop true it would become [4, 4][4, 4] as when c = 2(over bounds) it would again become 0, then 1, same for r
-this would need to dynamically fit into the broadcast as creating overload for this makes a messy code (~100 lines) that only changes a little.
-
-//done with modulos operation // changed to work using checks and iteration++
-
-
-//
-//2
-//
-to allow better use in ml, introducing something like matrix_learning (mxl) that could be used to perform forward and backward dynamic calculations (chain rule)´
-also functions like softmax, layer_norm, activation functions (of varying type) propability calculation functions etc.
-core flow would be that it would only work with interfaces from classes like Method. Allowing it to exist as a different header that can be imported if wanted.
-
-//done implementing matrix_learn header
-
-//
-//3
-//
-allow masking of matrices that would allow changing certain elements based on conditions like over, under, is, not etc.
-this could be done with a mask_object that would return the actual value ref or a fake value like 0 if the object meets the criteria as all operations use
-the operator() for indexing, prechecking the value could allow for a smoother way do conditional math and would introduce logical operators.
-
-//done using mask object and mask_view object, however changed the logic with index array that hold the index of all true elements. (no extra iterations)
-
-
-
-//
-// 4
-//
-
-ideas on how to make masking more dynamic,
-
-1. overloading it on operator[] seperates it cleanly from other overloads for example matrix[matrix < 0] = 0; //done
-
-
-2. potentially making sliced matrix convert straight away into mask_view, makes it easier to read that way and takes out zero functionality, as chain slicing,
-    can be already achieved with 1 (and calculations);  //looking into this with flag system.
-
-3. instead of creating a seperate mask_view, make the function return a Matrix of Nx1 ptr's to these elements, this way it inherits the full functionality of a masked view object
-    and only needed is a Matrix(mxb1<T>, Matrix<boolean>) constructor for masks made from slice_view with this, A flag system will be implemented that "flips" functionality in 
-    operators .M() makes a direct mask from ptr objects.
-    
-    also because this ptr matrix only exists as r-value in expression, doing auto matrix = matrix.M()>0 = 2; would only copy the matrix object. will have to look into this, 
-    as it would require saving them as ptr, and matrix currently indexes by returning pure ref (matrix[row * cols + c])
-    
-    potential solutions are 
-        1. make it use std::reference wrapper, or other ptr wrapper system.
-        2. make a second array that works using a flag
-        3. make matrix typename T, typename R = T, this way we can set T to be the actual type, but array the second, making it so that the return wont suffer.
-        4. wrapper class, kind of defeats the purpose, but this would be very lightweight that would just use the * in operator() indexing.
-        //all solutions must have this, must be able to return T& when indexed, must be sliceable, and when matrix = mask_view, the mask_view is copied into matrix.
-
-        //std::reference or second array is likely cleanest solution, best case scenario is that new members would only be added to base (flags)
-
-
-        //// DONE by converting matrix to handle mask_view using mask_ref<T> objects, and using .M() to route the mask directly into same matrix / slice
-
-        matrix_slice.M() > 0 = 1 //works
-
-
-4. to fully utilize slice_view, make it be a construcatable object, a lightweight and movable that has access to data.
-    - allow creating it from other slice_view.
-    - monitoring if the undelying matrix it points at exists.
-        - id system if a set has id that is unique for every matrix object, then if the set no longer has that id, it no longer points at anything.
-
 
 

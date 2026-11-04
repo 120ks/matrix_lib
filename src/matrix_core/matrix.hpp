@@ -2,13 +2,10 @@
 
 #include <utility>
 #include <type_traits>
-#include <cassert>
 #include <mutex>
 
-#include "matrix_subtypes.hpp"
-#include "matrix_helper.hpp"
-#include "matrix_base.hpp"
-
+#include "lifetime_table.hpp"
+#include "broadcast.hpp"
 
 
 template <typename T>
@@ -16,9 +13,10 @@ class Matrix_view;
 
 template<typename>
 class mask_flag;
-
 namespace machine
-{
+{   
+    
+
 template<typename T>
 class Matrix : public Matrix_base<T>
 {   
@@ -33,10 +31,10 @@ class Matrix : public Matrix_base<T>
 //
     public:
         friend class mask_flag<T>;
-        mask_flag<T> M();
+        mask_flag<T> M(){return *this;}
 
         friend class assign_flag<T>;
-        assign_flag<T> A();
+        assign_flag<T> A(){return *this;}
 
         friend class Matrix_view<T>;
         Matrix_view<T> V(){return *this;}
@@ -144,15 +142,25 @@ class Matrix : public Matrix_base<T>
             c_slice.end = (c_slice.end == 0) ? cols : c_slice.end;
             return {*this, r_slice, c_slice};
         }   
-        Matrix_view<T> operator()(Slice r_slice)
+        Matrix_view<T> operator()(Slice r_slice) //row slice
         {   
-            
             quick_throw::throw_if_slice_mismatch(*this, r_slice, Slice{}, "row slice");
 
             r_slice.end = (r_slice.end == 0) ? rows : r_slice.end;
             Slice c_slice{0, cols};
-            
+
             return {*this, r_slice, c_slice};
+        }
+
+        Matrix_view<T> operator[](Slice c_slice) //cols slice
+        {
+            quick_throw::throw_if_slice_mismatch(*this, Slice{}, c_slice, "col slice");
+
+            c_slice.end = (c_slice.end == 0) ? cols : c_slice.end;
+
+            Slice r_slice{0, rows};
+            return {*this, r_slice, c_slice};
+
         }
 
         Matrix<mask_ref<T>> operator[](const Matrix_base<boolean> &mask){
@@ -174,8 +182,7 @@ class Matrix : public Matrix_base<T>
         inline size_t get_rows()const override {return rows;}
         inline size_t get_cols()const override {return cols;}
 
-        inline Matrix<T> transpose()const override
-        {
+        inline Matrix<T> transpose()const override{
             Matrix<T> transposed{cols, rows};
             for(size_t row{} ; row<rows ; row++){
                 for(size_t col{} ; col<cols ; col++){
@@ -185,8 +192,7 @@ class Matrix : public Matrix_base<T>
             return transposed;
         }
 
-        inline Matrix<T> copy()const override
-        {   
+        inline Matrix<T> copy()const override{   
             return Matrix<T>{*this};
         }
 
@@ -285,15 +291,25 @@ class Matrix : public Matrix_base<T>
         }
 
         T* begin(){
-            return &matrix[0];
+            if(*this){
+                return &matrix[0];
+            }
+            return nullptr;
         }
         T* end(){
             return &matrix[0]+rows*cols;
         }
-
+        const T* begin()const{
+            if(*this){
+                return &matrix[0];
+            }
+            return nullptr;
+        }
+        const T* end()const{
+            return &matrix[0]+rows*cols;
+        }
 };
 }
-
 namespace machine
 {
     template <typename T>
@@ -304,245 +320,4 @@ namespace machine
 
     template <typename T>
     inline constexpr bool is_matrix_v = is_matrix<T>::value;
-}
-//
-//CREATING BOOLEANS
-//
-namespace machine
-{
-    template<typename T, typename R>
-    requires (std::integral<R> || std::floating_point<R>)
-    Matrix<boolean> make_mask(const Matrix_base<T> &mxb1, const Condition condition, const R &threshold)
-    {   
-        quick_throw::throw_if_no_data(mxb1);
-
-        size_t r1{mxb1.get_rows()};
-        size_t c1{mxb1.get_cols()};
-        Matrix<boolean> mask{r1, c1, boolean{false}};
-        
-        using common_type = std::common_type_t<T, R>;
-        auto N_threshold = threshold;
-
-        for(size_t r{} ; r<r1 ; r++){
-            for(size_t c{} ; c<c1 ; c++)
-            {
-                const auto &current_element = (mxb1(r, c));
-                switch(condition)
-                {   
-                case(Condition::is_true):   mask(r, c) = true; break;
-                case(Condition::is_false):  mask(r, c) = false; break;
-                case(Condition::over):      mask(r, c) = (current_element >  N_threshold); break;
-                case(Condition::over_or):   mask(r, c) = (current_element >= N_threshold); break;
-                case(Condition::under):     mask(r, c) = (current_element <  N_threshold); break;
-                case(Condition::under_or):  mask(r, c) = (current_element <= N_threshold); break;
-                case(Condition::is) :       mask(r, c) = (current_element == N_threshold); break;
-                case(Condition::is_not):    mask(r, c) = (current_element != N_threshold); break;
-                }
-            }
-        }
-        return mask;
-    }
-    template<typename T, typename R>
-    Matrix<boolean> make_mask(const Matrix_base<T> &mxb1, const Condition condition, const Matrix_base<R> &mxb2)
-    {   
-
-        quick_throw::throw_if_dimension_mismatch(mxb1, mxb2, "in make_mask()");
-        quick_throw::throw_if_no_data(mxb1);
-        quick_throw::throw_if_no_data(mxb2);
-
-        size_t r1{mxb1.get_rows()};
-        size_t c1{mxb1.get_cols()};
-        Matrix<boolean> mask{r1, c1, boolean{false}};
-
-        for(size_t r{} ; r<r1 ; r++){
-            for(size_t c{} ; c<c1 ; c++){
-
-                const auto& mxb1_current = mxb1(r, c);
-                const auto& mxb2_current = mxb2(r, c);
-
-                switch(condition)
-                {   
-                case(Condition::is_true):   mask(r, c) = true; break;
-                case(Condition::is_false):  mask(r, c) = false; break;
-                case(Condition::over):      mask(r, c) = (mxb1_current > mxb2_current); break;
-                case(Condition::over_or):   mask(r, c) = (mxb1_current >= mxb2_current); break;
-                case(Condition::under):     mask(r, c) = (mxb1_current < mxb2_current); break;
-                case(Condition::under_or):  mask(r, c) = (mxb1_current <= mxb2_current); break;
-                case(Condition::is) :       mask(r, c) = (mxb1_current == mxb2_current); break;
-                case(Condition::is_not):    mask(r, c) = (mxb1_current != mxb2_current); break;
-                }
-            }
-        }
-        return mask;
-    }
-
-
-//
-//MASK_FLAG
-//
-    template<typename T, typename R>
-    requires (std::integral<R> || std::floating_point<R>)
-    std::vector<mask_ref<T>> get_true_elements(Matrix_base<T> &mxb1, const Condition condition, const R &val)
-    {   
-        quick_throw::throw_if_no_data(mxb1);
-
-        size_t rows{mxb1.get_rows()};
-        size_t cols{mxb1.get_cols()};
-        std::vector<mask_ref<T>> vec;
-        vec.reserve(rows*cols);
-
-        for(size_t r{} ; r<rows ; r++){
-            for(size_t c{} ; c<cols ; c++)
-            {
-                auto& mx_val = mxb1(r, c);
-                switch(condition)
-                {
-                case(Condition::over):      if(mx_val >  val){vec.push_back(mx_val);} break;
-                case(Condition::over_or):   if(mx_val >= val){vec.push_back(mx_val);} break;
-                case(Condition::under):     if(mx_val <  val){vec.push_back(mx_val);} break;
-                case(Condition::under_or):  if(mx_val <= val){vec.push_back(mx_val);} break;
-                case(Condition::is) :       if(mx_val == val){vec.push_back(mx_val);} break;
-                case(Condition::is_not):    if(mx_val != val){vec.push_back(mx_val);} break;
-                }
-            }
-        }
-        return vec;
-    }
-
-    template<typename T, typename R>
-    std::vector<mask_ref<T>> get_true_elements(Matrix_base<T> &mxb1, const Condition condition, const Matrix_base<R> &mxb2)
-    {   
-        quick_throw::throw_if_dimension_mismatch(mxb1, mxb2, "in get_true_element()");
-        quick_throw::throw_if_no_data(mxb1);
-        quick_throw::throw_if_no_data(mxb2);
-
-
-        size_t rows{mxb1.get_rows()};
-        size_t cols{mxb1.get_cols()};
-
-        std::vector<mask_ref<T>> vec;
-        vec.reserve(rows*cols);
-        
-        for(size_t r{} ; r<rows ; r++){
-            for(size_t c{} ; c<cols ; c++)
-            {
-                auto& mx_val = mxb1(r, c);
-                const auto& mx2_val = mxb2(r, c);
-                switch(condition)
-                {
-                case(Condition::over):      if(mx_val >  mx2_val){vec.push_back(mx_val);} break;
-                case(Condition::over_or):   if(mx_val >= mx2_val){vec.push_back(mx_val);} break;
-                case(Condition::under):     if(mx_val <  mx2_val){vec.push_back(mx_val);} break;
-                case(Condition::under_or):  if(mx_val <= mx2_val){vec.push_back(mx_val);} break;
-                case(Condition::is) :       if(mx_val == mx2_val){vec.push_back(mx_val);} break;
-                case(Condition::is_not):    if(mx_val != mx2_val){vec.push_back(mx_val);} break;
-                }
-            }
-        }
-        return vec;
-    }
-}
-//
-//MASK FLAG COMPARISON OPERATORS
-//
-namespace machine
-{
-    template<typename T, typename R>
-    Matrix<mask_ref<T>> operator>(mask_flag<T> flag, const R &val) 
-    {   
-        return {get_true_elements((*flag.ptr), Condition::over, val)};
-    }
-    template<typename T, typename R>
-    Matrix<mask_ref<T>> operator<(mask_flag<T> flag, const R &val) 
-    {   
-        return {get_true_elements((*flag.ptr), Condition::under, val)};
-    }
-    template<typename T, typename R>
-    Matrix<mask_ref<T>> operator>=(mask_flag<T> flag, const R &val) 
-    {   
-        return {get_true_elements((*flag.ptr), Condition::over_or, val)};
-    }
-    template<typename T, typename R>
-    Matrix<mask_ref<T>> operator<=(mask_flag<T> flag, const R &val) 
-    {   
-        return {get_true_elements((*flag.ptr), Condition::under_or, val)};
-    }
-    template<typename T, typename R>
-    Matrix<mask_ref<T>> operator==(mask_flag<T> flag, const R &val) 
-    {   
-        return {get_true_elements((*flag.ptr), Condition::is, val)};
-    }
-    template<typename T, typename R>
-    Matrix<mask_ref<T>> operator!=(mask_flag<T> flag, const R &val) 
-    {   
-        return {get_true_elements((*flag.ptr), Condition::is_not, val)};
-    }
-    //
-    //MAKE MASK FLAG
-    //
-    template<typename T>
-    mask_flag<T> Matrix<T>::M()
-    {
-        return {*this};
-    }
-}
-//
-//ASSIGN FLAG
-//
-namespace machine
-{
-    template<typename T>
-    template<typename R>
-    Matrix<T>& assign_flag<T>::operator=(const Matrix_base<R>& mxb1)
-    {   
-        Matrix<T> temp{mxb1};
-        std::swap(ptr->matrix, temp.matrix);
-        ptr->rows = temp.rows;
-        ptr->cols = temp.cols;
-
-        lifetime_table::new_generation(ptr->id);
-        return *ptr;
-    }
-
-    template<typename T>
-    Matrix<T>& assign_flag<T>::operator=(Matrix<T> other)
-    {
-        std::swap(ptr->matrix, other.matrix);
-        ptr->rows = other.rows;
-        ptr->cols = other.cols;
-        
-        lifetime_table::new_generation(ptr->id);
-        return *ptr;
-    }
-
-    template<typename T>
-    assign_flag<T> Matrix<T>::A()
-    {   
-        return {*this};
-    }
-}
-
-namespace machine
-{   
-    template<typename T>
-    matrix_lock::matrix_lock(Matrix_base<T> &matrix)
-    : ptr{matrix.get_mutex()}
-    {   
-        has_locked = true;
-        ptr->lock();
-    }
-    matrix_lock::~matrix_lock()
-    {
-        ptr->unlock();
-        has_locked = false;
-    }
-    void matrix_lock::lock()
-    {   
-        if(!has_locked){
-            ptr->lock();
-        }
-    }
-    void matrix_lock::unlock(){
-        ptr->unlock();
-    }
 }

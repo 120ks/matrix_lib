@@ -1,12 +1,13 @@
 #pragma once
 
 #include "mx.hpp"
+#include "data_manip.hpp"
 #include <chrono>
 #include <iostream>
 #include <algorithm>
 #include <iostream>
 #include <thread>
-
+#include <set>
 namespace machine
 {
     void test_masking()
@@ -137,7 +138,7 @@ namespace machine
         std::getline(std::cin, s);
 
         std::cout<<" multi slicing matrix3"<<std::endl;
-        std::cout<<matrix3(sl{}, sl{1, 4})((sl{1, 3}, sl{1, 0}))(sl{0}, sl{1, 0}); //not recommended for obvious reasons
+        std::cout<<matrix3(sl{}, sl{1, 4})((sl{1, 0}, sl{1, 0}))(sl{0}, sl{1, 0}); //not recommended for obvious reasons
 
         std::getline(std::cin, s);
 
@@ -488,17 +489,17 @@ namespace machine
         std::getline(std::cin, s);
 
         Matrix<double> matrix1{rows, cols, 1};
-        Matrix<double> matrix2{matrix1};
+        Matrix<double> matrix2{rows, cols, 1};
         std::cout<<std::format("testing speed, matrix is ({}x{}), with {} iterations per course", rows, cols, iterations)<<std::endl<<std::endl;
         
-        std::cout<<"one iter is dot product"<<std::endl;
+        std::cout<<"one iter is matmul product"<<std::endl;
         std::getline(std::cin, s);
         auto step = std::max(size_t{1}, (iterations / 100));
         auto start = std::chrono::steady_clock::now();
 
         for(size_t i{} ; i<iterations ; i++)
         {
-            matrix1 = dot(matrix1, matrix2);
+            matmul(matrix1, matrix2);
 
             if(i % step == 0)
             {   
@@ -529,7 +530,7 @@ namespace machine
         std::getline(std::cin, s);
         
         matrix1 = 1;
-        auto mxb = matrix1.V();
+        auto mxb = matrix1;
         start = std::chrono::steady_clock::now();
 
         for(size_t i{} ; i<iterations ; i++)
@@ -579,15 +580,15 @@ namespace machine
 
         std::getline(std::cin, s);
         
-        std::cout<<"there is also the threaded dot product that splits the workload"<<std::endl;
-        std::cout<<"one iter is dot product, with 3 threads"<<std::endl;
+        std::cout<<"there is also the threaded matmul product that splits the workload"<<std::endl;
+        std::cout<<"one iter is matmul product, with 3 threads"<<std::endl;
         std::getline(std::cin, s);
 
         start = std::chrono::steady_clock::now();
 
         for(size_t i{} ; i<iterations ; i++)
         {
-            matrix1 = machine::threaded::tr_dot(matrix1, matrix2, 3);
+            machine::threaded::tr_matmul(matrix1, matrix2, 3);
 
             if(i % step == 0)
             {   
@@ -682,19 +683,19 @@ namespace machine
         std::getline(std::cin, s);
 
         auto f_ptr3 = [&](){
-             for(int i{} ; i<10 ; i++)
+            for(int i{} ; i<10 ; i++)
             {   
                 v1.emplace_back(10,1,0);
             }
         };
         auto f_ptr4 = [&](){
-             for(int i{} ; i<10 ; i++)
+            for(int i{} ; i<10 ; i++)
             {
                 v2.emplace_back(1,1,0);
             }
         };
         auto f_ptr5 = [&](){
-             for(int i{} ; i<10 ; i++)
+            for(int i{} ; i<10 ; i++)
             {
                 v3.emplace_back(1,1,0);
             }
@@ -741,17 +742,7 @@ namespace machine
         Matrix<float> matrix1{10, 10, 1};
         Matrix<float> matrix2{10, 10, 1};
 
-        
-
-        std::cout<<matrix1;
-        std::cout<<matrix2;
-
-        std::cout<<(matrix1 += matrix2);
-
-        
-        
-
-    }
+    };
 
 
 }

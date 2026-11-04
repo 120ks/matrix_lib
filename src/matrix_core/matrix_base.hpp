@@ -1,13 +1,9 @@
 #pragma once
-#include <vector>
-#include <iostream>
-#include <cassert>
-#include <cmath>
+
 #include <random>
-#include <memory>
 #include <mutex>
-
-
+#include <cassert>
+#include "matrix_subtypes.hpp"
 
 
 namespace machine
@@ -36,35 +32,15 @@ namespace machine
         virtual inline size_t get_id()const = 0;
         virtual inline long long get_gen()const = 0;
         virtual inline std::mutex &get_mutex() = 0;
-
+        virtual T* begin() = 0;
+        virtual T* end() = 0; 
+        virtual const T* begin()const = 0;
+        virtual const T* end()const = 0;
     };
 }
-//
-//enums and statics
-//
-namespace machine
-{
-    enum class Operation
-    {
-        multiply,
-        divide,
-        add,
-        substract,
-        modulo,
-        equal,
-        power,
-        root
-    };
 
-    enum axis
-    {
-        X,
-        Y
-    };
-    
-    static std::random_device random_device;
-    static std::mt19937 generator(random_device());
-}
+
+
 //
 //FLAG SKELETONS
 //
@@ -80,8 +56,8 @@ namespace machine
         mask_flag(Matrix_base<T> &mxb1) : ptr{&mxb1}{}
         mask_flag(const mask_flag<T>&) = delete;
         mask_flag(mask_flag<T> &&other) : ptr{other.ptr} {other.ptr = nullptr;}
-        operator=(mask_flag<T>&&) = delete;
-        operator=(const mask_flag<T>&) = delete;
+        mask_flag<T>& operator=(mask_flag<T>&&) = delete;
+        mask_flag<T>& operator=(const mask_flag<T>&) = delete;
         ~mask_flag() = default;
     //
     //comparison operators
@@ -101,8 +77,8 @@ namespace machine
         assign_flag(Matrix<T> &mx) : ptr{&mx}{}
         assign_flag(const Matrix<T> &mx) = delete;
         assign_flag(Matrix<T> &&mx) = delete;
-        operator= (const assign_flag&) = delete;
-        operator= (assign_flag&&) = delete;
+        assign_flag& operator= (const assign_flag&) = delete;
+        assign_flag& operator= (assign_flag&&) = delete;
         
         template<typename R>
         Matrix<T>& operator=(const Matrix_base<R>&);
@@ -143,7 +119,4 @@ namespace machine
             void lock();
         
     };
-
 }
-
-

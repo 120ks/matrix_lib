@@ -1,12 +1,9 @@
 #pragma once
-#include "matrix_base.hpp"
-#include "matrix_subtypes.hpp"
 
+#include "matrix.hpp"
 
 namespace machine
 {
-
-
 
 template<typename T>
 class Matrix_view : public Matrix_base<T>
@@ -123,9 +120,41 @@ class Matrix_view : public Matrix_base<T>
         }
         inline size_t get_id()const{return matrix_id;}
 
-        long long get_gen()const{return generation;}
+        inline long long get_gen()const{return generation;}
 
         std::mutex& get_mutex() override {return view_ptr->mxt;}
+
+        
+        T* begin() override
+        {
+            if(this->get_cols() == view_ptr->get_cols()){
+                return &((*this)(0, 0));
+            }
+            return nullptr;
+        }
+
+        T* end() override 
+        {
+            auto row = this->get_rows()-1;
+            auto col = this->get_cols()-1;
+
+            return &((*this)(row, col))+1;
+        }
+        const T* begin()const override
+        {
+            if(this->get_cols() == view_ptr->get_cols()-1){
+                return &((*this)(0, 0));
+            }
+            return nullptr;
+        }
+
+        const T* end()const override
+        {
+            auto row = this->get_rows()-1;
+            auto col = this->get_cols()-1;
+
+            return &((*this)(row, col))+1;
+        }
 
 //
 //SLICING AND MASKING
@@ -137,11 +166,18 @@ class Matrix_view : public Matrix_base<T>
             return{*view_ptr, row_slice+r_slice, col_slice+c_slice};
         }
 
-        Matrix_view<T> operator()(const Slice r_slice)
+        Matrix_view<T> operator()(const Slice r_slice) //row slice
         {   
             quick_throw::throw_if_no_data(*this);
             quick_throw::throw_if_slice_mismatch(*this, r_slice, Slice{}, "row slicing");
             return {*view_ptr, row_slice+r_slice, col_slice};
+        }
+
+        Matrix_view<T> operator[](const Slice c_slice) //col slice
+        {   
+            quick_throw::throw_if_no_data(*this);
+            quick_throw::throw_if_slice_mismatch(*this, Slice{}, c_slice, "row slicing");
+            return {*view_ptr, row_slice, col_slice+c_slice};
         }
 
         Matrix<mask_ref<T>> operator[](const Matrix<boolean> &mask){ //note the  []
@@ -251,7 +287,7 @@ class Matrix_view : public Matrix_base<T>
         }
 
 //
-//VIEW SPECIFIC
+//other functions
 //
         void reset_view()
         {
@@ -283,30 +319,4 @@ class Matrix_view : public Matrix_base<T>
             return *this;
         }
 };//class end
-}
-//
-//FLAG FUNCTIONS
-//
-namespace machine
-{
-   
-
-    template<typename T>
-    Matrix_view<T>& view_assign_flag<T>::operator=(Matrix_view<T> mxv1)
-    {   
-        ptr->view_ptr = mxv1.view_ptr;
-        ptr->row_slice = mxv1.row_slice;
-        ptr->col_slice = mxv1.col_slice;
-        ptr->matrix_id = mxv1.matrix_id;
-        ptr->generation = mxv1.generation;
-
-        return *ptr;
-    }   
-
-    template<typename T>
-    Matrix_view<T>& view_assign_flag<T>::operator=(Matrix<T> &matrix)
-    {   
-        ptr->change_pointer(matrix);
-        return *ptr;
-    }   
 }

@@ -68,4 +68,5 @@ Testing/
 .cache/
 
 #
-./vscode/
+.vscode/
+ideas.txt

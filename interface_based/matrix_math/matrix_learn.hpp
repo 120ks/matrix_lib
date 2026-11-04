@@ -3,7 +3,7 @@
 #include "matrix_base.hpp"
 #include "matrix_statistics.hpp"
 #include "matrix_linear.hpp"
-#include "matrix_helper.hpp"
+#include "broadcast.hpp"
 
 
 template<typename T>
@@ -61,10 +61,6 @@ namespace machine
         }
         return -std::log((prediction[hot_encoded>=0.98])(0,0));
     }
-
-    
-    
-
 }
 
 

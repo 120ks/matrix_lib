@@ -9,7 +9,7 @@
 namespace machine::threaded
 {
     template<typename T>
-    Matrix<T> tr_dot(const Matrix<T> &mx1, const Matrix<T> &mx2, size_t threads = 3)
+    Matrix<T> tr_matmul(const Matrix<T> &mx1, const Matrix<T> &mx2, size_t threads = 3)
     {   
         auto rows_1{mx1.get_rows()};
         auto cols_1{mx1.get_cols()};
@@ -32,7 +32,7 @@ namespace machine::threaded
         auto& mx3_matrix = mx3.get_matrix();
         auto cols_3 = mx3.get_cols();
 
-        auto matmull = [ = ,&mx1_matrix, &mx2_matrix, &mx3_matrix](size_t row_start, size_t row_end) -> void
+        auto matmul_f = [ = ,&mx1_matrix, &mx2_matrix, &mx3_matrix](size_t row_start, size_t row_end) -> void
         {
             for(size_t r{row_start} ; r<row_end ; r++)
             {
@@ -62,7 +62,7 @@ namespace machine::threaded
             if (start >= end){
                 break;
             }
-            thread_vector.emplace_back(matmull, start, end);
+            thread_vector.emplace_back(matmul_f, start, end);
             start = end;
         }
         
@@ -77,10 +77,10 @@ namespace machine::threaded
     }
 
     template<typename T, typename R>
-    Matrix<T> tr_dot(Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
+    Matrix<T> tr_matmul(Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
     {   
         using common_type = std::common_type_t<T, R>;
-        return tr_dot(Matrix<common_type>(mxb1), Matrix<common_type>(mxb2));
+        return tr_matmul(Matrix<common_type>(mxb1), Matrix<common_type>(mxb2));
     }
 
 
