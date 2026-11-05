@@ -80,8 +80,8 @@ namespace machine
         return true;
     }
     template<typename T>
-    bool row_or_col_is(const Matrix_base<T> &mxb1){
-        return ((mxb1.get_rows() == 1) || (mxb1.get_cols() == 1));
+    bool row_or_col_is(const Matrix_base<T> &mxb1, const size_t target){
+        return ((mxb1.get_rows() == target) || (mxb1.get_cols() == target));
     }
 
     template<typename T>
