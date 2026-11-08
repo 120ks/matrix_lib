@@ -8,30 +8,32 @@
 #include "broadcast.hpp"
 
 
-template <typename T>
-class Matrix_view;
+
 
 template<typename>
 class mask_flag;
 namespace machine
 {   
-    
+    template <typename T>
+    class Matrix_view;
 
+    template <typename T>
+    class Mask_view;
 template<typename T>
-class Matrix : public Matrix_base<T>
+class Matrix : public Matrix_base<Matrix<T>, T>
 {   
     private:
-        std::vector<T> matrix{};
-        size_t rows{};
-        size_t cols{};
-        const size_t id{lifetime_table::get_id()};
+        machine::array<T> matrix{};
+        long long rows{};
+        long long cols{};
+        const long long id{lifetime_table::get_id()};
         std::mutex mxt;
 //
 //flags
 //
     public:
-        friend class mask_flag<T>;
-        mask_flag<T> M(){return *this;}
+        friend class mask_flag<Matrix<T>, T>;
+        mask_flag<Matrix<T>, T> M(){return *this;}
 
         friend class assign_flag<T>;
         assign_flag<T> A(){return *this;}
@@ -39,21 +41,18 @@ class Matrix : public Matrix_base<T>
         friend class Matrix_view<T>;
         Matrix_view<T> V(){return *this;}
 
-        friend class matrix_lock;
-        matrix_lock L(){return *this;}
-
-        std::vector<T>& get_matrix()
+        array<T>& get_matrix()
         {
             return matrix;
         }
-        const std::vector<T>& get_matrix() const
+        const array<T>& get_matrix() const
         {
             return matrix;
         }
 //
 //CONSTRUCTORS
 //  
-        explicit Matrix(const size_t row_count = 1, const size_t col_count = 1, T val = T{})
+        explicit Matrix(const long long row_count = 1, const long long col_count = 1, T val = T{})
         : matrix(row_count * col_count, val)
         , rows{row_count}
         , cols{col_count}
@@ -68,85 +67,90 @@ class Matrix : public Matrix_base<T>
             quick_throw::throw_if_no_data(other);
         }  
 
-        Matrix(Matrix<T> &&other) noexcept
+        Matrix(Matrix<T> &&other)
         : matrix{std::move(other.matrix)}
         , rows{other.rows}
         , cols{other.cols}
         {   
             quick_throw::throw_if_no_data(other);
             lifetime_table::no_data(other.id);
+            other.rows = 0;
+            other.cols = 0;
         }
         
         template<typename R>
-        Matrix(const Matrix_base<R> &mxb1)
-        : matrix(mxb1.get_rows() * mxb1.get_cols())
-        , rows{mxb1.get_rows()}
-        , cols{mxb1.get_cols()}
-        {   
-            quick_throw::throw_if_no_data(mxb1);    
-
-            auto r1{mxb1.get_rows()};
-            auto c1{mxb1.get_cols()};
-            for(size_t r{} ; r<r1 ; r++)
+        Matrix(const Matrix_view<R> &view)
+        : matrix{}
+        , rows{view.get_rows()}
+        , cols{view.get_cols()}
+        {
+            auto r1{view.get_rows()};
+            auto c1{view.get_cols()};
+            for(long long r{} ; r<r1 ; r++)
             {
-                for(size_t c{} ; c<c1 ; c++)
+                for(long long c{} ; c<c1 ; c++)
                 {
-                    (*this)(r, c) = static_cast<T>(mxb1(r, c));
+                    (*this)(r, c) = static_cast<T>(view(r, c));
                 }
             }
         }
+        template<typename R>
+        Matrix(const Matrix<R> &other)
+        : matrix{other.get_rows() * other.get_cols()}
+        , rows{other.get_rows()}
+        , cols{other.get_cols()}
+        {
+            quick_throw::throw_if_no_data(other);
+            auto r1{other.get_rows()};
+            auto c1{other.get_cols()};
+            for(long long r{} ; r<r1 ; r++)
+            {
+                for(long long c{} ; c<c1 ; c++)
+                {
+                    (*this)(r, c) = static_cast<T>(other(r, c));
+                }
+            }
+        }  
+        template<typename R>
+        Matrix(const Mask_view<R>& other)
+        : matrix{other.get_cols()}
+        , rows{1}
+        , cols{other.get_cols()}
+        {
+            quick_throw::throw_if_no_data(other);
+            for(long long col{} ; col<cols ; col++){
+                matrix[col] = other(0, col);
+            }
+        }
+
+        template<typename Rmx, typename R>
+        Matrix(const Matrix_base<Rmx, R> &mxb1)
+        : Matrix(static_cast<const Rmx&>(mxb1))
+        {}
+
         ~Matrix()override
         {
             lifetime_table::remove_id(this->id);
         }
-        Matrix(std::vector<T> vec, const size_t row_count = 0, const size_t col_count = 0)
-        : matrix{std::move(vec)}
-        , rows{row_count}
-        , cols{col_count}
-        {   
-            if(rows*cols != matrix.size()){rows = 1 ; cols = matrix.size();}
-        }
-
-        template<typename R>
-        Matrix(Matrix_base<R> &other, const Matrix_base<boolean> &mask)
-        : matrix{}
-        , rows{1}
-        , cols{}
-        {   
-            auto r1{mask.get_rows()};
-            auto c1{mask.get_cols()};
-            
-            quick_throw::throw_if_dimension_mismatch(other, mask, "mxb2 = mask");
-            matrix.reserve(r1*c1);
-
-            for(size_t r{} ; r<r1 ; r++)
-            {
-                for(size_t c{} ; c<c1 ; c++)
-                {
-                    if(mask(r, c) == true){
-                        matrix.push_back(mask_ref{other(r, c)});
-                    }
-                }
-            }
-            cols = matrix.size();
-        }
 //
 //SLICE AND MASK
 //
-        Matrix_view<T> operator()(Slice r_slice, Slice c_slice)
-        {   
-            
-            quick_throw::throw_if_slice_mismatch(*this, r_slice, c_slice);
+        Matrix_view<T> operator()(Slice r_slice, Slice c_slice){   
 
-            r_slice.end = (r_slice.end == 0) ? rows : r_slice.end;
-            c_slice.end = (c_slice.end == 0) ? cols : c_slice.end;
+            r_slice.end = (r_slice.end <= 0) ? rows+r_slice.end : r_slice.end; //if 0, rows, if -1, rows-1
+            c_slice.end = (c_slice.end <= 0) ? cols+c_slice.end : c_slice.end;
+            
+            r_slice.begin = (r_slice.begin < 0) ? rows+r_slice.begin : r_slice.begin;
+            c_slice.begin = (c_slice.begin < 0) ? cols+c_slice.begin : c_slice.begin;
+
             return {*this, r_slice, c_slice};
         }   
+
         Matrix_view<T> operator()(Slice r_slice) //row slice
         {   
-            quick_throw::throw_if_slice_mismatch(*this, r_slice, Slice{}, "row slice");
+            r_slice.end = (r_slice.end <= 0) ? rows+r_slice.end : r_slice.end;
+            r_slice.begin = (r_slice.begin < 0) ? rows+r_slice.begin : r_slice.begin;
 
-            r_slice.end = (r_slice.end == 0) ? rows : r_slice.end;
             Slice c_slice{0, cols};
 
             return {*this, r_slice, c_slice};
@@ -154,56 +158,61 @@ class Matrix : public Matrix_base<T>
 
         Matrix_view<T> operator[](Slice c_slice) //cols slice
         {
-            quick_throw::throw_if_slice_mismatch(*this, Slice{}, c_slice, "col slice");
-
-            c_slice.end = (c_slice.end == 0) ? cols : c_slice.end;
+            c_slice.end = (c_slice.end <= 0) ? cols+c_slice.end : c_slice.end;
+            c_slice.begin = (c_slice.begin < 0) ? cols+c_slice.begin : c_slice.begin;
 
             Slice r_slice{0, rows};
             return {*this, r_slice, c_slice};
-
         }
 
-        Matrix<mask_ref<T>> operator[](const Matrix_base<boolean> &mask){
-            return {*this, mask};
-        }
+        template<typename BOOLmx>
+        Mask_view<T> operator[](const Matrix_base<BOOLmx, bool> &mask);
 //
 // OVERRIDES
 //        
-        inline T& operator()(const size_t row, const size_t col)override{
-            
+
+        inline T& operator()(long long row, long long col){
+            row = (row<0) ? rows+row : row;
+            col = (col<0) ? cols+col : col;
             return matrix[row*cols + col];
         }
         
-        inline const T& operator()(const size_t row, const size_t col)const override{
-
+        inline const T& operator()(long long row, long long col)const{
+            row = (row<0) ? rows+row : row;
+            col = (col<0) ? cols+col : col;
             return matrix[row*cols + col];
         }
 
-        inline size_t get_rows()const override {return rows;}
-        inline size_t get_cols()const override {return cols;}
+        inline long long get_rows()const {return rows;}
+        inline long long get_cols()const {return cols;}
 
-        inline Matrix<T> transpose()const override{
+        inline Matrix<T> transpose()const{
             Matrix<T> transposed{cols, rows};
-            for(size_t row{} ; row<rows ; row++){
-                for(size_t col{} ; col<cols ; col++){
+            for(long long row{} ; row<rows ; row++){
+                for(long long col{} ; col<cols ; col++){
                     transposed(col, row) = (*this)(row, col);
                 }
             }
             return transposed;
         }
 
-        inline Matrix<T> copy()const override{   
+        inline Matrix<T> copy()const{   
             return Matrix<T>{*this};
         }
 
-        inline operator bool() const override{
+        template<typename R, typename R2 = R>
+        inline Matrix<R> copy_as()const{
+            return Matrix<R>{*this};
+        }
+
+        inline operator bool() const{
             return lifetime_table::check_id(id);
         }
 
-        inline size_t get_id()const{return id;}
+        inline long long get_id()const{return id;}
 
         long long get_gen()const{return lifetime_table::get_gen(id);}
-        std::mutex& get_mutex() override{return mxt;}
+        std::mutex& get_mutex() {return mxt;}
 
 //
 // ASSIGN OPERATORS
@@ -220,9 +229,8 @@ class Matrix : public Matrix_base<T>
             return *this;
         }
 
-        template<typename R, typename U = T>
-        requires (!is_mask_ref_v<U>)
-        Matrix<T>& operator=(const Matrix_base<R> &mxb1)
+        template<typename R, typename Rmx, typename U = T>
+        Matrix<T>& operator=(const Matrix_base<Rmx, R> &mxb1)
         {   
             
             quick_throw::throw_if_dimension_mismatch(*this, mxb1);
@@ -231,13 +239,7 @@ class Matrix : public Matrix_base<T>
 
             return *this;
         }
-        
-        template<typename R>
-        Matrix<T>& operator=(const Matrix_base<mask_ref<R>> &mxb1)
-        {   
-            machine::broadcast(*this, mxb1, Operation::equal);
-            return *this;
-        }  
+
         template<typename R>
         requires (std::integral<R> || std::floating_point<R>)
         Matrix<T>& operator=(R val)
@@ -280,10 +282,10 @@ class Matrix : public Matrix_base<T>
 //NOT OPERATOR
 //      
         template <typename U = T>
-        requires (std::is_same_v<U, boolean>)
-        Matrix<boolean> operator!()const
+        requires (std::is_same_v<U, bool>)
+        Matrix<bool> operator!()const
         {   
-            Matrix<boolean> mask{*this};
+            Matrix<bool> mask{*this};
             for(auto& val : mask.matrix){
                 val = !val;
             }

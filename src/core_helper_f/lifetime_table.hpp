@@ -1,6 +1,6 @@
 #pragma once
 #include "matrix_exceptions.hpp"
-
+#include <iostream>
 namespace machine
 {   
     class lifetime_table
@@ -11,31 +11,35 @@ namespace machine
         template<typename>
         friend class assign_flag;
 
-        inline static std::vector<long long> matrix_ids{0};
+        inline static array<long long> matrix_ids{10, 0};
         inline static std::mutex mxt;
 
-        inline static void no_data(size_t id)
+        inline static void no_data(long long id)
         {   
+            std::lock_guard<std::mutex> lock(mxt);
             if(id>= matrix_ids.size())
                 {throw indexing_mismatch("id index too large in no_data()");
             }
-            std::lock_guard<std::mutex> lock(mxt);
+            
             matrix_ids[id] = -std::abs(matrix_ids[id]);
         }
 
-        inline static void remove_id(size_t id)
+        inline static void remove_id(long long id)
         {   
-            if(id>= matrix_ids.size())
-                {throw indexing_mismatch("id index too large in remove_id()");
-            }
             std::lock_guard<std::mutex> lock(mxt);
+
+            if(id >= matrix_ids.size())
+            {
+                throw indexing_mismatch("id index too large in remove_id()");
+            }
+            
             matrix_ids[id] = 0;
         }
 
-        inline static size_t get_id(const long long gen = 1)
+        inline static long long get_id(const long long gen = 1)
         {   
             std::lock_guard<std::mutex> lock(mxt);
-            for(size_t i{} ; i<matrix_ids.size() ; i++)
+            for(long long i{} ; i<matrix_ids.size() ; i++)
             {
                 if(matrix_ids[i] == 0){
                     matrix_ids[i] = gen;
@@ -49,7 +53,7 @@ namespace machine
             return i_size;
         }
 
-        inline static void new_generation(size_t id){
+        inline static void new_generation(long long id){
             std::lock_guard<std::mutex> lock(mxt);
 
             if(id>= matrix_ids.size())
@@ -62,14 +66,14 @@ namespace machine
         };
 
         public:
-            inline static bool check_id(size_t id)
+            inline static bool check_id(long long id)
             {   
                 std::lock_guard<std::mutex> lock(mxt);
                 if(id >= matrix_ids.size()){throw indexing_mismatch("id index too large in check_id()");}
                 return matrix_ids[id]>0;
             }
 
-            inline static long long get_gen(size_t id)
+            inline static long long get_gen(long long id)
             {   
                 std::lock_guard<std::mutex> lock(mxt);
                 if(id >= matrix_ids.size()){throw indexing_mismatch("id index too large get_gen()");}

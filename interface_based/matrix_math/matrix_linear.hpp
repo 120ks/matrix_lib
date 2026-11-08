@@ -24,12 +24,12 @@ namespace machine
         auto& mx3_matrix = mx3.get_matrix();
         auto cols_3 = mx3.get_cols();
 
-        for(size_t r{} ; r<rows_1 ; r++){
-            for(size_t k{} ; k<cols_1 ; k++){
+        for(long long r{} ; r<rows_1 ; r++){
+            for(long long k{} ; k<cols_1 ; k++){
 
                 T mx1_val = mx1_matrix[r*cols_1 + k];
 
-                for(size_t c{} ; c<cols_2 ; c++){
+                for(long long c{} ; c<cols_2 ; c++){
                     mx3_matrix[r*cols_3 + c] +=  mx1_val * mx2_matrix[k*cols_2 + c];
                 }
                 
@@ -60,12 +60,12 @@ namespace machine
         auto& mx3_matrix = mx3.get_matrix();
         auto cols_3 = mx3.get_cols();
 
-        for(size_t r{} ; r<rows_1 ; r++){
-            for(size_t k{} ; k<cols_1 ; k++){
+        for(long long r{} ; r<rows_1 ; r++){
+            for(long long k{} ; k<cols_1 ; k++){
 
                 T mx1_val = mx1_matrix[r*cols_1 + k];
 
-                for(size_t c{} ; c<cols_2 ; c++){
+                for(long long c{} ; c<cols_2 ; c++){
                     mx3_matrix[r*cols_3 + c] +=  mx1_val * mx2_matrix[k*cols_2 + c];
                 }
                 
@@ -74,8 +74,8 @@ namespace machine
         return mx3;
     }
 
-    template<typename T, typename R>
-    double euclidean_distance(const Matrix_base<T> &point1, const Matrix_base<R> &point2)
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    double euclidean_distance(const Matrix_base<Tmx, T> &point1, const Matrix_base<Rmx, R> &point2)
     {   
         auto rows_1{point1.get_rows()};
         auto cols_1{point1.get_cols()};

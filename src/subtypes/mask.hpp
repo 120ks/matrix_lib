@@ -6,21 +6,21 @@
 //
 namespace machine
 {
-    template<typename T, typename R>
+    template<typename Tmx, typename T, typename R>
     requires (std::integral<R> || std::floating_point<R>)
-    Matrix<boolean> make_mask(const Matrix_base<T> &mxb1, const Condition condition, const R &threshold)
+    Matrix<bool> make_mask(const Matrix_base<Tmx, T> &mxb1, const Condition condition, const R &threshold)
     {   
         quick_throw::throw_if_no_data(mxb1);
 
-        size_t r1{mxb1.get_rows()};
-        size_t c1{mxb1.get_cols()};
-        Matrix<boolean> mask{r1, c1, boolean{false}};
+        long long r1{mxb1.get_rows()};
+        long long c1{mxb1.get_cols()};
+        Matrix<bool> mask{r1, c1, false};
         
         using common_type = std::common_type_t<T, R>;
         auto N_threshold = threshold;
 
-        for(size_t r{} ; r<r1 ; r++){
-            for(size_t c{} ; c<c1 ; c++)
+        for(long long r{} ; r<r1 ; r++){
+            for(long long c{} ; c<c1 ; c++)
             {
                 const auto &current_element = (mxb1(r, c));
                 switch(condition)
@@ -38,20 +38,20 @@ namespace machine
         }
         return mask;
     }
-    template<typename T, typename R>
-    Matrix<boolean> make_mask(const Matrix_base<T> &mxb1, const Condition condition, const Matrix_base<R> &mxb2)
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    Matrix<bool> make_mask(const Matrix_base<Tmx, T> &mxb1, const Condition condition, const Matrix_base<Rmx, R> &mxb2)
     {   
 
         quick_throw::throw_if_dimension_mismatch(mxb1, mxb2, "in make_mask()");
         quick_throw::throw_if_no_data(mxb1);
         quick_throw::throw_if_no_data(mxb2);
 
-        size_t r1{mxb1.get_rows()};
-        size_t c1{mxb1.get_cols()};
-        Matrix<boolean> mask{r1, c1, boolean{false}};
+        long long r1{mxb1.get_rows()};
+        long long c1{mxb1.get_cols()};
+        Matrix<bool> mask{r1, c1, false};
 
-        for(size_t r{} ; r<r1 ; r++){
-            for(size_t c{} ; c<c1 ; c++){
+        for(long long r{} ; r<r1 ; r++){
+            for(long long c{} ; c<c1 ; c++){
 
                 const auto& mxb1_current = mxb1(r, c);
                 const auto& mxb2_current = mxb2(r, c);

@@ -15,30 +15,102 @@ namespace machine
     class Matrix_view;
 
     template<typename T>
+    class Mask_view;
+
+    template<typename Tmx, typename T>
     class Matrix_base
     {   
     protected:
         Matrix_base() = default;
         virtual ~Matrix_base() = default;
-    public:
-        virtual T& operator()(const size_t, const size_t) = 0;
-        virtual const T& operator()(const size_t, const size_t) const = 0;
 
-        virtual inline size_t get_rows()const = 0;
-        virtual inline size_t get_cols()const = 0;
-        virtual inline Matrix<T> transpose()const = 0;
-        virtual inline Matrix<T> copy()const = 0;
-        virtual inline operator bool() const = 0;
-        virtual inline size_t get_id()const = 0;
-        virtual inline long long get_gen()const = 0;
-        virtual inline std::mutex &get_mutex() = 0;
-        virtual T* begin() = 0;
-        virtual T* end() = 0; 
-        virtual const T* begin()const = 0;
-        virtual const T* end()const = 0;
+
+    public:
+        inline T& operator()(long long row, long long col){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx(row, col);
+        }
+        inline const T& operator()(long long row, long long col)const{
+            const auto& mx = static_cast<const Tmx&>(*this);
+            return mx(row, col);
+        }
+        inline long long get_rows(){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx.get_rows();
+        }
+        inline long long get_cols(){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx.get_cols();
+        }
+        inline long long get_rows()const{
+            const auto& mx = static_cast<const Tmx&>(*this);
+            return mx.get_rows();
+        }
+        inline long long get_cols()const{
+            const auto& mx = static_cast<const Tmx&>(*this);
+            return mx.get_cols();
+        }
+        inline operator bool()const{
+            const auto& mx = static_cast<const Tmx&>(*this);
+            return mx;
+        }
+        inline long long get_id()const{
+            const auto& mx = static_cast<const Tmx&>(*this);
+            return mx.get_id();
+        };
+        inline long long get_gen()const{
+            const auto& mx = static_cast<const Tmx&>(*this);
+            return mx.get_gen();
+        }
+        T* begin(){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx.begin();
+        }
+        T* end(){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx.end();
+        }
+        const T * begin()const{
+            const auto& mx = static_cast<const Tmx&>(*this);
+            return mx.begin();
+        }
+        const T* end()const{
+            const auto& mx = static_cast<const Tmx&>(*this);
+            return mx.end();
+        }
+        Matrix<T> copy()const{
+            return {*this};
+        }
+        Matrix<T> transpose()const{
+            const auto& mx = static_cast<const Tmx&>(*this);
+            return mx.transpose();
+        }
+
+
+        template<typename Rmx, typename R, typename U>
+        Tmx& operator+=(Matrix_base<Rmx, R){
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     };
 }
-
 
 
 //
@@ -46,24 +118,22 @@ namespace machine
 //
 namespace machine
 {
-    template<typename T>
+    template<typename Tmx, typename T>
     class mask_flag
     {   
         friend class Matrix<T>;
         friend class Matrix_view<T>;
     public:
-        Matrix_base<T>* ptr{};
-        mask_flag(Matrix_base<T> &mxb1) : ptr{&mxb1}{}
-        mask_flag(const mask_flag<T>&) = delete;
-        mask_flag(mask_flag<T> &&other) : ptr{other.ptr} {other.ptr = nullptr;}
-        mask_flag<T>& operator=(mask_flag<T>&&) = delete;
-        mask_flag<T>& operator=(const mask_flag<T>&) = delete;
+        Matrix_base<Tmx, T>* ptr{};
+        mask_flag(Matrix_base<Tmx, T> &mxb1) : ptr{&mxb1}{}
+        mask_flag(const mask_flag<Tmx, T>&) = delete;
+        mask_flag(mask_flag<Tmx, T> &&other) : ptr{other.ptr} {other.ptr = nullptr;}
+        mask_flag<Tmx, T>& operator=(mask_flag<Tmx, T>&&) = delete;
+        mask_flag<Tmx, T>& operator=(const mask_flag<Tmx, T>&) = delete;
         ~mask_flag() = default;
-    //
-    //comparison operators
-    //  
-        friend mask_flag<T> Matrix<T>::M();
-        friend mask_flag<T> Matrix_view<T>::M();
+        
+        friend mask_flag<Matrix<T>, T> Matrix<T>::M();
+        friend mask_flag<Matrix_view<T>, T> Matrix_view<T>::M();
     };
 
     
@@ -80,8 +150,8 @@ namespace machine
         assign_flag& operator= (const assign_flag&) = delete;
         assign_flag& operator= (assign_flag&&) = delete;
         
-        template<typename R>
-        Matrix<T>& operator=(const Matrix_base<R>&);
+        template<typename Rmx, typename R>
+        Matrix<T>& operator=(const Matrix_base<Rmx, R>&);
         Matrix<T>& operator=(Matrix<T>);
     };  
 
@@ -101,22 +171,4 @@ namespace machine
         Matrix_view<T>& operator=(Matrix_view<T>);
         Matrix_view<T>& operator=(Matrix<T> &matrix);
     };  
-    
-    class matrix_lock
-    {   
-        std::mutex* ptr{};
-        bool has_locked{};
-        public:
-            template<typename T>
-            matrix_lock(Matrix_base<T> &mxb);
-
-            matrix_lock(const matrix_lock&) = delete;
-            matrix_lock(matrix_lock&&) = delete;
-            ~matrix_lock();
-            matrix_lock& operator=(const matrix_lock&) = delete;
-            matrix_lock& operator=(matrix_lock&&) = delete;
-            void unlock();
-            void lock();
-        
-    };
 }

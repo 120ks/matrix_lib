@@ -8,12 +8,12 @@ int main()
     try
     {
         //mxn::test_masking();
-        //mxn::test_view();
+        mxn::test_view();
         //mxn::test_view_safety();
         //mxn::test_operators();
-        mxn::speed_test(256, 256, 100);
+        //mxn::speed_test(256, 256, 100);
         //mxn::test_threads();
-        mxn::devep_test_ground();
+        //mxn::devep_test_ground();
 
     }
     catch(mxn::dimension_mismatch &e)

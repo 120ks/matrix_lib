@@ -58,7 +58,7 @@ namespace machine
         std::getline(std::cin, s);
 
         std::cout<<"new matrix from the values of matrix1 vals over matrix 2 "<<std::endl;
-        Matrix<int> matrix_trues = matrix1[matrix1 > matrix2];
+        Matrix<int> matrix_trues = (matrix1[matrix1 > matrix2]);
         std::cout<<matrix_trues<<'\n';
 
         std::getline(std::cin, s);
@@ -153,6 +153,15 @@ namespace machine
         std::cout<<matrix3;
 
         std::getline(std::cin, s);
+
+        std::cout<<"using negative number for slice uses for example total_rows - index so -1 uses the last row\n";
+        std::cout<<"getting the last row of matrix1\n";
+        std::cout<<matrix1(sl{-1});
+        std::getline(std::cin, s);
+        std::cout<<"getting the 2 rows and 2nd last col of matrix1\n";
+        std::cout<<matrix1(sl{-2, 0}, sl{-1});
+
+        
     }  
 
     void test_view_safety()
@@ -479,7 +488,7 @@ namespace machine
         std::getline(std::cin, s);
     }
 
-    void speed_test(size_t rows = 256, size_t cols = 256, size_t iterations = 50)
+    void speed_test(long long rows = 256, long long cols = 256, long long iterations = 50)
     {   
         std::cout<<"speed testing"<<std::endl;
         std::cout<<"press enter to continue\n"<<std::endl;
@@ -494,10 +503,11 @@ namespace machine
         
         std::cout<<"one iter is matmul product"<<std::endl;
         std::getline(std::cin, s);
-        auto step = std::max(size_t{1}, (iterations / 100));
+        long long i{};
+        auto step = std::max(i, (iterations / 100));
         auto start = std::chrono::steady_clock::now();
 
-        for(size_t i{} ; i<iterations ; i++)
+        for(long long i{} ; i<iterations ; i++)
         {
             matmul(matrix1, matrix2);
 
@@ -533,7 +543,7 @@ namespace machine
         auto mxb = matrix1;
         start = std::chrono::steady_clock::now();
 
-        for(size_t i{} ; i<iterations ; i++)
+        for(long long i{} ; i<iterations ; i++)
         {   
             mxb += 1;
             mxb -= 1;
@@ -586,7 +596,7 @@ namespace machine
 
         start = std::chrono::steady_clock::now();
 
-        for(size_t i{} ; i<iterations ; i++)
+        for(long long i{} ; i<iterations ; i++)
         {
             machine::threaded::tr_matmul(matrix1, matrix2, 3);
 
@@ -709,7 +719,7 @@ namespace machine
         t4.join();
         t5.join();
 
-        std::set<size_t> set{};
+        std::set<long long> set{};
 
         for(auto& m : v1){
             
@@ -736,11 +746,23 @@ namespace machine
         std::cout<<"there are "<<set.size()<<" unique id's out of 30 matrices created";
     }
 
+    void test(Matrix_base<Matrix<float>, float> &mxb1){
+        Matrix_view<float> mxv{mxb1};
+        std::cout<<mxv;
+        mxv = 1;
+        
+    }
 
     void devep_test_ground()
-    {
+    {   
         Matrix<float> matrix1{10, 10, 1};
         Matrix<float> matrix2{10, 10, 1};
+        std::cout<<matrix1;
+        randomize(matrix1, 1, 10);
+        
+        
+
+
 
     };
 

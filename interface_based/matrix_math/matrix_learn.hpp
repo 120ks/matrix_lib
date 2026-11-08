@@ -13,8 +13,8 @@ namespace machine
 {   
     static const double E{2.718281828459};
 
-    template<typename T>
-    Matrix<T> softmax(const Matrix_base<T> &mxb1)
+    template<typename Tmx, typename T>
+    Matrix<T> softmax(const Matrix_base<Tmx, T> &mxb1)
     {   
         
         Matrix<T> probabilities{machine::broadcast(mxb1, E, Operation::equal)};
@@ -23,8 +23,8 @@ namespace machine
         return probabilities;
     }
 
-    template<typename T>
-    Matrix<T> softmax(const Matrix_base<T> &mxb1, const axis ax)
+    template<typename Tmx, typename T>
+    Matrix<T> softmax(const Matrix_base<Tmx, T> &mxb1, const axis ax)
     {   
         Matrix<T> probabilities{machine::broadcast(mxb1, E, Operation::equal)};
         probabilities /= machine::sum(probabilities, ax);
@@ -32,8 +32,8 @@ namespace machine
         return probabilities;
     }
 
-    template<typename T, typename R>
-    void _ReLU(Matrix_base<T> &mxb1, const R &threshold, const double multiplier = 0)
+    template<typename Tmx, typename T, typename R>
+    void _ReLU(Matrix_base<Tmx, T> &mxb1, const R &threshold, const double multiplier = 0)
     {
         auto mask{mxb1<threshold};
         mxb1[mask] *= multiplier;
@@ -45,8 +45,8 @@ namespace machine
         return 1 / (1 + std::pow(E, -val));
     }
 
-    template<typename T, typename R>
-    double cross_entropy_loss(const Matrix_base<T> &prediction, const Matrix_base<R> &hot_encoded)
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    double cross_entropy_loss(const Matrix_base<Tmx, T> &prediction, const Matrix_base<Rmx, R> &hot_encoded)
     {
         if(!machine::same_dims(prediction, hot_encoded))
         {

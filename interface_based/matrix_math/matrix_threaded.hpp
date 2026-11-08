@@ -9,7 +9,7 @@
 namespace machine::threaded
 {
     template<typename T>
-    Matrix<T> tr_matmul(const Matrix<T> &mx1, const Matrix<T> &mx2, size_t threads = 3)
+    Matrix<T> tr_matmul(const Matrix<T> &mx1, const Matrix<T> &mx2, long long threads = 3)
     {   
         auto rows_1{mx1.get_rows()};
         auto cols_1{mx1.get_cols()};
@@ -32,33 +32,33 @@ namespace machine::threaded
         auto& mx3_matrix = mx3.get_matrix();
         auto cols_3 = mx3.get_cols();
 
-        auto matmul_f = [ = ,&mx1_matrix, &mx2_matrix, &mx3_matrix](size_t row_start, size_t row_end) -> void
+        auto matmul_f = [ = ,&mx1_matrix, &mx2_matrix, &mx3_matrix](long long row_start, long long row_end) -> void
         {
-            for(size_t r{row_start} ; r<row_end ; r++)
+            for(long long r{row_start} ; r<row_end ; r++)
             {
-                for(size_t k{} ; k<cols_1 ; k++){
+                for(long long k{} ; k<cols_1 ; k++){
 
                     T mx1_val = mx1_matrix[r*cols_1 + k];
 
-                    for(size_t c{} ; c<cols_2 ; c++){
+                    for(long long c{} ; c<cols_2 ; c++){
                         mx3_matrix[r*cols_3 + c] +=  mx1_val * mx2_matrix[k*cols_2 + c];
                     }
                 }
             }
         };
 
-        size_t per_thread = (rows_1 / threads);
-        size_t remainder = rows_1 % threads;
+        long long per_thread = (rows_1 / threads);
+        long long remainder = rows_1 % threads;
 
         assert(rows_1 == per_thread*threads + remainder);
 
-        size_t start{0};
+        long long start{0};
         std::vector<std::thread> thread_vector;
         thread_vector.reserve(threads);
 
-        for(size_t t{0} ; t<threads ; t++)
+        for(long long t{0} ; t<threads ; t++)
         {   
-            size_t end = start + per_thread + ((t<remainder) ? 1 : 0); 
+            long long end = start + per_thread + ((t<remainder) ? 1 : 0); 
             if (start >= end){
                 break;
             }
@@ -76,8 +76,8 @@ namespace machine::threaded
         return mx3;
     }
 
-    template<typename T, typename R>
-    Matrix<T> tr_matmul(Matrix_base<T> &mxb1, const Matrix_base<R> &mxb2)
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    Matrix<T> tr_matmul(Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2)
     {   
         using common_type = std::common_type_t<T, R>;
         return tr_matmul(Matrix<common_type>(mxb1), Matrix<common_type>(mxb2));
