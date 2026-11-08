@@ -384,7 +384,7 @@ namespace machine
         std::getline(std::cin, s);
 
         std::cout<<"matrix1 += 4"<<std::endl;
-        matrix1 += 2;
+        matrix1 += 4;
         std::cout<<matrix1;
 
         std::getline(std::cin, s);
@@ -701,13 +701,13 @@ namespace machine
         auto f_ptr4 = [&](){
             for(int i{} ; i<10 ; i++)
             {
-                v2.emplace_back(1,1,0);
+                v2.emplace_back(10000,1000,0);
             }
         };
         auto f_ptr5 = [&](){
             for(int i{} ; i<10 ; i++)
             {
-                v3.emplace_back(1,1,0);
+                v3.emplace_back(178,10,0);
             }
         };
 

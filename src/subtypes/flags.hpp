@@ -71,7 +71,7 @@ namespace machine
         ptr->rows = other.rows;
         ptr->cols = other.cols;
         
-        lifetime_table::new_generation(ptr->id);
+        lifetime_table::new_generation(ptr->matrix_id);
         return *ptr;
     }
 }

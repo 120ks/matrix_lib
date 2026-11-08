@@ -46,7 +46,7 @@ namespace machine
                     return i;
                 }
             }
-
+            
             auto i_size = matrix_ids.size();
             matrix_ids.resize(i_size*2, 0);
             matrix_ids[i_size] = gen;

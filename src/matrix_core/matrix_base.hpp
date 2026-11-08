@@ -8,24 +8,31 @@
 
 namespace machine
 {   
-    template<typename T>
+
+    template<typename>
     class Matrix;
 
-    template<typename T>
+    template<typename>
     class Matrix_view;
 
-    template<typename T>
+    template<typename>
     class Mask_view;
 
+    template<typename, typename>
+    class Matrix_base;
+
+    template<typename Tmx, typename T>
+    Matrix<T> transpose(const Matrix_base<Tmx, T>&);
     template<typename Tmx, typename T>
     class Matrix_base
     {   
     protected:
         Matrix_base() = default;
         virtual ~Matrix_base() = default;
-
-
     public:
+        //
+        //INDEXING
+        //
         inline T& operator()(long long row, long long col){
             auto& mx = static_cast<Tmx&>(*this);
             return mx(row, col);
@@ -34,6 +41,9 @@ namespace machine
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx(row, col);
         }
+        //
+        //ROWS AND COLS
+        //
         inline long long get_rows(){
             auto& mx = static_cast<Tmx&>(*this);
             return mx.get_rows();
@@ -50,6 +60,9 @@ namespace machine
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx.get_cols();
         }
+        //
+        //DATA MANAGEMENT
+        //
         inline operator bool()const{
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx;
@@ -62,6 +75,9 @@ namespace machine
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx.get_gen();
         }
+        //
+        //BEGIN END
+        //
         T* begin(){
             auto& mx = static_cast<Tmx&>(*this);
             return mx.begin();
@@ -78,41 +94,48 @@ namespace machine
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx.end();
         }
+        //
+        //COPY AND TRANSPOSE
+        //
         Matrix<T> copy()const{
             return {*this};
         }
+        //
+        //ASSIGN
+        //
+        template<typename R>
+        Tmx& operator=(const R &val){
+            broadcast(*this, val, Operation::equal);
+            return static_cast<Tmx&>(*this);
+        }
+        //
+        //ARITHMETIC
+        //
+        template<typename R>
+        Tmx& operator+=(const R &val){
+            broadcast(*this, val, Operation::add);
+            return static_cast<Tmx&>(*this);
+        }
+        template<typename R>
+        Tmx& operator-=(const R &val){
+            broadcast(*this, val, Operation::substract);
+            return static_cast<Tmx&>(*this);
+        }
+        template<typename R>
+        Tmx& operator*=(const R &val){
+            broadcast(*this, val, Operation::multiply);
+            return static_cast<Tmx&>(*this);
+        }
+        template<typename R>
+        Tmx& operator/=(const R &val){
+            broadcast(*this, val, Operation::divide);
+            return static_cast<Tmx&>(*this);
+        }
         Matrix<T> transpose()const{
-            const auto& mx = static_cast<const Tmx&>(*this);
-            return mx.transpose();
+            return machine::transpose(*this);
         }
-
-
-        template<typename Rmx, typename R, typename U>
-        Tmx& operator+=(Matrix_base<Rmx, R){
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     };
 }
-
-
 //
 //FLAG SKELETONS
 //

@@ -6,7 +6,7 @@
 
 #include "lifetime_table.hpp"
 #include "broadcast.hpp"
-
+#include "matrix_base.hpp"
 
 
 
@@ -19,6 +19,9 @@ namespace machine
 
     template <typename T>
     class Mask_view;
+
+    template <typename, typename>
+    class Matrix_base;
 template<typename T>
 class Matrix : public Matrix_base<Matrix<T>, T>
 {   
@@ -26,7 +29,7 @@ class Matrix : public Matrix_base<Matrix<T>, T>
         machine::array<T> matrix{};
         long long rows{};
         long long cols{};
-        const long long id{lifetime_table::get_id()};
+        const long long matrix_id{lifetime_table::get_id()};
         std::mutex mxt;
 //
 //flags
@@ -73,64 +76,29 @@ class Matrix : public Matrix_base<Matrix<T>, T>
         , cols{other.cols}
         {   
             quick_throw::throw_if_no_data(other);
-            lifetime_table::no_data(other.id);
+            lifetime_table::no_data(other.matrix_id);
             other.rows = 0;
             other.cols = 0;
-        }
-        
-        template<typename R>
-        Matrix(const Matrix_view<R> &view)
-        : matrix{}
-        , rows{view.get_rows()}
-        , cols{view.get_cols()}
-        {
-            auto r1{view.get_rows()};
-            auto c1{view.get_cols()};
-            for(long long r{} ; r<r1 ; r++)
-            {
-                for(long long c{} ; c<c1 ; c++)
-                {
-                    (*this)(r, c) = static_cast<T>(view(r, c));
-                }
-            }
-        }
-        template<typename R>
-        Matrix(const Matrix<R> &other)
-        : matrix{other.get_rows() * other.get_cols()}
-        , rows{other.get_rows()}
-        , cols{other.get_cols()}
-        {
-            quick_throw::throw_if_no_data(other);
-            auto r1{other.get_rows()};
-            auto c1{other.get_cols()};
-            for(long long r{} ; r<r1 ; r++)
-            {
-                for(long long c{} ; c<c1 ; c++)
-                {
-                    (*this)(r, c) = static_cast<T>(other(r, c));
-                }
-            }
-        }  
-        template<typename R>
-        Matrix(const Mask_view<R>& other)
-        : matrix{other.get_cols()}
-        , rows{1}
-        , cols{other.get_cols()}
-        {
-            quick_throw::throw_if_no_data(other);
-            for(long long col{} ; col<cols ; col++){
-                matrix[col] = other(0, col);
-            }
         }
 
         template<typename Rmx, typename R>
         Matrix(const Matrix_base<Rmx, R> &mxb1)
-        : Matrix(static_cast<const Rmx&>(mxb1))
-        {}
+        : rows{mxb1.get_rows()}
+        , cols{mxb1.get_cols()}
+        {   
+            quick_throw::throw_if_no_data(mxb1);
+            matrix.resize(rows*cols);
+            for(long long row{} ; row<rows ; row++){
+                for(long long col{} ; col<cols ; col++){
+                    (*this)(row, col) = mxb1(row, col);
+                }
+            }
+        }
+
 
         ~Matrix()override
         {
-            lifetime_table::remove_id(this->id);
+            lifetime_table::remove_id(this->matrix_id);
         }
 //
 //SLICE AND MASK
@@ -164,13 +132,11 @@ class Matrix : public Matrix_base<Matrix<T>, T>
             Slice r_slice{0, rows};
             return {*this, r_slice, c_slice};
         }
-
         template<typename BOOLmx>
         Mask_view<T> operator[](const Matrix_base<BOOLmx, bool> &mask);
-//
-// OVERRIDES
-//        
-
+        //
+        // OVERRIDES
+        //        
         inline T& operator()(long long row, long long col){
             row = (row<0) ? rows+row : row;
             col = (col<0) ? cols+col : col;
@@ -186,16 +152,6 @@ class Matrix : public Matrix_base<Matrix<T>, T>
         inline long long get_rows()const {return rows;}
         inline long long get_cols()const {return cols;}
 
-        inline Matrix<T> transpose()const{
-            Matrix<T> transposed{cols, rows};
-            for(long long row{} ; row<rows ; row++){
-                for(long long col{} ; col<cols ; col++){
-                    transposed(col, row) = (*this)(row, col);
-                }
-            }
-            return transposed;
-        }
-
         inline Matrix<T> copy()const{   
             return Matrix<T>{*this};
         }
@@ -206,17 +162,19 @@ class Matrix : public Matrix_base<Matrix<T>, T>
         }
 
         inline operator bool() const{
-            return lifetime_table::check_id(id);
+            return lifetime_table::check_id(matrix_id);
         }
 
-        inline long long get_id()const{return id;}
+        inline long long get_id()const{return matrix_id;}
 
-        long long get_gen()const{return lifetime_table::get_gen(id);}
+        long long get_gen()const{return lifetime_table::get_gen(matrix_id);}
         std::mutex& get_mutex() {return mxt;}
 
 //
 // ASSIGN OPERATORS
 //      
+        using Matrix_base<Matrix<T>, T>::operator=;
+
         Matrix<T>& operator=(Matrix<T> mx)
         {   
             quick_throw::throw_if_no_data(*this);
@@ -229,55 +187,6 @@ class Matrix : public Matrix_base<Matrix<T>, T>
             return *this;
         }
 
-        template<typename R, typename Rmx, typename U = T>
-        Matrix<T>& operator=(const Matrix_base<Rmx, R> &mxb1)
-        {   
-            
-            quick_throw::throw_if_dimension_mismatch(*this, mxb1);
-            Matrix<T> mx{mxb1};
-            this->matrix = std::move(mx.matrix);
-
-            return *this;
-        }
-
-        template<typename R>
-        requires (std::integral<R> || std::floating_point<R>)
-        Matrix<T>& operator=(R val)
-        {   
-            for(auto& value : this->matrix){
-                value = val;
-            }
-            return *this;
-        }
-//
-//MEMBER ARITHMETIC OPERATORS
-//
-        template<typename R>
-        Matrix<T>& operator+=(const R &val)//handles both nums and base<T>
-        {   
-            machine::broadcast(*this, val, Operation::add);
-            return *this;
-        }
-        template<typename R>
-        Matrix<T>& operator-=(const R &val)
-        {
-            machine::broadcast(*this, val, Operation::substract);
-            return *this;
-        }
-
-        template<typename R>
-        Matrix<T>& operator*=(const R &val)
-        {
-            machine::broadcast(*this, val, Operation::multiply);
-            return *this;
-        }
-
-        template<typename R>
-        Matrix<T>& operator/=(const R &val)
-        {
-            machine::broadcast(*this, val, Operation::divide);
-            return *this;
-        }
 //
 //NOT OPERATOR
 //      
@@ -294,21 +203,21 @@ class Matrix : public Matrix_base<Matrix<T>, T>
 
         T* begin(){
             if(*this){
-                return &matrix[0];
+                return matrix.begin();
             }
             return nullptr;
         }
         T* end(){
-            return &matrix[0]+rows*cols;
+            return matrix.end();
         }
         const T* begin()const{
             if(*this){
-                return &matrix[0];
+                return matrix.begin();
             }
             return nullptr;
         }
         const T* end()const{
-            return &matrix[0]+rows*cols;
+            return matrix.end();
         }
 };
 }

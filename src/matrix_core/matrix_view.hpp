@@ -34,36 +34,25 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
 //
 //FLAGS
 //          
-        mask_flag<Matrix_view<T>, T> M()
-        {
+        mask_flag<Matrix_view<T>, T> M(){
             return *this;
         }
-        view_assign_flag<T> A()
-        {
+        view_assign_flag<T> A(){
             return *this;
         }
 
         Matrix_view(const Matrix<T> &matrix)
-        : start_data{const_cast<T*>(matrix.begin())}
-        , row_slice{0, matrix.get_rows()}
-        , col_slice{0, matrix.get_cols()}
-        , base_cols{matrix.get_cols()}
-        , base_rows{matrix.get_rows()}
-        , matrix_id{matrix.id}
-        , generation{lifetime_table::get_gen(matrix.id)}
-        {   
-            Matrix<T> &mx = const_cast<Matrix<T>&>(matrix);
-            mxt = &mx.get_mutex();
-            quick_throw::throw_if_no_data(matrix, " binding view to empty data");
-        }
+        : Matrix_view(matrix, Slice{0, matrix.rows}, Slice{0, matrix.cols})
+        {}
+
         Matrix_view(const Matrix<T> &matrix, Slice r_slice, Slice c_slice)
         : start_data{const_cast<T*>(matrix.begin())}
         , row_slice{r_slice}
         , col_slice{c_slice}
         , base_cols{matrix.get_cols()}
         , base_rows{matrix.get_rows()}
-        , matrix_id{matrix.id}
-        , generation{lifetime_table::get_gen(matrix.id)}
+        , matrix_id{matrix.matrix_id}
+        , generation{matrix.get_gen()}
         {
             quick_throw::throw_if_no_data(matrix, " binding view to empty data");
             Matrix<T> &mx = const_cast<Matrix<T>&>(matrix);
@@ -73,20 +62,10 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
 
             row_slice.begin = (row_slice.end < 0) ? base_rows+row_slice.begin : row_slice.begin; 
             col_slice.begin = (col_slice.end < 0) ? base_cols+col_slice.begin : col_slice.begin;
-            
         }
-        
         Matrix_view(const Matrix_view<T> &other)
-        : start_data{const_cast<T*>(other.start_data)}
-        , row_slice{other.row_slice}
-        , col_slice{other.col_slice}
-        , base_cols{other.base_col}
-        , base_rows{other.base_rows}
-        , matrix_id{other.matrix_id}
-        , generation{other.generation}
-        , mxt{other.mxt}
+        : Matrix_view(other, other.row_slice, other.col_slice)
         {}
-
         Matrix_view(const Matrix_view<T> &other, Slice r_slice, Slice c_slice)
         : start_data{const_cast<T*>(other.start_data)}
         , row_slice{r_slice}
@@ -103,25 +82,17 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
             row_slice.begin = (row_slice.end < 0) ? base_rows+row_slice.begin : row_slice.begin; 
             col_slice.begin = (col_slice.end < 0) ? base_cols+col_slice.begin : col_slice.begin;
         }
-
         Matrix_view(Matrix_view<T> &&other)noexcept
-        : start_data{other.start_data}
-        , row_slice{other.row_slice}
-        , col_slice{other.col_slice}
-        , matrix_id{other.matrix_id}
-        , generation{other.generation}
-        {
-            other.view_ptr = nullptr;
-            other.mxt = nullptr;
-        }
-
+        : Matrix_view(other)
+        {}
+        Matrix_view(Matrix_view<T> &&other, Slice r_slice, Slice c_slice)
+        : Matrix_view(other, r_slice, c_slice)
+        {}
         template<typename Rmx, typename R=T>
         requires (std::is_same_v<T, R> && !std::is_same_v<Rmx, Mask_view<R>>)
         Matrix_view(const Matrix_base<Rmx, R> &mxb1)
         : Matrix_view(static_cast<const Rmx&>(mxb1))
         {}
-
-    
         ~Matrix_view()override = default;
 //  
 // OVERRIDES
@@ -141,57 +112,35 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
             col = (col<0) ? this->get_cols()+col : col;
             return *(start_data + (row+row_slice.begin)*base_cols + col+col_slice.begin);
         }
-        Matrix<T> transpose()const
-        {   
-            quick_throw::throw_if_no_data(*this);
-            auto rows{this->get_rows()};
-            auto cols{this->get_cols()};
-            Matrix<T> transposed{cols, rows};
-
-            for(long long row{} ; row<rows ; row++){
-                for(long long col{} ; col<cols ; col++){
-                    transposed(col, row) = (*this)(row, col);
-                }
-            }
-            return transposed;
-        }
-        Matrix<T> copy()const
-        {   
+        Matrix<T> copy()const{   
             return {*this};
         }
 
-        template<typename R, typename R2 = R>
+        template<typename R>
         inline Matrix<R> copy_as(){
             return Matrix<R>{*this};
         }
 
-
-        operator bool() const
-        {   
+        operator bool() const{   
             auto current_gen {lifetime_table::get_gen(matrix_id)};
             return (current_gen == generation) && (current_gen>0);
         }
+
         inline long long get_id()const{return matrix_id;}
 
         inline long long get_gen()const{return generation;}
 
-        T* begin()
-        {
+        T* begin(){
             if(this->get_cols() == base_cols){
                 return &((*this)(0, 0));
             }
             return nullptr;
         }
 
-        T* end()
-        {
-            auto row = this->get_rows()-1;
-            auto col = this->get_cols()-1;
-
-            return &((*this)(row, col))+1;
+        T* end(){
+            return &((*this)(-1, -1))+1;
         }
-        const T* begin()const
-        {
+        const T* begin()const{
             if(this->get_cols() == base_cols){
                 return &((*this)(0, 0));
             }
@@ -200,10 +149,7 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
 
         const T* end()const
         {
-            auto row = this->get_rows()-1;
-            auto col = this->get_cols()-1;
-
-            return &((*this)(row, col))+1;
+            return &((*this)(-1, -1))+1;
         }
 
         std::mutex& get_mutex(){
@@ -250,97 +196,7 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
             broadcast(*this, mxv, Operation::equal);
             return *this;
         }
-
-        template<typename Rmx, typename R>
-        Matrix_view& operator=(const Matrix_base<Rmx, R> &mxb1)
-        {   
-            broadcast(*this, mxb1, Operation::equal);
-            return *this;
-        }
-
-        template<typename R>
-        requires (std::integral<R> || std::floating_point<R>)
-        Matrix_view& operator=(const R val)
-        {
-            broadcast(*this, val, Operation::equal);
-            return *this;
-        }
-
-//
-//MEMBER ARITHMETIC OPERATORS
-//      
-        template<typename Rmx, typename R>
-        Matrix_view& operator+=(const Matrix_base<Rmx, R>& other)
-        {
-            broadcast(*this, other, Operation::add);
-            return *this;
-        }
-        
-        template<typename R>
-        requires (std::integral<R> || std::floating_point<R>)
-        Matrix_view& operator+=(const R val)
-        {
-            broadcast(*this, val, Operation::add);
-            return *this;
-        }
-
-        template<typename Rmx, typename R>
-        Matrix_view& operator-=(const Matrix_base<Rmx, R>& other)
-        {
-            broadcast(*this, other, Operation::substract);
-            return *this;
-        }
-
-        template<typename R>
-        requires (std::integral<R> || std::floating_point<R>)
-        Matrix_view& operator-=(const R val)
-        {
-            broadcast(*this, val, Operation::substract);
-            return *this;
-        }
-        template<typename Rmx, typename R>
-        Matrix_view& operator*=(const Matrix_base<Rmx, R>& other)
-        {
-            broadcast(*this, other, Operation::multiply);
-            return *this;
-        }
-
-        template<typename R>
-        requires (std::integral<R> || std::floating_point<R>)
-        Matrix_view& operator*=(const R val)
-        {
-            broadcast(*this, val, Operation::multiply);
-            return *this;
-        }
-
-        template<typename Rmx, typename R>
-        Matrix_view& operator/=(const Matrix_base<Rmx, R>& other)
-        {
-            broadcast(*this, other, Operation::divide);
-            return *this;
-        }
-
-        template<typename R>
-        requires (std::integral<R> || std::floating_point<R>)
-        Matrix_view& operator/=(const R val)
-        {
-            broadcast(*this, val, Operation::divide);
-            return *this;
-        }
-//
-//not operator
-//
-        template <typename U = T>
-        requires (std::is_same_v<U, bool>)
-        Matrix<bool> operator!()const
-        {   
-            Matrix<bool> mask{*this};
-            for(auto& val : mask.matrix){
-                val = !val;
-            }
-            return mask;
-        }
-
+        using Matrix_base<Matrix_view<T>, T>::operator=;
 //
 //other functions
 //
@@ -369,7 +225,7 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
         {   
             quick_throw::throw_if_no_data(matrix, "cant view a matrix with no data");
             start_data = const_cast<T*>(matrix.begin());
-            matrix_id = matrix.id;
+            matrix_id = matrix.matrix_id;
             reset_view();
             return *this;
         }

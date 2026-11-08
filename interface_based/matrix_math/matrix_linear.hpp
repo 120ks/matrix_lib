@@ -90,4 +90,19 @@ namespace machine
         auto distance = machine::broadcast(point1-point2, 2, Operation::power);
         return std::sqrt(machine::sum(distance));
     }
+
+    template<typename Tmx, typename T>
+    Matrix<T> transpose(const Matrix_base<Tmx, T> &mxb1){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+
+        Matrix<T> transposed{cols, rows};
+            for(long long row{} ; row<rows ; row++){
+                for(long long col{} ; col<cols ; col++){
+                    transposed(col, row) = mxb1(row, col);
+                }
+            }
+            return transposed;
+        }
+    
 }
