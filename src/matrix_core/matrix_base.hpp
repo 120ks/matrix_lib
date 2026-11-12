@@ -4,9 +4,10 @@
 #include <mutex>
 #include <cassert>
 #include "matrix_subtypes.hpp"
+#include <type_traits>
 
 
-namespace machine
+namespace machx
 {   
 
     template<typename>
@@ -76,6 +77,57 @@ namespace machine
             return mx.get_gen();
         }
         //
+        //SLICING AND MASKING
+        //
+        template<typename Dtype = Tmx>
+        requires (!std::is_same_v<Dtype, Mask_view<T>>)
+        Matrix_view<T> operator()(Slice row_slice, Slice col_slice){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx(row_slice, col_slice);
+        }
+        template<typename Dtype = Tmx>
+        requires (!std::is_same_v<Dtype, Mask_view<T>>)
+        Matrix_view<T> operator()(Slice row_slice){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx(row_slice);
+        }
+        template<typename Dtype = Tmx>
+        requires (!std::is_same_v<Dtype, Mask_view<T>>)
+        Matrix_view<T> operator[](Slice col_slice){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx[col_slice];
+        }
+        template<typename Dtype = Tmx>
+        requires (!std::is_same_v<Dtype, Mask_view<T>>)
+        Matrix_view<T> rows_at(long long start, long long end){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx(Slice{start, end});
+        }
+        template<typename Dtype = Tmx>
+        requires (!std::is_same_v<Dtype, Mask_view<T>>)
+        Matrix_view<T> cols_at(long long start, long long end){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx[Slice{start, end}];
+        }
+        template<typename Dtype = Tmx>
+        requires (!std::is_same_v<Dtype, Mask_view<T>>)
+        Matrix_view<T> rows_at(long long start){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx(Slice{start, start+1});
+        }
+        template<typename Dtype = Tmx>
+        requires (!std::is_same_v<Dtype, Mask_view<T>>)
+        Matrix_view<T> cols_at(long long start){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx[Slice{start, start+1}];
+        }
+
+        template<typename BOOLmx>
+        Mask_view<T> operator[](const Matrix_base<BOOLmx, bool> &mask){
+            auto& mx = static_cast<Tmx&>(*this);
+            return mx[mask];
+        }
+        //
         //BEGIN END
         //
         T* begin(){
@@ -132,20 +184,31 @@ namespace machine
             return static_cast<Tmx&>(*this);
         }
         Matrix<T> transpose()const{
-            return machine::transpose(*this);
+            return machx::transpose(*this);
+        }
+        Tmx& sort(){
+            if(this->begin()){
+                std::sort(this->begin(), this->end());
+                return static_cast<Tmx&>(*this);
+            }
+            else{
+                *this = this->copy().sort();
+                return static_cast<Tmx&>(*this);
+            }
         }
     };
 }
 //
 //FLAG SKELETONS
 //
-namespace machine
+namespace machx
 {
     template<typename Tmx, typename T>
     class mask_flag
     {   
         friend class Matrix<T>;
         friend class Matrix_view<T>;
+        friend class Mask_view<T>;
     public:
         Matrix_base<Tmx, T>* ptr{};
         mask_flag(Matrix_base<Tmx, T> &mxb1) : ptr{&mxb1}{}
@@ -157,6 +220,7 @@ namespace machine
         
         friend mask_flag<Matrix<T>, T> Matrix<T>::M();
         friend mask_flag<Matrix_view<T>, T> Matrix_view<T>::M();
+        friend mask_flag<Mask_view<T>, T> Mask_view<T>::M();
     };
 
     

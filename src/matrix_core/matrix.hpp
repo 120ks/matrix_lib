@@ -10,9 +10,7 @@
 
 
 
-template<typename>
-class mask_flag;
-namespace machine
+namespace machx
 {   
     template <typename T>
     class Matrix_view;
@@ -20,13 +18,13 @@ namespace machine
     template <typename T>
     class Mask_view;
 
-    template <typename, typename>
-    class Matrix_base;
+    template<typename, typename>
+    class mask_flag;
 template<typename T>
 class Matrix : public Matrix_base<Matrix<T>, T>
 {   
     private:
-        machine::array<T> matrix{};
+        machx::array<T> matrix{};
         long long rows{};
         long long cols{};
         const long long matrix_id{lifetime_table::get_id()};
@@ -42,7 +40,7 @@ class Matrix : public Matrix_base<Matrix<T>, T>
         assign_flag<T> A(){return *this;}
 
         friend class Matrix_view<T>;
-        Matrix_view<T> V(){return *this;}
+        Matrix_view<T> V(){return {*this};}
 
         array<T>& get_matrix()
         {
@@ -100,9 +98,9 @@ class Matrix : public Matrix_base<Matrix<T>, T>
         {
             lifetime_table::remove_id(this->matrix_id);
         }
-//
-//SLICE AND MASK
-//
+        //
+        //SLICE AND MASK
+        //
         Matrix_view<T> operator()(Slice r_slice, Slice c_slice){   
 
             r_slice.end = (r_slice.end <= 0) ? rows+r_slice.end : r_slice.end; //if 0, rows, if -1, rows-1
@@ -110,7 +108,6 @@ class Matrix : public Matrix_base<Matrix<T>, T>
             
             r_slice.begin = (r_slice.begin < 0) ? rows+r_slice.begin : r_slice.begin;
             c_slice.begin = (c_slice.begin < 0) ? cols+c_slice.begin : c_slice.begin;
-
             return {*this, r_slice, c_slice};
         }   
 
@@ -135,7 +132,7 @@ class Matrix : public Matrix_base<Matrix<T>, T>
         template<typename BOOLmx>
         Mask_view<T> operator[](const Matrix_base<BOOLmx, bool> &mask);
         //
-        // OVERRIDES
+        //INDEXING
         //        
         inline T& operator()(long long row, long long col){
             row = (row<0) ? rows+row : row;
@@ -148,6 +145,15 @@ class Matrix : public Matrix_base<Matrix<T>, T>
             col = (col<0) ? cols+col : col;
             return matrix[row*cols + col];
         }
+        inline T& at(long long index){
+            index = (index<0) ? rows*cols + index : index;
+            return matrix[index];
+        }
+        inline const T& at(long long index)const{
+            index = (index<0) ? rows*cols + index : index;
+            return matrix[index];
+        }
+
 
         inline long long get_rows()const {return rows;}
         inline long long get_cols()const {return cols;}
@@ -192,8 +198,7 @@ class Matrix : public Matrix_base<Matrix<T>, T>
 //      
         template <typename U = T>
         requires (std::is_same_v<U, bool>)
-        Matrix<bool> operator!()const
-        {   
+        Matrix<bool> operator!()const{   
             Matrix<bool> mask{*this};
             for(auto& val : mask.matrix){
                 val = !val;
@@ -221,7 +226,7 @@ class Matrix : public Matrix_base<Matrix<T>, T>
         }
 };
 }
-namespace machine
+namespace machx
 {
     template <typename T>
     struct is_matrix : std::false_type {};

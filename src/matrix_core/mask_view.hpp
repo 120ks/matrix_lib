@@ -4,7 +4,7 @@
 #include "matrix_view.hpp"
 
 
-namespace machine
+namespace machx
 {   
     template<typename T>
     class Mask_view : public Matrix_base<Mask_view<T>, T>
@@ -12,16 +12,12 @@ namespace machine
         private:
 
             array<T*> ptr_arr{};
-            long long matrix_id{};
-            long long generation{};
 
         public:
             template<typename Tmx, typename BOOLmx>
             Mask_view(Matrix_base<Tmx, T> &mxb1, const Matrix_base<BOOLmx, bool> &mask)
             : ptr_arr{}
-            , matrix_id{mxb1.get_id()}
-            , generation{mxb1.get_gen()}
-            {
+            {   
                 quick_throw::throw_if_dimension_mismatch(mxb1, mask);
                 auto rows = mask.get_rows();
                 auto cols = mask.get_cols();
@@ -35,23 +31,51 @@ namespace machine
                     }
                 }
             }
+            Mask_view(const machx::array<T*> &arr)
+            : ptr_arr{arr}
+            {}
+            Mask_view(machx::array<T*>&& arr)
+            : ptr_arr{std::move(arr)}
+            {}
+
             template<typename Tmx, typename BOOLmx>
             Mask_view(Matrix_base<Tmx, T> &&mxb1, const Matrix_base<BOOLmx, bool> &mask)
             : Mask_view(mxb1, mask)
+            {}
+
+            Mask_view(const Mask_view<T> &other)
+            : ptr_arr{other.ptr_arr}
+            {}
+            Mask_view(Mask_view<T> &&other)
+            : ptr_arr{std::move(other.ptr_arr)}
             {}
 
             inline long long get_rows()const{return 1;} //always 1 row N cols
             inline long long get_cols()const{return ptr_arr.size();}
 
             inline T& operator()(long long row, long long col){
+                col = (col<0)? ptr_arr.size()+col : col;
                 return *(ptr_arr[col]); //row always = 0, cols = size
             }
             inline const T& operator()(long long row, long long col)const{   
+                col = (col<0)? ptr_arr.size()+col : col;
                 return *(ptr_arr[col]);
             }
 
-            Matrix<T> copy()const{   
-                return {*this};
+            inline T& operator()(long long col){
+                col = (col<0)? ptr_arr.size()+col : col;
+                return *(ptr_arr[col]); //row always = 0, cols = size
+            }
+            inline const T& operator()(long long col)const{   
+                col = (col<0)? ptr_arr.size()+col : col;
+                return *(ptr_arr[col]);
+            }
+
+            template<typename BOOLmx>
+            Mask_view<T> operator[](const Matrix_base<BOOLmx, bool> &mask){
+                quick_throw::throw_if_dimension_mismatch(*this, mask, "mask does not match dims of mxb");
+                
+                return {*this, mask};
             }
 
             template<typename R>
@@ -59,19 +83,10 @@ namespace machine
                 return Matrix<R>{*this};
             }
 
-            operator bool() const{   
-                auto current_gen {lifetime_table::get_gen(matrix_id)};
-                return (current_gen == generation) && (current_gen>0);
-            }
-
-            inline long long get_id()const{return matrix_id;}
-            inline long long get_gen()const{return generation;}
-
             T* begin(){return nullptr;}
             T* end(){return nullptr;}
             const T* begin()const{return nullptr;}
             const T* end()const{return nullptr;}
-
             //
             //ASSIGNS
             //
@@ -80,11 +95,22 @@ namespace machine
                 return *this;
             }
 
-            Mask_view<T>& operator=(Mask_view<T> &&mxv){
+            Mask_view<T>& operator=(Mask_view<T> &&mxv)noexcept{
                 broadcast(*this, mxv, Operation::equal);
                 return *this;
             }
             using Matrix_base<Mask_view<T>, T>::operator=;
+            //
+            //FLAGS
+            //
+            mask_flag<Mask_view<T>, T> M(){
+                return {*this};
+            }
+
+            operator bool()const{ //empty is valid with mask so always valid
+                return true;
+            }
+
     };
     template<typename T>
     template<typename BOOLmx>

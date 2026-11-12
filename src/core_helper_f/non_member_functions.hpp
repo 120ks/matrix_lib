@@ -8,7 +8,7 @@
 
 
 
-namespace machine
+namespace machx
 {
     template<typename T> class Matrix;
     
@@ -52,37 +52,37 @@ namespace machine
     template<typename Tmx, typename T, typename R>
     Matrix<bool> operator>(const Matrix_base<Tmx, T> &mxb1, const R val)
     {   
-        return  machine::make_mask(mxb1, Condition::over, val);
+        return  machx::make_mask(mxb1, Condition::over, val);
     }
 
     template<typename Tmx, typename T, typename R>
     Matrix<bool> operator<(const Matrix_base<Tmx, T> &mxb1, const R val)
     {  
-        return machine::make_mask(mxb1, Condition::under, val);
+        return machx::make_mask(mxb1, Condition::under, val);
     }
 
     template<typename Tmx, typename T, typename R>
     Matrix<bool> operator>=(const Matrix_base<Tmx, T> &mxb1, const R val)
     {
-        return machine::make_mask(mxb1, Condition::over_or, val);
+        return machx::make_mask(mxb1, Condition::over_or, val);
     }
 
     template<typename Tmx, typename T, typename R>
     Matrix<bool> operator<=(const Matrix_base<Tmx, T> &mxb1, const R val)
     {
-        return machine::make_mask(mxb1, Condition::under_or, val);
+        return machx::make_mask(mxb1, Condition::under_or, val);
     }
 
     template<typename Tmx, typename T, typename R>
     Matrix<bool> operator==(const Matrix_base<Tmx, T> &mxb1, const R val)
-    {
-        return machine::make_mask(mxb1, Condition::is, val);
+    {   
+        return machx::make_mask(mxb1, Condition::is, val);
     }
 
     template<typename Tmx, typename T, typename R>
     Matrix<bool> operator!=(const Matrix_base<Tmx, T> &mxb1, const R val)
     {
-        return machine::make_mask(mxb1, Condition::is_not, val);
+        return machx::make_mask(mxb1, Condition::is_not, val);
     }
 
     Matrix<bool> operator&&(const Matrix<bool> &mask1, const Matrix<bool>&mask2)
@@ -163,7 +163,7 @@ namespace machine
         return os;
     }
 }
-namespace machine
+namespace machx
 {   
     template<typename Tmx, typename T, typename Rmx, typename R>
     auto concat(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2, const axis ax)

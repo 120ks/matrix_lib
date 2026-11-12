@@ -6,7 +6,7 @@
 
 #include "matrix_base.hpp"
 
-namespace machine
+namespace machx
 {   
     template<typename, typename>
     class Matrix_base;
@@ -57,7 +57,7 @@ namespace machine
 
 }
 
-namespace machine
+namespace machx
 {
     template<typename Tmx, typename T, typename Rmx, typename R>
     bool same_dims(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2)
@@ -74,11 +74,27 @@ namespace machine
     template<typename Tmx, typename T, typename Rmx, typename R>
     bool divisible(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2)
     {
-        if((mxb1.get_rows() % mxb2.get_rows() != 0) && (mxb2.get_rows() & mxb1.get_rows() != 0)){return false;}
-        if((mxb1.get_cols() % mxb2.get_cols() != 0) && (mxb2.get_cols() & mxb1.get_cols() != 0)){return false;}
+        auto rows1 = mxb1.get_rows();
+        auto cols1 = mxb1.get_cols();
+        auto rows2 = mxb2.get_rows();
+        auto cols2 = mxb2.get_cols();
 
-        return true;
+        if( (rows1 == 0) || (rows2 == 0) || (cols1 == 0) || (cols2 == 0)){
+            return false;
+        } 
+
+        bool rows_divisible = false;
+        bool cols_divisible = false;
+        
+        if((rows1 % rows2 == 0) || (rows2 % rows1 == 0)){
+            rows_divisible = true;
+        }
+        if((cols1 % cols2 == 0) || (cols2 % cols1 == 0)){
+            cols_divisible = true;
+        }
+        return (rows_divisible && cols_divisible);
     }
+    
     template<typename Tmx, typename T>
     bool row_or_col_is(const Matrix_base<Tmx, T> &mxb1, const long long target){
         return ((mxb1.get_rows() == target) || (mxb1.get_cols() == target));
@@ -100,7 +116,7 @@ namespace machine
 
 }
 
-namespace machine::quick_throw
+namespace machx::quick_throw
 {   
 
     template<typename Tmx, typename T>

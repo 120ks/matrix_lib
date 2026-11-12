@@ -6,7 +6,7 @@
 
 
 
-namespace machine::threaded
+namespace machx::threaded
 {
     template<typename T>
     Matrix<T> tr_matmul(const Matrix<T> &mx1, const Matrix<T> &mx2, long long threads = 3)

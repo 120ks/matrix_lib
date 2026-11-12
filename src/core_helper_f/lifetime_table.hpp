@@ -1,7 +1,7 @@
 #pragma once
 #include "matrix_exceptions.hpp"
 #include <iostream>
-namespace machine
+namespace machx
 {   
     class lifetime_table
     {   

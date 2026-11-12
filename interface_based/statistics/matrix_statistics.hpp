@@ -3,12 +3,114 @@
 #include "non_member_functions.hpp"
 #include "matrix_base.hpp"
 #include "broadcast.hpp"
+#include <cmath>
 
 
 template<typename T>
 class Matrix;
 
-namespace machine
+
+//
+//BASICS
+//
+namespace machx
+{   
+    template<typename Tmx, typename T>
+    T sum(const Matrix_base<Tmx, T> &mxb1){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+
+        T sum_val = T{};
+        for(long long row{} ; row<rows; row++){
+            for(long long col{} ; col<cols ; col++){
+                sum_val += mxb1(row, col);
+            }
+        }
+        return sum_val;
+    }
+    template<typename Tmx, typename T>
+    Matrix<T> sum(const Matrix_base<Tmx, T> &mxb1, const axis ax){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+
+        if(ax == axis::X){
+            Matrix<T> sum_mx{1, cols};
+            return sum_mx + mxb1;
+        }
+        else{
+            Matrix<T> sum_mx{rows, 1};
+            return sum_mx + mxb1;
+        }
+    }
+
+    template<typename Tmx, typename T>
+    double mean(const Matrix_base<Tmx, T> &mxb1){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+        return machx::sum(mxb1) / (rows*cols);
+    }
+
+    template<typename Tmx, typename T>
+    auto mean(const Matrix_base<Tmx, T> &mxb1, axis ax){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+        Matrix<T> sum_mx = machx::sum(mxb1, ax);
+        return sum_mx / (sum_mx.get_cols() * sum_mx.get_rows());
+    }
+}
+//
+//deviations
+//
+namespace machx
+{   
+    template<typename Tmx, typename T>
+    double variance(const Matrix_base<Tmx, T> &mxb1, double degree = 0){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+
+        double mean = machx::mean(mxb1);
+        auto variance_mx{mxb1 - mean};
+        machx::power(variance_mx, 2);
+        double sum = machx::sum(variance_mx);
+
+        return sum / (rows * cols + degree);
+    }
+
+    template<typename Tmx, typename T>
+    Matrix<double> variance(const Matrix_base<Tmx, T> &mxb1, axis ax, double degree = 0){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+
+        auto mean = machx::mean(mxb1, ax);
+        auto variance_mx{mxb1 - mean};
+        machx::power(variance_mx, 2);
+        auto sum = machx::sum(variance_mx, ax);
+        
+        return sum / ((ax == axis::X) ? cols : rows);
+    }
+
+    template<typename Tmx, typename T>
+    double standard_deviation(const Matrix_base<Tmx, T> &mxb1, double degree = 0){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+        double variance = machx::variance(mxb1, degree);
+        return std::sqrt(variance);
+    }
+
+    template<typename Tmx, typename T>
+    Matrix<double> standard_deviation(const Matrix_base<Tmx, T> &mxb1, axis ax, double degree = 0){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+        auto variance = machx::variance(mxb1, ax, degree);
+        machx::root(variance, 2.0);
+        return variance;
+    }
+}
+
+//
+//MIN, MAX, ABS
+//
+namespace machx
 {   
     template<typename Tmx, typename T>
     T minimum(const Matrix_base<Tmx, T>& mxb1)
@@ -34,180 +136,228 @@ namespace machine
     }
     template<typename Tmx, typename T>
     Matrix<T> argmax(const Matrix_base<Tmx, T> &mxb1, const axis ax)
-    {   
+    {
+        
+    }
+    template<typename Tmx, typename T>
+    requires(std::is_arithmetic_v<T>)
+    Tmx& abs(Matrix_base<Tmx, T> &mxb1){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+        for(long long row{} ; row<rows ; row++){
+            for(long long col {} ; col<cols ; col++){
+                mxb1(row, col) = std::abs(mxb1(row, col));
+            }
+        }
+        return static_cast<Tmx&>(mxb1);
+    }
+
+    template<typename Tmx, typename T>
+    requires(std::is_arithmetic_v<T>)
+    Matrix<T> abs(Matrix_base<Tmx, T> &&mxb1){
+        abs(mxb1);
+        return {static_cast<Tmx&>(mxb1)};
+    }
+
+    template<typename Tmx, typename T>
+    requires(std::is_arithmetic_v<T>)
+    Tmx& log(Matrix_base<Tmx, T> &mxb1){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+        for(long long row{} ; row<rows ; row++){
+            for(long long col {} ; col<cols ; col++){
+                mxb1(row, col) = std::log(mxb1(row, col));
+            }
+        }
+        return static_cast<Tmx&>(mxb1);
+    }
+}
+//
+//SCALES AND NORMALIZERS
+//
+namespace machx
+{
+    template<typename Tmx, typename T>
+    Tmx& z_scores(Matrix_base<Tmx, T> &mxb1, double degree = 0){
+        auto mean = machx::mean(mxb1);
+        auto std = machx::standard_deviation(mxb1, degree);
+        (mxb1 -= mean) /= std;
+        return static_cast<Tmx&>(mxb1);
+    }
+
+    template<typename Tmx, typename T>
+    Tmx& robust_scale(Matrix_base<Tmx, T>& mxb1, double percentile1 = 0.15, double percentile2 = 0.85){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+
+        Matrix<T> copy = mxb1.copy();
+        std::sort(copy.begin(), copy.end());
+        auto median = copy(rows/2, cols/2);
+        auto Q1 = copy(static_cast<long long>(rows*percentile1), static_cast<long long>(cols*percentile1));
+        auto Q3 = copy(static_cast<long long>(rows*percentile2), static_cast<long long>(cols*percentile2));
+        auto IQR = Q3-Q1;
+        (mxb1 -= median) /= IQR;
+        return static_cast<Tmx&>(mxb1);
+    }
+
+    template<typename Tmx, typename T>
+    Tmx& robust_z(Matrix_base<Tmx, T>& mxb1, double percentile1 = 0.15, double percentile2 = 0.85, double degree = 0){
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+        Matrix<T> copy = mxb1.copy();
+        std::sort(copy.begin(), copy.end());
+        Slice row_slice {static_cast<long long>(rows * percentile1), static_cast<long long>(rows * percentile2)};
+        Slice col_slice {static_cast<long long>(cols * percentile1), static_cast<long long>(cols * percentile2)};
+
+        auto mean = machx::mean(mxb1(row_slice, col_slice));
+        auto std = machx::standard_deviation(mxb1(row_slice, col_slice), degree);
+        (mxb1 -= mean) /= std;
+        return static_cast<Tmx&>(mxb1);
+
+    }
+
+    template<typename Tmx, typename T>
+    Tmx& batch_normalization(Matrix_base<Tmx, T> &mxb1, double degree = 0){
+        auto means = machx::mean(mxb1, axis::Y);
+        auto std = machx::standard_deviation(mxb1, axis::Y, degree);
+        (mxb1 -= mean) /= std;
+        return static_cast<Tmx&>(mxb1);
+    }
+
+    template<typename Tmx, typename T>
+    Tmx& layer_normalization(Matrix_base<Tmx, T> &mxb1, double degree = 0){
+        auto means = machx::mean(mxb1, axis::X);
+        auto std = machx::standard_deviation(mxb1, axis::X, degree);
+        (mxb1 -=mean) /= std;
+        return static_cast<Tmx&>(mxb1);
+    }
+
+    template<typename Tmx, typename T>
+    Tmx& group_normalization(Matrix_base<Tmx, T> &mxb1, long long groups, double degree = 0){
+        auto cols = mxb1.get_cols();
+        if(cols % groups != 0){
+            throw std::runtime_error("cols must be divisible by group number");
+        }
+        long long group_members = cols / groups;
+        long long start = 0;
+        for(long long g{} ; g<groups ; g++){
+            auto end = start+group_members;
+            auto means = machx::mean(mxb1[Slice{start, end}], axis::X);
+            auto std = machx::standard_deviation(mxb1, axis::X, degree)
+            (mxb1[Slice{start, end}] -= means) /= std;
+        }
+        return static_cast<Tmx&>(mxb1);
+    }
+    template<typename Tmx, typename T>
+    Tmx& rank(Matrix_base<Tmx, T> &mxb1, bool ascending = true, bool duplicates_share = false){
         auto rows{mxb1.get_rows()};
         auto cols{mxb1.get_cols()};
-
-        if(ax == axis::X){
-            Matrix<T> mx{rows, 1};
-            for(long long row{} ; row<rows ; row++){
-                for(long long col{} ; col<cols ; col++){
-                    if(mxb1(row, col) > mx(row, 0)){
-                        mx(row, 0) = mxb1(row, col);
-                    }
-                }
+        long long start{};
+        auto rank_f = [&](auto self, machx::Mask_view<T> mv) -> void {
+            if(mv.get_cols() == 0){
+                return;
             }
-            return mx;
-        }
-        else{
-            if(ax == axis::X){
-                Matrix<T> mx{1, cols};
-                for(long long row{} ; row<rows ; row++){
-                    for(long long col{} ; col<cols ; col++)
-                    {
-                        if(mxb1(row, col) > mx(col, 0)){
-                            mx(0, col) = mxb1(row, col);
-                        }
+            if(mv.get_cols() == 1){
+                mv(0) = start++;
+                return;
+            }
+            auto pivot = mv(0);
+            if(ascending){
+                auto left = mv.M() < pivot;
+                auto right = mv.M() > pivot;
+                auto middle = mv[mv == pivot];
+                self(self, left);
+                if(duplicates_share){
+                    middle = start++;
+                }
+                else{
+                    for(long long col{} ; col<middle.get_cols() ; col++){
+                        middle(col) = start++;
                     }
                 }
-            return mx;
-            }    
-        }
-    }
-    //
-    //SUM AND AVARAGE
-    //
-    template<typename Tmx, typename T>
-    double sum(const Matrix_base<Tmx, T> &mxb1)
-    {
-        Matrix<double> mx{1, 1, 0};
-        machine::broadcast(mx, mxb1, Operation::add);
-        return mx(0,0);
-    }
-
-    template<typename Tmx, typename T>
-    Matrix<double> sum(const Matrix_base<Tmx, T> &mxb1, const axis ax)
-    {   
-        Matrix<double> mx = (ax == axis::X)? Matrix<double>{mxb1.get_rows(), 1} : Matrix<double>{1, mxb1.get_cols()};
-        machine::broadcast(mx, mxb1, Operation::add);
-        return mx;
-    }
-    template<typename Tmx, typename T>
-    double average(const Matrix_base<Tmx, T> &mxb1)
-    {   
-        auto r1{mxb1.get_rows()};
-        auto c1{mxb1.get_cols()};
-
-        if(r1*c1 == 0){
-            throw std::runtime_error("cols or rows are 0 in average");
-        }
-
-        double average{sum(mxb1)};
-        return average / (r1*c1);
-    }
-    template<typename Tmx, typename T>
-    Matrix<double> average(const Matrix_base<Tmx, T> &mxb1, const axis ax)
-    {
-        auto r1{mxb1.get_rows()};
-        auto c1{mxb1.get_cols()};
-
-        Matrix<double> average{sum(mxb1, (ax==axis::X)? axis::X : axis::Y)};
-        machine::broadcast(average, (ax==axis::X)? c1 : r1, Operation::divide);
-        return average;
-    }
-    //
-    //VARIANCE AND DEVIATION
-    //
-    template<typename Tmx, typename T>
-    double variance(const Matrix_base<Tmx, T> &mxb1, double degree = 0)
-    {   
-        auto r1{mxb1.get_rows()};
-        auto c1{mxb1.get_cols()};
-        double mean{average(mxb1)};
-
-        Matrix<double> var{mxb1};
-        var -= mean;
-        machine::broadcast(var, 2, Operation::power);
-        double var_out{sum(var)};
-        return  var_out / (r1*c1-degree);
-    }
-    template<typename Tmx, typename T>
-    Matrix<double> variance(const Matrix_base<Tmx, T> &mxb1, const axis ax, double degree = 0)
-    {   
-        auto r1{mxb1.get_rows()};
-        auto c1{mxb1.get_cols()};
-        Matrix<double> mean{average(mxb1, ax)};
-        Matrix<double> var{mxb1};
-        var -= mean;
-        machine::broadcast(var, 2, Operation::power);
-        Matrix<double> var_out {sum(var, ax)};
-        machine::broadcast(var_out, (ax == axis::X)? c1-degree : r1-degree, Operation::divide);
-        return var_out;
-    }
-    template<typename Tmx, typename T>
-    double standard_dev(const Matrix_base<Tmx, T> &mxb1, double degree = 0)
-    {   
-        return std::sqrt(variance(mxb1, degree));
-    }
-    template<typename Tmx, typename T>
-    Matrix<double> standard_dev(const Matrix_base<Tmx, T> &mxb1, const axis ax, double degree = 0)
-    {   
-        Matrix<double> standard_deviation{variance(mxb1, ax, degree)};
-        machine::broadcast(standard_deviation, 2.0, Operation::root);
-        return standard_deviation;
-    }
-    //
-    //NORMALIZATION
-    //
-    template<typename Tmx, typename T>
-    Matrix<T> normal_distribution(const Matrix_base<Tmx, T> &mxb1, const axis ax)
-    {   
-        double small_num {0.001};
-        Matrix<double> n_dist{mxb1 - average(mxb1, ax)};
-
-        Matrix<double> variance_squared{
-            machine::broadcast(variance(mxb1, ax) + small_num, 2.0, Operation::root)
+                self(self, right);
+                return;
+            }
+            else{
+                auto left = mv.M() > pivot;
+                auto right = mv.M() < pivot;
+                auto middle = mv[mv == pivot];
+                self(self, left);
+                if(duplicates_share){
+                    middle = start++;
+                }
+                else{
+                    for(long long col{} ; col<middle.get_cols() ; col++){
+                        middle(col) = start++;
+                    }
+                }
+                self(self, right);
+                return;
+            }
         };
+        Matrix<bool> mask{rows, cols, true};
+        rank_f(rank_f, mxb1[mask]);
 
-        return n_dist / variance_squared;
+        return static_cast<Tmx&>(mxb1);
     }
+
     template<typename Tmx, typename T>
-    double z_score(const Matrix_base<Tmx, T> &mxb1, double percentage);
+    Tmx& quantile(Matrix_base<Tmx, T> &mxb1, bool ascending = true){
+        auto rows{mxb1.get_rows()};
+        auto cols{mxb1.get_cols()};
+        machx::rank(mxb1, ascending);
+        mxb1 /= ((rows*cols)-1);
+        return static_cast<Tmx&>(mxb1);
+    }
+
+    template<typename Tmx, typename T>
+    Tmx& force_gaussian(Matrix_base<Tmx, T> &mxb1, bool ascending = true){
+        auto rows{mxb1.get_rows()};
+        auto cols{mxb1.get_cols()};
+        (machx::rank(mxb1, ascending) -= 0.625) /= (rows*cols + 0.25);
+        Matrix<T> ones_arr{rows, cols, 1};
+        mxb1 /= (ones_arr -= machx::abs(mxb1));
+        machx::log(mxb1);
+        mxb1 /= 1.702;
+        
+        return static_cast<Tmx&>(mxb1);
+    }   
+
+}
+namespace machx
+{
+
     
-
-    template<typename Tmx, typename T>
-    Matrix<T> normal_distribution(const Matrix_base<Tmx, T> &mxb1)
-    {
-    }
-
-    template<typename Tmx, typename T>
-    Matrix<T> normal_distribution(const Matrix_base<Tmx, T> &mxb1, const axis ax);
-
-    template<typename Tmx, typename T>
-    Matrix<T> robust_scale();
     //
     //TRIGONOMETRY
     //
     template<typename Tmx, typename T>
-    Matrix<T> cos(const Matrix_base<Tmx, T> &mxb1){
+    Tmx& cos(const Matrix_base<Tmx, T> &mxb1){
         auto rows{mxb1.get_rows()};
         auto cols{mxb1.get_cols()};
-        Matrix<T> mx{mxb1};
         for(long long row{} ; row<rows ; row++){
             for(long long col{} ; col<cols ; col++){
-                mx(row, col) = std::cos(mxb1(row, col));
+                mxb1(row, col) = std::cos(mxb1(row, col));
             }
         }
     }
     template<typename Tmx, typename T>
-    Matrix<T> sin(const Matrix_base<Tmx, T> &mxb1){
+    Tmx& sin(const Matrix_base<Tmx, T> &mxb1){
         auto rows{mxb1.get_rows()};
         auto cols{mxb1.get_cols()};
-        Matrix<T> mx{mxb1};
         for(long long row{} ; row<rows ; row++){
             for(long long col{} ; col<cols ; col++){
-                mx(row, col) = std::sin(mxb1(row, col));
+                mxb1(row, col) = std::sin(mxb1(row, col));
             }
         }
     }
     template<typename Tmx, typename T>
-    Matrix<T> tan(const Matrix_base<Tmx, T> &mxb1){
+    Tmx& tan(const Matrix_base<Tmx, T> &mxb1){
         auto rows{mxb1.get_rows()};
         auto cols{mxb1.get_cols()};
-        Matrix<T> mx{mxb1};
         for(long long row{} ; row<rows ; row++){
             for(long long col{} ; col<cols ; col++){
-                mx(row, col) = std::tan(mxb1(row, col));
+                mxb1(row, col) = std::tan(mxb1(row, col));
             }
         }
     }
@@ -215,7 +365,7 @@ namespace machine
     //RANDOMIZE AND INITIALIZE
     //
     template<typename Tmx, typename T, typename R, typename U>
-    void randomize(Matrix_base<Tmx, T> &mxb1, const R min, const U max){
+    Tmx& randomize(Matrix_base<Tmx, T> &mxb1, const R min, const U max){
         auto r1{mxb1.get_rows()};
         auto c1{mxb1.get_cols()};
 
@@ -236,10 +386,14 @@ namespace machine
                 }
             }
         }
+        return static_cast<Tmx&>(mxb1);
     }
+
+
+
     template<typename Tmx, typename T>
     void initialize(Matrix_base<Tmx, T> &mxb1);
-};
+}
 
 
 

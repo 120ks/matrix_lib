@@ -4,30 +4,39 @@
 #include <functional>
 
 
-namespace machine
-{
+namespace machx
+{   
+
     template<typename T>
     class trailing
-    {
+    {   
+        //stacks flags with syntax eg. matrix.cols_at(2).trailing(10).std().offset(1).cut(n = trail)
+        //when destroyed at end of expression, performs full operations, saves functions to list to be used at the end.
         private:
-            Matrix_view<T> mptr{};
-            long long trail{};
-            long long rows{};
-            long long cols{};
+            Matrix_view<T> mxv{};
+            long long trailing_n{};
             axis ax{axis::Y};
-            bool reverse{};
+            long long shift_by{0};
+            std::function<Matrix<T>(Matrix_view<T>, axis)> func{};
 
             trailing(Matrix_view<T> mxv1, long long trail_n, axis xy= axis::Y) 
-            : mptr{std::move(mxv1)}
-            , trail{}
-            , rows{mxv1->get_rows()}
-            , cols{mxv1->get_cols()}
+            : mxv{std::move(mxv1)}
+            , trailing_n{trail_n}
             , ax{xy}
             {
-                if(trail_n<0){
-                    reverse = true;
-                }
-                trail = static_cast<long long> (std::abs(trail_n));
+            }
+            ~trailing(){
+                
+            }
+            
+            trailing<T>& shift(long long offset){
+                shift_by = offset;
+                return *this;
+            }
+
+            trailing<T>& axis(axis xy){
+                ax = xy;
+                return *this;
             }
 
             trailing& std(double degree = 0);
@@ -38,44 +47,31 @@ namespace machine
 
             trailing& max();
 
-            trailing sum(){
+            trailing& sum(){
             }
 
             template<typename Umx, typename U = T>
-            trailing<T>& apply(std::function<void(Matrix_base<Umx, U>&, axis)> func)
+            trailing<T>& apply()
             {   
-                Slice row_slice{0, trail};
-                Slice col_slice{0, cols};
-                if(ax == axis::X){
-                    Slice row_slice{0, rows};
-                    Slice col_slice{0, trail};
-                    
-                    for(long long col{} ; col<cols ; col++){
-                        col_slice.begin += col;
-                        col_slice.end += col;
+                auto rows = mxv.get_rows();
+                auto cols = mxv.get_cols();
 
-                        (*mptr)[trail+col-1] = func((*mptr)(row_slice, col_slice), ax);
-                    }
-                    return *this;
-                
-                for(long long row{} ; row<rows ; row++){
-                        row_slice.begin += row;
-                        row_slice.end += row;
+                Matrix<T> copy = mxv.copy();
 
-                        (*mptr)(trail + row-1) = func((*mptr)(row_slice, col_slice), ax);
+                long long start = 0;
+                if(ax == axis::Y){
+                    for(auto row{trailing_n} ; row < rows ; row++){
+                        mxv(Slice{row}) = func(copy(Slice{start, row}), ax);
+                        start++;
                     }
-                return *this;
                 }
+                else{
+                    for(auto col{trailing_n} ; col < cols ; col++){
+                        mxv[Slice{col}] = func(copy(Slice{start, col}), ax);
+                        start++;
+                    }
+                }
+                return *this;
             }
-            //annetaan aina esim avg'ssa slice per kohta, eli esim jos on 1, 2, 3, 4, 5 kahden avulla niin kutsutaan sum[sl{0, 2}] etc, tähän voidaan soveltaa jokin funktio
-
-
-
-
-
     };
-
-
-
-
 }

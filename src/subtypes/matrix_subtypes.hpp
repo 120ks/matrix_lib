@@ -2,10 +2,12 @@
 #include<type_traits>
 #include <stdexcept>
 #include <utility>
+#include <iostream>
+
 //
 //enums and statics
 //
-namespace machine
+namespace machx
 {
     enum class Operation
     {
@@ -27,7 +29,7 @@ namespace machine
     static std::mt19937 generator(random_device());
 }
 
-namespace machine
+namespace machx
 {
     enum class Condition
     {   
@@ -62,12 +64,11 @@ class Slice
         {
             
             new_slice.end = (new_slice.end <= 0)? old_slice.end+new_slice.end : new_slice.end;
-            new_slice.begin = (new_slice.begin<0)? old_slice.begin+new_slice.begin : new_slice.begin;
-
-
+            new_slice.begin = (new_slice.begin<0)? old_slice.end+new_slice.begin : new_slice.begin;
             return {new_slice};
         }
 };
+
 
 //
 //using for ease
@@ -77,7 +78,7 @@ namespace std{
     using sl = Slice;
 }
 
-namespace machine
+namespace machx
 {
     template<typename T>
     class array

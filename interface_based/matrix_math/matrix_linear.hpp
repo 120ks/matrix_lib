@@ -1,7 +1,8 @@
 #pragma once
 #include "matrix_statistics.hpp"
+#include "broadcast.hpp"
 
-namespace machine
+namespace machx
 {   
     template<typename T>
     Matrix<T> matmul(const Matrix<T> &mx1, const Matrix<T> &mx2)
@@ -73,22 +74,55 @@ namespace machine
         }
         return mx3;
     }
+    template<typename Tmx, typename T>
+    auto manhattan_distance(const Matrix_base<Tmx, T> &mxb1){
+        auto distances = machx::abs(mxb1.copy());
+        return sum(distances);
+    }
 
     template<typename Tmx, typename T, typename Rmx, typename R>
-    double euclidean_distance(const Matrix_base<Tmx, T> &point1, const Matrix_base<Rmx, R> &point2)
+    auto manhattan_distance(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2){
+        quick_throw::throw_if_dimension_mismatch(mxb1, mxb2, "manhattan distance");
+        auto distances = machx::abs(mxb1-mxb2);
+        return sum(distances);
+    }
+
+    template<typename Tmx, typename T>
+    auto euclidean_distance(const Matrix_base<Tmx, T> &mxb1)
     {   
-        auto rows_1{point1.get_rows()};
-        auto cols_1{point1.get_cols()};
+        auto rows_1{mxb1.get_rows()};
+        auto cols_1{mxb1.get_cols()};
 
-        auto rows_2{point2.get_rows()};
-        auto cols_2{point2.get_cols()};
+        auto distances = power(mxb1, 2.0);
+        return std::sqrt(sum(distances));
+    }
 
-        if(!machine::same_dims(point1, point2)){
-            throw dimension_mismatch(point1, point2, "euclidean distance");
-        }
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    auto euclidean_distance(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2)
+    {   
+        auto rows_1{mxb1.get_rows()};
+        auto cols_1{mxb1.get_cols()};
 
-        auto distance = machine::broadcast(point1-point2, 2, Operation::power);
-        return std::sqrt(machine::sum(distance));
+        auto rows_2{mxb2.get_rows()};
+        auto cols_2{mxb2.get_cols()};
+
+        quick_throw::throw_if_dimension_mismatch(mxb1, mxb2, "euclidean distance");
+
+        auto distances = power(mxb1 - mxb2, 2);
+        return std::sqrt(sum(distances));
+    }
+
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    auto dot_product(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2){
+        return sum(mxb1 * mxb2);
+    }
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    auto cosine_similarity(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2){
+        return dot_product(mxb1, mxb2) / (euclidean_distance(mxb1) * euclidean_distance(mxb2));
+    }
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    auto cosine_distance(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2){
+        return 1.0 - cosine_similarity(mxb1, mxb2);
     }
 
     template<typename Tmx, typename T>
@@ -97,12 +131,12 @@ namespace machine
         auto cols = mxb1.get_cols();
 
         Matrix<T> transposed{cols, rows};
-            for(long long row{} ; row<rows ; row++){
-                for(long long col{} ; col<cols ; col++){
-                    transposed(col, row) = mxb1(row, col);
-                }
+        for(long long row{} ; row<rows ; row++){
+            for(long long col{} ; col<cols ; col++){
+                transposed(col, row) = mxb1(row, col);
             }
-            return transposed;
         }
+        return transposed;
+    }
     
 }

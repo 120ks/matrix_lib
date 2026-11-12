@@ -3,7 +3,7 @@
 #include "matrix_exceptions.hpp"
 #include <cmath>
 
-namespace machine
+namespace machx
 {   
     //
     //Broadcast Optimizers
@@ -41,7 +41,6 @@ namespace machine
         }
         if(divisible(mxb1, mxb2))
         {
-            
             tile_broadcast(mxb1, mxb2, op);
             return;
         }
@@ -65,7 +64,6 @@ namespace machine
     template<typename Tmx, typename T, typename Rmx, typename R>
     Matrix<T> broadcast(Matrix_base<Tmx, T> &&mxb1, const Matrix_base<Rmx, R> &mxb2, const Operation op)
     {   
-        
         broadcast(mxb1, mxb2, op);
         return {std::move(mxb1)};
     }
@@ -79,9 +77,9 @@ namespace machine
     }
 }
 //
-//BROADCAST MACHINE END
+//BROADCAST machx END
 //
-namespace machine
+namespace machx
 {   
     template<typename T, typename R>
     inline void direct_broadcast(T* begin1, T* end1, const R* begin2, const Operation op){ 
@@ -112,36 +110,18 @@ namespace machine
                 *(begin1++) = *(begin2++);
             }
         };
-
-        auto power = [&]()->void {
-            while (begin1 != end1){
-                auto val1 = static_cast<const double>((*begin1));
-                auto val2 = static_cast<const double>((*begin2++));
-                *(begin1++) = std::pow(val1, val2);
-            }
-        };
-        auto root = [&]()->void {
-            while (begin1 != end1){
-                auto val1 = static_cast<const double>((*begin1));
-                auto val2 = static_cast<const double>((*begin2++));
-                *(begin1++) = std::pow(val1, 1/val2);
-            }
-        };
         switch(op){
         case(Operation::add): add(); return;
         case(Operation::substract): substract(); return;
         case(Operation::multiply): multiply(); return;
         case(Operation::divide): divide(); return;
         case(Operation::equal): equal(); return;
-        case(Operation::power): power(); return;
-        case(Operation::root): root(); return;
         }
     }
 
     template<typename T, typename R>
     requires (!std::is_pointer_v<R>)
     inline void direct_broadcast(T* begin1, T* end1, const R val, const Operation op){  
-        
         auto add = [&]()->void {
             while (begin1 != end1){
                 *(begin1++) += val;
@@ -169,29 +149,12 @@ namespace machine
                 *(begin1++) = val;
             }
         };
-
-        auto power = [&]()->void {
-            while (begin1 != end1){
-                auto val1 = static_cast<const double>((*begin1));
-                auto val2 = static_cast<const double>(val);
-                *(begin1++) = std::pow(val1, val2);
-            }
-        };
-        auto root = [&]()->void {
-            while (begin1 != end1){
-                auto val1 = static_cast<const double>((*begin1));
-                auto val2 = static_cast<const double>(val);
-                *(begin1++) = std::pow(val1, 1/val2);
-            }
-        };
         switch(op){
         case(Operation::add): add(); return;
         case(Operation::substract): substract(); return;
         case(Operation::multiply): multiply(); return;
         case(Operation::divide): divide(); return;
         case(Operation::equal): equal(); return;
-        case(Operation::power): power(); return;
-        case(Operation::root): root(); return;
         }
     }
     
@@ -200,13 +163,11 @@ namespace machine
 //
 //BROADCAST OPERATIONS
 //
-namespace machine
+namespace machx
 {    
     template<typename Tmx, typename T, typename Rmx, typename R>
-    void tile_broadcast(Matrix_base<Tmx, T> &mxb, const Matrix_base<Rmx, R> &mxb2, const Operation op)
+    void tile_broadcast(Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2, const Operation op)
     {   
-
-        auto& mxb1 = static_cast<Tmx&>(mxb);
 
         auto rows1{mxb1.get_rows()}, rows2{mxb2.get_rows()};
         auto cols1{mxb1.get_cols()}, cols2{mxb2.get_cols()};
@@ -278,39 +239,12 @@ namespace machine
                 }
             }
         };
-
-        auto power = [&]()->void {
-            for(long long r{0} ; r<max_row ; r++){  
-                mx1_row = r % rows1;
-                mx2_row = r % rows2; 
-                for(long long c{0} ; c<max_col ; c++){
-                    mx1_col = c % cols1;
-                    mx2_col = c % cols2;
-                    mxb1(mx1_row, mx1_col) = std::pow(static_cast<double>(mxb1(mx1_row, mx1_col)), mxb2(mx2_row, mx2_col));
-                }
-            }
-        };
-        auto root = [&]()->void {
-            for(long long r{0} ; r<max_row ; r++){  
-                mx1_row = r % rows1;
-                mx2_row = r % rows2; 
-                for(long long c{0} ; c<max_col ; c++){
-                    mx1_col = c % cols1;
-                    mx2_col = c % cols2;
-                    mxb1(mx1_row, mx1_col) = std::pow(static_cast<double>(mxb1(mx1_row, mx1_col)), 1.0 / mxb2(mx2_row, mx2_col));
-                }
-            }
-        };
-
-        std::cerr<<"here\n"<<mxb2;
         switch(op){
         case(Operation::multiply)   : multiply(); return;
         case(Operation::divide)     : divide(); return;
         case(Operation::add)        : add(); return;
         case(Operation::substract)  : substract(); return;
         case(Operation::equal)      : equal(); return;
-        case(Operation::power)      : power(); return;
-        case(Operation::root)       : root(); return;
         }
         
     }
@@ -326,6 +260,7 @@ namespace machine
                 throw std::runtime_error("division/root by 0");
             }
         }
+
         auto max_row = mxb1.get_rows();
         auto max_col = mxb1.get_cols();
 
@@ -364,28 +299,107 @@ namespace machine
                 }
             }
         };
-        auto power = [&]()->void {
-            for(long long r{0} ; r<max_row ; r++){  
-                for(long long c{0} ; c<max_col ; c++){
-                    mxb1(r, c) =  std::pow(static_cast<double>(mxb1(r, c)), value);
-                }
-            }
-        };
-        auto root = [&]()->void {
-            for(long long r{0} ; r<max_row ; r++){  
-                for(long long c{0} ; c<max_col ; c++){
-                    mxb1(r, c) =  std::pow(static_cast<double>(mxb1(r, c)), 1.0/value);
-                }
-            }
-        };
         switch(op){
         case(Operation::multiply)   : multiply(); return;
         case(Operation::divide)     : divide(); return;
         case(Operation::add)        : add(); return;
         case(Operation::substract)  : substract(); return;
         case(Operation::equal)      : equal(); return;
-        case(Operation::power)      : power(); return;
-        case(Operation::root)       : root(); return;
         }
     }
+}
+
+namespace machx{
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    void power(Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2){
+        
+        auto rows1{mxb1.get_rows()}, rows2{mxb2.get_rows()};
+        auto cols1{mxb1.get_cols()}, cols2{mxb2.get_cols()};
+
+        if((rows1 == 0) || (cols1 == 0)) {return;}
+        if((rows2 == 0) || (cols2 == 0)) {return;}
+
+        long long max_row{std::max(rows1, rows2)};
+        long long max_col{std::max(cols1, cols2)};
+        
+        long long mx1_row{}, mx2_row{};
+        long long mx1_col{}, mx2_col{};
+
+        for(long long r{0} ; r<max_row ; r++){  
+            mx1_row = r % rows1;
+            mx2_row = r % rows2; 
+            for(long long c{0} ; c<max_col ; c++){
+                mx1_col = c % cols1;
+                mx2_col = c % cols2;
+                mxb1(mx1_row, mx1_col) = std::pow(static_cast<double>(mxb1(mx1_row, mx1_col)), mxb2(mx2_row, mx2_col));
+            }
+        }
+    }
+    
+    template<typename Tmx, typename T, typename R>
+    requires (std::is_arithmetic_v<R>)
+    void power(Matrix_base<Tmx, T> &mxb1, const R &val){
+        
+        auto rows1{mxb1.get_rows()};
+        auto cols1{mxb1.get_cols()};
+
+        if((rows1 == 0) || (cols1 == 0)) {return;}
+
+        for(long long r{0} ; r<rows1 ; r++){  
+            for(long long c{0} ; c<cols1 ; c++){
+                mxb1(r, c) = std::pow(static_cast<double>(mxb1(r, c)), val);
+            }
+        }
+    }
+    template<typename Tmx, typename T, typename R>
+    requires (std::is_arithmetic_v<R>)
+    Matrix<T> power(const Matrix_base<Tmx, T> &mxb1, const R &val){
+        Matrix<T> mx{mxb1};
+        power(mx, val);
+        return mx;
+    }
+
+
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    void root(Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2){
+        
+        auto rows1{mxb1.get_rows()}, rows2{mxb2.get_rows()};
+        auto cols1{mxb1.get_cols()}, cols2{mxb2.get_cols()};
+
+        if((rows1 == 0) || (cols1 == 0)) {return;}
+        if((rows2 == 0) || (cols2 == 0)) {return;}
+
+        long long max_row{std::max(rows1, rows2)};
+        long long max_col{std::max(cols1, cols2)};
+        
+        long long mx1_row{}, mx2_row{};
+        long long mx1_col{}, mx2_col{};
+
+        for(long long r{0} ; r<max_row ; r++){  
+            mx1_row = r % rows1;
+            mx2_row = r % rows2; 
+            for(long long c{0} ; c<max_col ; c++){
+                mx1_col = c % cols1;
+                mx2_col = c % cols2;
+                mxb1(mx1_row, mx1_col) = std::pow(static_cast<double>(mxb1(mx1_row, mx1_col)), 1.0 / mxb2(mx2_row, mx2_col));
+            }
+        }
+    }
+
+    template<typename Tmx, typename T, typename R>
+    requires (std::is_arithmetic_v<R>)
+    void root(Matrix_base<Tmx, T> &mxb1, const R &val){
+        
+        auto rows1{mxb1.get_rows()};
+        auto cols1{mxb1.get_cols()};
+
+        if((rows1 == 0) || (cols1 == 0)) {return;}
+
+        for(long long r{0} ; r<rows1 ; r++){  
+            for(long long c{0} ; c<cols1 ; c++){
+                mxb1(r, c) = std::pow(static_cast<double>(mxb1(r, c)), 1.0/ val);
+            }
+        }
+    }
+
 }

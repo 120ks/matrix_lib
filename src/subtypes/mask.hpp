@@ -4,14 +4,13 @@
 //
 //CREATING BOOLEANS
 //
-namespace machine
+namespace machx
 {
     template<typename Tmx, typename T, typename R>
     requires (std::integral<R> || std::floating_point<R>)
     Matrix<bool> make_mask(const Matrix_base<Tmx, T> &mxb1, const Condition condition, const R &threshold)
     {   
         quick_throw::throw_if_no_data(mxb1);
-
         long long r1{mxb1.get_rows()};
         long long c1{mxb1.get_cols()};
         Matrix<bool> mask{r1, c1, false};

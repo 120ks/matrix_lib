@@ -9,7 +9,7 @@
 template<typename T>
 class Matrix;
 
-namespace machine
+namespace machx
 {   
     static const double E{2.718281828459};
 
@@ -17,8 +17,8 @@ namespace machine
     Matrix<T> softmax(const Matrix_base<Tmx, T> &mxb1)
     {   
         
-        Matrix<T> probabilities{machine::broadcast(mxb1, E, Operation::equal)};
-        probabilities /= machine::sum(probabilities);
+        Matrix<T> probabilities{broadcast(mxb1, E, Operation::equal)};
+        probabilities /= sum(probabilities);
         
         return probabilities;
     }
@@ -26,8 +26,8 @@ namespace machine
     template<typename Tmx, typename T>
     Matrix<T> softmax(const Matrix_base<Tmx, T> &mxb1, const axis ax)
     {   
-        Matrix<T> probabilities{machine::broadcast(mxb1, E, Operation::equal)};
-        probabilities /= machine::sum(probabilities, ax);
+        Matrix<T> probabilities{broadcast(mxb1, E, Operation::equal)};
+        probabilities /= sum(probabilities, ax);
 
         return probabilities;
     }
@@ -48,7 +48,7 @@ namespace machine
     template<typename Tmx, typename T, typename Rmx, typename R>
     double cross_entropy_loss(const Matrix_base<Tmx, T> &prediction, const Matrix_base<Rmx, R> &hot_encoded)
     {
-        if(!machine::same_dims(prediction, hot_encoded))
+        if(!same_dims(prediction, hot_encoded))
         {
             throw dimension_mismatch(std::format(
                 "prediction({}x{}), must match hot_encoded({},{})", 

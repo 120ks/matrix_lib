@@ -8,7 +8,7 @@
 #include <iostream>
 #include <thread>
 #include <set>
-namespace machine
+namespace machx
 {
     void test_masking()
     {   
@@ -344,7 +344,6 @@ namespace machine
         }
         
         std::getline(std::cin, s);
-
         std::cout<<"changes matrix1 to 9 in the same slice area\n";
         mxv1 = 9;
         std::cout<<matrix1;
@@ -598,7 +597,7 @@ namespace machine
 
         for(long long i{} ; i<iterations ; i++)
         {
-            machine::threaded::tr_matmul(matrix1, matrix2, 3);
+            machx::threaded::tr_matmul(matrix1, matrix2, 3);
 
             if(i % step == 0)
             {   
@@ -625,7 +624,7 @@ namespace machine
 
 
 
-namespace machine
+namespace machx
 {
     void test_threads()
     {   
@@ -746,26 +745,67 @@ namespace machine
         std::cout<<"there are "<<set.size()<<" unique id's out of 30 matrices created";
     }
 
-    void test(Matrix_base<Matrix<float>, float> &mxb1){
-        Matrix_view<float> mxv{mxb1};
-        std::cout<<mxv;
-        mxv = 1;
-        
-    }
-
     void devep_test_ground()
     {   
-        Matrix<float> matrix1{10, 10, 1};
+        Matrix<float> matrix1{5, 5, 1};
         Matrix<float> matrix2{10, 10, 1};
-        std::cout<<matrix1;
         randomize(matrix1, 1, 10);
-        
-        
-
+        matrix1.rows_at(1) = 3;
+        std::cout<<matrix1;
+        std::cout<<force_gaussian(matrix1);
 
 
     };
 
+    void test_data_manip(){
+
+
+        Matrix<double> matrix{5, 5, 0};
+        randomize(matrix, 1, 10);
+        std::cout<<matrix;
+
+        std::cout<<"sum of matrix\n";
+        std::cout<<machx::sum(matrix)<<'\n';
+        
+        std::cout<<"sum of matrix per col (axis = Y)\n";
+        std::cout<<machx::sum(matrix, axis::Y)<<'\n';
+
+        std::cout<<"sum of matrix per row (axis = X)\n";
+        std::cout<<machx::sum(matrix, axis::X)<<'\n';
+
+        std::cout<<"mean of matrix, random is between 1 and 10 so something ~5.5\n";
+        std::cout<<machx::mean(matrix)<<'\n'<<'\n';
+
+        std::cout<<"mean of matrix per col (axis = Y)\n";
+        std::cout<<machx::mean(matrix, axis::Y)<<'\n';
+
+        std::cout<<"mean of matrix  per row (axis = X)\n";
+        std::cout<<machx::mean(matrix, axis::X)<<'\n';
+        
+        std::cout<<"std of matrix, random is between 1 and 10 so something ~2.55\n";
+        std::cout<<machx::standard_deviation(matrix)<<'\n'<<'\n';
+
+        std::cout<<"std of matrix per col (axis = Y)\n";
+        std::cout<<machx::standard_deviation(matrix, axis::Y)<<'\n';
+
+        std::cout<<"std of matrix  per row (axis = X)\n";
+        std::cout<<machx::standard_deviation(matrix, axis::X)<<'\n';
+
+        std::cout<<"z_scores\n";
+        auto copy = matrix.copy();
+        std::cout<<machx::z_scores(copy);
+
+        std::cout<<"robust_scale\n";
+        auto copy2 = matrix.copy();
+        std::cout<<machx::robust_scale(copy2);
+
+        std::cout<<"robust_z\n";
+        auto copy3 = matrix.copy();
+        std::cout<<machx::robust_z(copy3);
+
+        std::cout<<cosine_distance(matrix, copy);
+
+    }   
 
 }
 
