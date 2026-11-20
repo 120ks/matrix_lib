@@ -7,31 +7,28 @@
 namespace machx
 {
     template<typename Tmx, typename T, typename R>
-    requires (std::integral<R> || std::floating_point<R>)
+    requires (std::is_arithmetic_v<R>)
     Matrix<bool> make_mask(const Matrix_base<Tmx, T> &mxb1, const Condition condition, const R &threshold)
     {   
-        quick_throw::throw_if_no_data(mxb1);
-        long long r1{mxb1.get_rows()};
-        long long c1{mxb1.get_cols()};
-        Matrix<bool> mask{r1, c1, false};
-        
-        using common_type = std::common_type_t<T, R>;
+        auto rows = mxb1.get_rows();
+        auto cols = mxb1.get_cols();
+        Matrix<bool> mask{rows, cols, false};
         auto N_threshold = threshold;
 
-        for(long long r{} ; r<r1 ; r++){
-            for(long long c{} ; c<c1 ; c++)
+        for(long long row{} ; row<rows ; row++){
+            for(long long col{} ; col<cols ; col++)
             {
-                const auto &current_element = (mxb1(r, c));
+                const auto &current_element = (mxb1(row, col));
                 switch(condition)
                 {   
-                case(Condition::is_true):   mask(r, c) = true; break;
-                case(Condition::is_false):  mask(r, c) = false; break;
-                case(Condition::over):      mask(r, c) = (current_element >  N_threshold); break;
-                case(Condition::over_or):   mask(r, c) = (current_element >= N_threshold); break;
-                case(Condition::under):     mask(r, c) = (current_element <  N_threshold); break;
-                case(Condition::under_or):  mask(r, c) = (current_element <= N_threshold); break;
-                case(Condition::is) :       mask(r, c) = (current_element == N_threshold); break;
-                case(Condition::is_not):    mask(r, c) = (current_element != N_threshold); break;
+                case(Condition::is_true):   mask(row, col) = true; break;
+                case(Condition::is_false):  mask(row, col) = false; break;
+                case(Condition::over):      mask(row, col) = (current_element >  N_threshold); break;
+                case(Condition::over_or):   mask(row, col) = (current_element >= N_threshold); break;
+                case(Condition::under):     mask(row, col) = (current_element <  N_threshold); break;
+                case(Condition::under_or):  mask(row, col) = (current_element <= N_threshold); break;
+                case(Condition::is) :       mask(row, col) = (current_element == N_threshold); break;
+                case(Condition::is_not):    mask(row, col) = (current_element != N_threshold); break;
                 }
             }
         }

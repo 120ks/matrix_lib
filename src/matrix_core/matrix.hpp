@@ -23,6 +23,9 @@ namespace machx
 template<typename T>
 class Matrix : public Matrix_base<Matrix<T>, T>
 {   
+    template<typename, typename>
+    friend class Matrix_base;
+
     private:
         machx::array<T> matrix{};
         long long rows{};
@@ -33,9 +36,6 @@ class Matrix : public Matrix_base<Matrix<T>, T>
 //flags
 //
     public:
-        friend class mask_flag<Matrix<T>, T>;
-        mask_flag<Matrix<T>, T> M(){return *this;}
-
         friend class assign_flag<T>;
         assign_flag<T> A(){return *this;}
 
@@ -53,7 +53,7 @@ class Matrix : public Matrix_base<Matrix<T>, T>
 //
 //CONSTRUCTORS
 //  
-        explicit Matrix(const long long row_count = 1, const long long col_count = 1, T val = T{})
+        Matrix(const long long row_count = 1, const long long col_count = 1, T val = T{})
         : matrix(row_count * col_count, val)
         , rows{row_count}
         , cols{col_count}
@@ -88,7 +88,7 @@ class Matrix : public Matrix_base<Matrix<T>, T>
             matrix.resize(rows*cols);
             for(long long row{} ; row<rows ; row++){
                 for(long long col{} ; col<cols ; col++){
-                    (*this)(row, col) = mxb1(row, col);
+                    (*this)(row, col) = static_cast<T>(mxb1(row, col));
                 }
             }
         }
@@ -98,11 +98,8 @@ class Matrix : public Matrix_base<Matrix<T>, T>
         {
             lifetime_table::remove_id(this->matrix_id);
         }
-        //
-        //SLICE AND MASK
-        //
+        //SLICE
         Matrix_view<T> operator()(Slice r_slice, Slice c_slice){   
-
             r_slice.end = (r_slice.end <= 0) ? rows+r_slice.end : r_slice.end; //if 0, rows, if -1, rows-1
             c_slice.end = (c_slice.end <= 0) ? cols+c_slice.end : c_slice.end;
             
@@ -111,26 +108,42 @@ class Matrix : public Matrix_base<Matrix<T>, T>
             return {*this, r_slice, c_slice};
         }   
 
-        Matrix_view<T> operator()(Slice r_slice) //row slice
-        {   
+        Matrix_view<T> operator()(Slice r_slice){   
             r_slice.end = (r_slice.end <= 0) ? rows+r_slice.end : r_slice.end;
             r_slice.begin = (r_slice.begin < 0) ? rows+r_slice.begin : r_slice.begin;
-
-            Slice c_slice{0, cols};
-
-            return {*this, r_slice, c_slice};
+            return {*this, r_slice, Slice{0, cols}};
         }
 
-        Matrix_view<T> operator[](Slice c_slice) //cols slice
-        {
+        Matrix_view<T> operator[](Slice c_slice){
             c_slice.end = (c_slice.end <= 0) ? cols+c_slice.end : c_slice.end;
             c_slice.begin = (c_slice.begin < 0) ? cols+c_slice.begin : c_slice.begin;
-
-            Slice r_slice{0, rows};
-            return {*this, r_slice, c_slice};
+            return {*this, Slice{0, rows}, c_slice};
         }
-        template<typename BOOLmx>
-        Mask_view<T> operator[](const Matrix_base<BOOLmx, bool> &mask);
+
+        //CONST SLICE
+        const Matrix_view<T> operator()(Slice r_slice, Slice c_slice)const{   
+            r_slice.end = (r_slice.end <= 0) ? rows+r_slice.end : r_slice.end; //if 0, rows, if -1, rows-1
+            c_slice.end = (c_slice.end <= 0) ? cols+c_slice.end : c_slice.end;
+            
+            r_slice.begin = (r_slice.begin < 0) ? rows+r_slice.begin : r_slice.begin;
+            c_slice.begin = (c_slice.begin < 0) ? cols+c_slice.begin : c_slice.begin;
+            return {*this, r_slice, c_slice};
+        }   
+
+        const Matrix_view<T> operator()(Slice r_slice)const{   
+            r_slice.end = (r_slice.end <= 0) ? rows+r_slice.end : r_slice.end;
+            r_slice.begin = (r_slice.begin < 0) ? rows+r_slice.begin : r_slice.begin;
+            return {*this, r_slice, Slice{0, cols}};
+        }
+
+        const Matrix_view<T> operator[](Slice c_slice)const{
+            c_slice.end = (c_slice.end <= 0) ? cols+c_slice.end : c_slice.end;
+            c_slice.begin = (c_slice.begin < 0) ? cols+c_slice.begin : c_slice.begin;
+            return {*this, Slice{0, rows}, c_slice};
+        }
+
+        using Matrix_base<Matrix<T>, T>::operator[];
+        
         //
         //INDEXING
         //        
@@ -160,11 +173,6 @@ class Matrix : public Matrix_base<Matrix<T>, T>
 
         inline Matrix<T> copy()const{   
             return Matrix<T>{*this};
-        }
-
-        template<typename R, typename R2 = R>
-        inline Matrix<R> copy_as()const{
-            return Matrix<R>{*this};
         }
 
         inline operator bool() const{

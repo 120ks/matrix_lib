@@ -1,7 +1,6 @@
 #pragma once
 
 #include "mx.hpp"
-#include "data_manip.hpp"
 #include <chrono>
 #include <iostream>
 #include <algorithm>
@@ -9,7 +8,9 @@
 #include <thread>
 #include <set>
 namespace machx
-{
+{   
+
+
     void test_masking()
     {   
         std::cout<<"testing masking\n"<<std::endl;
@@ -21,9 +22,10 @@ namespace machx
         Matrix<int> matrix2{5, 5};
         Matrix<double> matrix3{5, 10};
 
-        randomize(matrix1, 1, 10);
-        randomize(matrix2, 1, 10);
-        randomize(matrix3, 1.0, 10.0);
+        matrix1.randomize_uniform(1, 10);
+        matrix2.randomize_uniform(1, 10);
+        matrix3.randomize_uniform(1, 10);
+        
         auto matrix1_copy = matrix1.copy();
 
         std::cout<<"matrix1"<<std::endl;
@@ -100,9 +102,9 @@ namespace machx
         Matrix<int> matrix2{5, 5};
         Matrix<double> matrix3{2, 10};
 
-        randomize(matrix1, 1, 10);
-        randomize(matrix2, 1, 10);
-        randomize(matrix3, 1.0, 10.0);
+        matrix1.randomize_uniform(1, 10);
+        matrix2.randomize_uniform(1, 10);
+        matrix3.randomize_uniform(1, 10);
 
         std::cout<<"matrix1"<<std::endl;
         std::cout<<matrix1;
@@ -175,7 +177,7 @@ namespace machx
         std::getline(std::cin, s);
 
         Matrix<int> matrix1{5, 5};
-        randomize(matrix1, 1, 10);
+        matrix1.randomize_uniform(1, 10);
 
         std::cout<<"matrix1"<<std::endl;
         std::cout<<matrix1;
@@ -363,9 +365,9 @@ namespace machx
         Matrix<int> matrix2{4, 4};
         Matrix<double> matrix3{8, 8};
 
-        randomize(matrix1, 1, 10);
-        randomize(matrix2, 1, 10);
-        randomize(matrix3, 1.0, 10.0);
+        matrix1.randomize_uniform(1, 10);
+        matrix2.randomize_uniform(1, 10);
+        matrix3.randomize_uniform(1, 10);
 
         std::cout<<"matrix1"<<std::endl;
         std::cout<<matrix1;
@@ -508,7 +510,7 @@ namespace machx
 
         for(long long i{} ; i<iterations ; i++)
         {
-            matmul(matrix1, matrix2);
+            matrix1.matmul(matrix1);
 
             if(i % step == 0)
             {   
@@ -534,7 +536,7 @@ namespace machx
         std::getline(std::cin, s);
 
         std::cout<<"operations +-/*"<<std::endl;
-        std::cout<<"one iter is is all arithmetic operatos, mx *= 1, mx *=mx, mx*1 mx*mx for all arithmetics"<<std::endl;
+        std::cout<<"one iter is is all arithmetic operators, mx *= 1, mx *=mx, mx*1 mx*mx for all arithmetics"<<std::endl;
         std::cout<<"with assign on all binary operations"<<std::endl;
         std::getline(std::cin, s);
         
@@ -747,12 +749,15 @@ namespace machx
 
     void devep_test_ground()
     {   
-        Matrix<float> matrix1{5, 5, 1};
-        Matrix<float> matrix2{10, 10, 1};
-        randomize(matrix1, 1, 10);
-        matrix1.rows_at(1) = 3;
-        std::cout<<matrix1;
-        std::cout<<force_gaussian(matrix1);
+        Matrix<double> matrix{6, 6, 0};
+        matrix.randomize_uniform(-4, 10);
+
+        std::cout<<matrix;
+        std::cout<<"shift_cols(2) \n";
+        std::cout<<matrix.copy().shift_cols(2);
+
+        std::cout<<"drop_nan_cols \n";
+        std::cout<<matrix.copy().shift_cols(2).drop_nan_cols();
 
 
     };
@@ -760,52 +765,330 @@ namespace machx
     void test_data_manip(){
 
 
-        Matrix<double> matrix{5, 5, 0};
-        randomize(matrix, 1, 10);
+        Matrix<double> matrix{6, 6, 0};
+        matrix.randomize_uniform(-4, 10);
         std::cout<<matrix;
 
-        std::cout<<"sum of matrix\n";
-        std::cout<<machx::sum(matrix)<<'\n';
+        std::cout<<"sum\n";
+        std::cout<<matrix.sum()<<'\n'<<'\n';
         
-        std::cout<<"sum of matrix per col (axis = Y)\n";
-        std::cout<<machx::sum(matrix, axis::Y)<<'\n';
+        std::cout<<"row_sum\n";
+        std::cout<<matrix.row_sum();
 
-        std::cout<<"sum of matrix per row (axis = X)\n";
-        std::cout<<machx::sum(matrix, axis::X)<<'\n';
+        std::cout<<"col_sum\n";
+        std::cout<<matrix.col_sum();
 
-        std::cout<<"mean of matrix, random is between 1 and 10 so something ~5.5\n";
-        std::cout<<machx::mean(matrix)<<'\n'<<'\n';
-
-        std::cout<<"mean of matrix per col (axis = Y)\n";
-        std::cout<<machx::mean(matrix, axis::Y)<<'\n';
-
-        std::cout<<"mean of matrix  per row (axis = X)\n";
-        std::cout<<machx::mean(matrix, axis::X)<<'\n';
+        std::cout<<"mean\n";
+        std::cout<<matrix.mean()<<'\n'<<'\n';
         
-        std::cout<<"std of matrix, random is between 1 and 10 so something ~2.55\n";
-        std::cout<<machx::standard_deviation(matrix)<<'\n'<<'\n';
+        std::cout<<"row_mean\n";
+        std::cout<<matrix.row_mean();
 
-        std::cout<<"std of matrix per col (axis = Y)\n";
-        std::cout<<machx::standard_deviation(matrix, axis::Y)<<'\n';
+        std::cout<<"col_mean\n";
+        std::cout<<matrix.col_mean();
+        
+        std::cout<<"var\n";
+        std::cout<<matrix.var()<<'\n'<<'\n';
+        
+        std::cout<<"row_var\n";
+        std::cout<<matrix.row_var();
 
-        std::cout<<"std of matrix  per row (axis = X)\n";
-        std::cout<<machx::standard_deviation(matrix, axis::X)<<'\n';
+        std::cout<<"col_var\n";
+        std::cout<<matrix.col_var();
+
+        std::cout<<"std\n";
+        std::cout<<matrix.std()<<'\n'<<'\n';
+        
+        std::cout<<"row_std\n";
+        std::cout<<matrix.row_std();
+
+        std::cout<<"col_std\n";
+        std::cout<<matrix.col_std();
+
+        std::cout<<"min\n";
+        std::cout<<matrix.min()<<'\n'<<'\n';
+        
+        std::cout<<"row_min\n";
+        std::cout<<matrix.row_min();
+
+        std::cout<<"col_min\n";
+        std::cout<<matrix.col_min();
+
+        std::cout<<"max\n";
+        std::cout<<matrix.max()<<'\n'<<'\n';
+        
+        std::cout<<"row_max\n";
+        std::cout<<matrix.row_max();
+
+        std::cout<<"col_max\n";
+        std::cout<<matrix.col_max();
+
+        std::cout<<"min_max // 0-1\n";
+        std::cout<<matrix.copy().min_max(0, 1);
 
         std::cout<<"z_scores\n";
-        auto copy = matrix.copy();
-        std::cout<<machx::z_scores(copy);
+        std::cout<<matrix.copy().z_scores();
 
         std::cout<<"robust_scale\n";
-        auto copy2 = matrix.copy();
-        std::cout<<machx::robust_scale(copy2);
+        std::cout<<matrix.copy().robust_scale();
 
         std::cout<<"robust_z\n";
-        auto copy3 = matrix.copy();
-        std::cout<<machx::robust_z(copy3);
+        std::cout<<matrix.copy().robust_z(0.1, 0.9);
 
-        std::cout<<cosine_distance(matrix, copy);
+        std::cout<<"batch_norm\n";
+        std::cout<<matrix.copy().batch_norm();
 
+        std::cout<<"layer_norm scale\n";
+        std::cout<<matrix.copy().layer_norm();
+
+        std::cout<<"group_norm // two groups \n";
+        std::cout<<matrix.copy().group_norm(2);
+
+        std::cout<<"abs\n";
+        std::cout<<matrix.copy().abs();
+
+        std::cout<<"rank //ascending = true, duplicates share rank = true\n";
+        std::cout<<matrix.copy().rank(true, true);
+
+        std::cout<<"quantile\n";
+        std::cout<<matrix.copy().quantile();
+
+        std::cout<<"bucket // b = 6\n";
+        std::cout<<matrix.copy().bucket(6);
+
+        std::cout<<"fit_gaussian\n";
+        std::cout<<matrix.copy().fit_gaussian();
+
+        std::cout<<"clip //-2, 5\n";
+        std::cout<<matrix.copy().clip(-2, 5);
+
+        std::cout<<"clip_Q percerntiles//0.1, 0.9\n";
+        std::cout<<matrix.copy().clip_Q(0.1, 0.9);
+
+        std::cout<<"clip_to_zero // -0.3, 0.3 (z-scored) \n";
+        std::cout<<matrix.copy().z_scores().clip_to_zero(-0.3, 0.3);
+
+        std::cout<<"copy \n";
+        std::cout<<matrix.copy();
+
+        std::cout<<"shift_rows(-2) \n";
+        std::cout<<matrix.copy().shift_rows(-2);
+
+        std::cout<<"drop_nan_rows \n";
+        std::cout<<matrix.copy().shift_rows(-2).drop_nan_rows();
+
+        std::cout<<"shift_cols(2) \n";
+        std::cout<<matrix.copy().shift_cols(2);
+
+        std::cout<<"drop_nan_cols \n";
+        std::cout<<matrix.copy().shift_cols(2).drop_nan_cols();
+
+        std::cout<<"auto random mask \n";
+        auto mask = matrix>0;
+        std::cerr<<mask;
+
+        std::cout<<"row_mask(true) //and \n";
+        std::cerr<<mask.row_mask(true);
+
+        std::cout<<"row_mask(false) \n";
+        std::cerr<<mask.row_mask(false);
+
+        std::cout<<"col_mask(true) \n";
+        std::cerr<<mask.col_mask(true);
+
+        std::cout<<"col_mask(or) \n";
+        std::cerr<<mask.col_mask(false);
+
+        std::cerr<<"matrix\n";
+        std::cerr<<matrix;
+
+        std::cout<<"concat_rows({0, 2, 4}) \n";
+        std::cerr<<matrix.concat_rows({0, 2, 4});
+
+        std::cout<<"concat_cols({1, 2, 5}) \n";
+        std::cerr<<matrix.concat_cols({1, 2, 5});
+
+        std::cout<<"ref_rows({1, 2, 4}) \n";
+        std::cerr<<matrix.ref_rows({1, 2, 4});
+
+        std::cout<<"ref_cols({1, 2, 4}) \n";
+        std::cerr<<matrix.ref_cols({1, 2, 4});
     }   
+
+
+    void flag_test(){
+
+        Matrix<double> matrix{6, 6, 0};
+        matrix.randomize_uniform(-4, 10);
+        std::cout<<matrix;
+
+        const Matrix<double> const_matrix{matrix*1.5};
+
+        std::cout<<"matrix.M() < 1.5 = -1\n";
+        matrix.M() < 1.5 = -1;
+        std::cout<<matrix;
+
+        std::cout<<"matrix.RMA() <8 //rows where all vals are under 8\n";
+        std::cout<<(matrix.RMA() < 8);
+
+        std::cout<<"matrix.RMO() >8 //rows where atleast one col has val over 8\n";
+        std::cout<<(matrix.RMO() > 8);
+
+        std::cout<<"matrix.CMA() <8 //cols where all vals are under 8\n";
+        std::cout<<(matrix.CMA() < 8);
+
+        std::cout<<"matrix.CMO() >8 //cols where atleast one row has val over 8\n";
+        std::cout<<(matrix.CMO() > 8);
+
+        std::cerr<<"const_matrix\n";
+        std::cout<<const_matrix;
+
+        std::cerr<<"matrix\n";
+        std::cout<<matrix;
+
+        std::cout<<"also work on const, return non mutable references to matrices\n";
+        std::cout<<"matrix.M() < const_matrix = const_matrix.M() > matrix;\n";
+        matrix.M() < const_matrix = const_matrix.M()>=matrix;
+        std::cout<<matrix;
+
+        std::cout<<"const_matrix.RMA() <11 //rows where all vals are under 11\n";
+        std::cout<<(const_matrix.RMA() < 11);
+
+        std::cout<<"const_matrix.RMO() >11 //rows where atleast one col has val over 11\n";
+        std::cout<<(const_matrix.RMO() > 11);
+
+        std::cout<<"const_matrix.CMA() <11 //cols where all vals are under 11\n";
+        std::cout<<(const_matrix.CMA() < 11);
+
+        std::cout<<"const_matrix.CMO() >11 //cols where atleast one row has val over 11\n";
+        std::cout<<(const_matrix.CMO() > 11);
+
+    }
+
+
+    void cov_and_corr(){
+
+        Matrix<float> matrix{6, 6, 0};
+        matrix.randomize_uniform(-4, 10);
+
+        Matrix<float> matrix2{6, 6, 0};
+        matrix2.randomize_uniform(-4, 10);
+
+        std::cerr<<"matrix\n";
+        std::cerr<<matrix;
+
+        std::cerr<<"matrix2\n";
+        std::cerr<<matrix2;
+        
+        std::cerr<<"all default samples, add 0 to arguments for full population\n\n";
+
+        std::cerr<<"matrix.cov(matrix2)\n";
+        std::cerr<<matrix.cov(matrix2)<<'\n'<<'\n';
+
+        std::cerr<<"matrix.cov_matrix() \n";
+        std::cerr<<matrix.cov_matrix();
+
+        std::cerr<<"matrix.row_cov(matrix2)// covariance between rows cov(row i, row j) \n";
+        std::cerr<<matrix.row_cov(matrix2);
+
+        std::cerr<<"matrix.col_cov(matrix2)\n";
+        std::cerr<<matrix.col_cov(matrix2); 
+
+        std::cerr<<"matrix.corr(matrix2)\n";
+        std::cerr<<matrix.corr(matrix2)<<'\n'<<'\n';
+
+        std::cerr<<"matrix.auto_corr(lag = 1) \n";
+        std::cerr<<matrix.auto_corr(1)<<'\n'<<'\n';
+
+        std::cerr<<"matrix.row_corr(matrix2)\n";
+        std::cerr<<matrix.row_corr(matrix2);
+
+        std::cerr<<"matrix.col_corr(matrix2)\n";
+        std::cerr<<matrix.col_corr(matrix2);
+    }
+
+        void searching(){
+            Matrix<double> matrix{6, 6, 0};
+            matrix.randomize_uniform(-4, 10);
+            std::cout<<matrix;
+            const Matrix<double> const_matrix{matrix};
+
+
+            std::cerr<<"all returned values / matrices are references and they can be used to change the values\n\n";
+            std::cerr<<"upper is for non const, lower for const\n\n";
+
+            std::cerr<<"min()\n";
+            std::cerr<<matrix.min()<<'\n';
+            std::cerr<<const_matrix.min()<<'\n';
+
+            std::cerr<<"max()\n";
+            std::cerr<<matrix.max()<<'\n';
+            std::cerr<<const_matrix.max()<<'\n';
+
+            std::cerr<<"row_min()\n";
+            std::cerr<<matrix.row_min();
+            std::cerr<<const_matrix.row_min();
+
+            std::cerr<<"col_min()\n";
+            std::cerr<<matrix.col_min();
+            std::cerr<<const_matrix.col_min();
+
+            std::cerr<<"row_max()\n";
+            std::cerr<<matrix.row_max();
+            std::cerr<<const_matrix.row_max();
+
+            std::cerr<<"col_max()\n";
+            std::cerr<<matrix.col_max();
+            std::cerr<<const_matrix.col_max();
+
+            std::cerr<<"closest(0)\n";
+            std::cerr<<matrix.closest(0)<<'\n';
+            std::cerr<<const_matrix.closest(0)<<'\n';
+
+            std::cerr<<"changing values to 1.2345 for all selected values\n\n";
+
+            std::cerr<<"min()\n";
+            matrix.min() = 1.2345;
+            std::cerr<<matrix<<'\n';
+
+            std::cerr<<"max()\n";
+            matrix.max() = 1.2345;
+            std::cerr<<matrix<<'\n';
+
+            std::cerr<<"row_min()\n";
+            matrix.row_min() = 1.2345;
+            std::cerr<<matrix<<'\n';
+
+            std::cerr<<"col_max()\n";
+            matrix.col_max() = 1.2345;
+            std::cerr<<matrix<<'\n';
+
+            std::cerr<<"closest(0) is\n";
+            std::cerr<<matrix.closest(0)<<'\n';
+
+            auto& closest = matrix.closest(0) = 1.2345;
+            std::cerr<<"same position is now\n";
+            std::cerr<<closest<<'\n';
+            std::cerr<<matrix<<'\n';
+        }   
+
+
+    void test_rolling(){
+        Matrix<double> matrix{6, 6, 0};
+        matrix.randomize_uniform(-4, 10);
+        std::cerr<<matrix<<'\n';
+        std::cerr<<matrix.rolling_avg(2);
+
+        auto x = matrix.RMO() < 1222;
+        x(sl{1, 2}, sl{1, 3}) = 1000;
+
+        std::cerr<<matrix;
+
+        Matrix_base<decltype(x), double>& mxb = x;
+
+        std::cerr<<mxb(sl{1, 2});
+        std::cerr<<matrix(sl{1, 2});
+    }
 
 }
 

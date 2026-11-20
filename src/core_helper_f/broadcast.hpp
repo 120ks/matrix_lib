@@ -311,13 +311,13 @@ namespace machx
 
 namespace machx{
     template<typename Tmx, typename T, typename Rmx, typename R>
-    void power(Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2){
+    Tmx& power(Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2){
         
         auto rows1{mxb1.get_rows()}, rows2{mxb2.get_rows()};
         auto cols1{mxb1.get_cols()}, cols2{mxb2.get_cols()};
 
-        if((rows1 == 0) || (cols1 == 0)) {return;}
-        if((rows2 == 0) || (cols2 == 0)) {return;}
+        if((rows1 == 0) || (cols1 == 0)) {static_cast<Tmx&>(mxb1);}
+        if((rows2 == 0) || (cols2 == 0)) {static_cast<Tmx&>(mxb1);}
 
         long long max_row{std::max(rows1, rows2)};
         long long max_col{std::max(cols1, cols2)};
@@ -334,40 +334,35 @@ namespace machx{
                 mxb1(mx1_row, mx1_col) = std::pow(static_cast<double>(mxb1(mx1_row, mx1_col)), mxb2(mx2_row, mx2_col));
             }
         }
+        return static_cast<Tmx&>(mxb1);
     }
     
     template<typename Tmx, typename T, typename R>
     requires (std::is_arithmetic_v<R>)
-    void power(Matrix_base<Tmx, T> &mxb1, const R &val){
+    Tmx& power(Matrix_base<Tmx, T> &mxb1, const R &val){
         
         auto rows1{mxb1.get_rows()};
         auto cols1{mxb1.get_cols()};
 
-        if((rows1 == 0) || (cols1 == 0)) {return;}
+        if((rows1 == 0) || (cols1 == 0)) {static_cast<Tmx&>(mxb1);}
 
         for(long long r{0} ; r<rows1 ; r++){  
             for(long long c{0} ; c<cols1 ; c++){
                 mxb1(r, c) = std::pow(static_cast<double>(mxb1(r, c)), val);
             }
         }
-    }
-    template<typename Tmx, typename T, typename R>
-    requires (std::is_arithmetic_v<R>)
-    Matrix<T> power(const Matrix_base<Tmx, T> &mxb1, const R &val){
-        Matrix<T> mx{mxb1};
-        power(mx, val);
-        return mx;
+        return static_cast<Tmx&>(mxb1);
     }
 
 
     template<typename Tmx, typename T, typename Rmx, typename R>
-    void root(Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2){
+    Tmx& root(Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2){
         
         auto rows1{mxb1.get_rows()}, rows2{mxb2.get_rows()};
         auto cols1{mxb1.get_cols()}, cols2{mxb2.get_cols()};
 
-        if((rows1 == 0) || (cols1 == 0)) {return;}
-        if((rows2 == 0) || (cols2 == 0)) {return;}
+        if((rows1 == 0) || (cols1 == 0)) {static_cast<Tmx&>(mxb1);}
+        if((rows2 == 0) || (cols2 == 0)) {static_cast<Tmx&>(mxb1);}
 
         long long max_row{std::max(rows1, rows2)};
         long long max_col{std::max(cols1, cols2)};
@@ -384,22 +379,24 @@ namespace machx{
                 mxb1(mx1_row, mx1_col) = std::pow(static_cast<double>(mxb1(mx1_row, mx1_col)), 1.0 / mxb2(mx2_row, mx2_col));
             }
         }
+        return static_cast<Tmx&>(mxb1);
     }
 
     template<typename Tmx, typename T, typename R>
     requires (std::is_arithmetic_v<R>)
-    void root(Matrix_base<Tmx, T> &mxb1, const R &val){
+    Tmx& root(Matrix_base<Tmx, T> &mxb1, const R &val){
         
         auto rows1{mxb1.get_rows()};
         auto cols1{mxb1.get_cols()};
 
-        if((rows1 == 0) || (cols1 == 0)) {return;}
+        if((rows1 == 0) || (cols1 == 0)) {return static_cast<Tmx&>(mxb1);}
 
         for(long long r{0} ; r<rows1 ; r++){  
             for(long long c{0} ; c<cols1 ; c++){
                 mxb1(r, c) = std::pow(static_cast<double>(mxb1(r, c)), 1.0/ val);
             }
         }
+        return static_cast<Tmx&>(mxb1);
     }
 
 }

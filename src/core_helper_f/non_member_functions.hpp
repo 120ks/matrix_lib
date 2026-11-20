@@ -5,6 +5,8 @@
 #include <iostream>
 #include <iomanip>
 #include <type_traits>
+#include <string>
+#include <format>
 
 
 
@@ -12,7 +14,43 @@ namespace machx
 {
     template<typename T> class Matrix;
     
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    auto operator+(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2)
+    {   
+        using common_type = std::common_type_t<T, R>;
+        Matrix<common_type>mx{mxb1};
+        mx += mxb2;
+        return mx;
+    }
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    auto operator-(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2)
+    {   
+        using common_type = std::common_type_t<T, R>;
+        Matrix<common_type>mx{mxb1};
+        mx -= mxb2;
+        return mx;
+    }
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    auto operator*(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2)
+    {   
+        using common_type = std::common_type_t<T, R>;
+        Matrix<common_type>mx{mxb1};
+        
+        mx *= mxb2;
+        
+        return mx;
+    }
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    auto operator/(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2)
+    {   
+        using common_type = std::common_type_t<T, R>;
+        Matrix<common_type>mx{mxb1};
+        mx /= mxb2;
+        return mx;
+    }
+
     template<typename Tmx, typename T, typename R>
+    requires (std::is_arithmetic_v<R>)
     auto operator+(const Matrix_base<Tmx, T> &mxb1, const R &val) //handles both 
     {   
         using common_type = std::common_type_t<T, R>;
@@ -21,6 +59,7 @@ namespace machx
         return mx;
     }
     template<typename Tmx, typename T, typename R>
+    requires (std::is_arithmetic_v<R>)
     auto operator-(const Matrix_base<Tmx, T> &mxb1, const R &val)
     {   
         using common_type = std::common_type_t<T, R>;
@@ -29,6 +68,7 @@ namespace machx
         return mx;
     }
     template<typename Tmx, typename T, typename R>
+    requires (std::is_arithmetic_v<R>)
     auto operator*(const Matrix_base<Tmx, T> &mxb1, const R &val)
     {   
         using common_type = std::common_type_t<T, R>;
@@ -39,6 +79,7 @@ namespace machx
         return mx;
     }
     template<typename Tmx, typename T, typename R>
+    requires (std::is_arithmetic_v<R>)
     auto operator/(const Matrix_base<Tmx, T> &mxb1, const R &val)
     {   
         using common_type = std::common_type_t<T, R>;
@@ -99,7 +140,7 @@ namespace machx
 
         for(long long r{} ; r < rows1 ; r++){
             for(long long c{} ; c<cols1 ; c++){
-                mask3(r, c) = ((mask1(r, c) == 1) && (mask2(r, c) == 1)) ? 1 : 0;
+                mask3(r, c) = (mask1(r, c) && mask2(r, c));
             }
         }
         return mask3;
@@ -119,45 +160,32 @@ namespace machx
 
         for(long long r{} ; r < rows1 ; r++){
             for(long long c{} ; c<cols1 ; c++){
-                mask3(r, c) = ((mask1(r, c) == 1) || (mask2(r, c) == 1)) ? 1 : 0;
+                mask3(r, c) = (mask1(r, c) || mask2(r, c));
             }
         }
         return mask3;
     }
 
     template<typename Tmx, typename T>
-    requires (std::is_arithmetic_v<T>) 
     std::ostream& operator<<(std::ostream& os, const Matrix_base<Tmx, T> &mxb1)
     {   
-        
-        auto r1{mxb1.get_rows()};
-        auto c1{mxb1.get_cols()};
-        for(long long r{} ; r<r1 ; r++){
-            for(long long c{} ; c<c1 ; c++){
-                //auto s = std::to_string(mxb1(r, c)); //make show only N chars for uniform view
-                if(c<c1-1){os<<std::fixed<<std::setprecision(2)<<mxb1(r, c)<<" | ";}
-                else{os<<std::fixed<<std::setprecision(2)<<mxb1(r, c);}
-            }
-            os<<'\n';
-        }
-        os<<'\n';
-        return os;
-    }
+        auto rows{mxb1.get_rows()};
+        auto cols{mxb1.get_cols()};
 
-    template<typename Tmx, typename T>
-    requires (!std::is_arithmetic_v<T>)
-    std::ostream& operator<<(std::ostream& os, const Matrix_base<Tmx ,T> &mxb1)
-    {
-        auto r1{mxb1.get_rows()};
-        auto c1{mxb1.get_cols()};
-        for(long long r{} ; r<r1 ; r++){
-            for(long long c{} ; c<c1 ; c++){
-                if(c<c1-1){
-                    os<<std::fixed<<std::setprecision(2)<<mxb1(r, c);
-                }
-                else{os<<mxb1(r, c);}
+        if(rows == 0 || cols == 0){
+            os<<"[]\n";
+        }
+
+        for(long long row{} ; row<rows ; row++){
+            os<<"[ ";
+            for(long long col{} ; col<cols ; col++){
+                auto val = static_cast<float>(mxb1(row, col));
+                auto fs = std::format("{}", static_cast<float>(mxb1(row, col)));
+                
+                if(col<cols-1){os<<fs.substr(0, 6)<<" | ";}
+                else{os<<fs.substr(0, 6);}
             }
-            os<<'\n';
+            os<<" ]\n";
         }
         os<<'\n';
         return os;
@@ -166,49 +194,32 @@ namespace machx
 namespace machx
 {   
     template<typename Tmx, typename T, typename Rmx, typename R>
-    auto concat(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2, const axis ax)
+    auto concat_top(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2)
     {   
         auto mxb1_rows{mxb1.get_rows()};
         auto mxb1_cols{mxb1.get_cols()};
         auto mxb2_rows{mxb2.get_rows()};
-        auto mxb2_cols{mxb2.get_cols()};
-
-        if(ax==axis::Y){
-            if(mxb1_cols != mxb2_cols){
-                throw dimension_mismatch(std::format("stacking_rows = true, cols must match, mxb1: {}, mxb2: {}", mxb1_cols, mxb2_cols));
-            }
-        }
-        else{
-            if(mxb1_rows != mxb2_rows){
-                throw dimension_mismatch(std::format("stacking_rows = false, rows must match, mxb1: {}, mxb2: {}", mxb1_rows, mxb2_rows));
-            }
-        }
 
         using common_type = std::common_type_t<T, R>;
-        Matrix<common_type> mx{(ax == axis::Y)? Matrix<common_type>{mxb1_rows+mxb2_rows, mxb1_cols} : Matrix<common_type>{mxb1_rows, mxb1_cols+mxb2_cols}};
+        Matrix<common_type> mx{mxb1_rows+mxb2_rows, mxb1_cols};
 
-        if(ax == axis::Y)
-        {
-            for(long long c{} ; c<mxb1_cols ; c++)
-            {   
-                long long iter_row{0};
-                for(long long r{} ; r<mxb1_rows+mxb2_rows ; r++)
-                {
-                    mx(r, c) = (r<mxb1_rows) ?  mxb1(r, c) : mxb2(iter_row++, c);
-                }
-            }
-        }
-        else
-        {   
-            for(long long r{} ; r<mxb1_rows ; r++)
-            {
-                long long iter_col{0};
-                for(long long c{} ; c<mxb1_cols+mxb2_cols ; c++)
-                {
-                    mx(r, c) = (c<mxb1_cols) ? mxb1(r, c) : mxb2(r, iter_col++);
-                }
-            }
-        }
+        mx.rows_at(0, mxb1_rows) = mxb1;
+        mx.rows_at(mxb1_rows, 0) = mxb2;
+        return mx;
+    }
+
+    template<typename Tmx, typename T, typename Rmx, typename R>
+    auto concat_side(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2)
+    {   
+        auto mxb1_rows{mxb1.get_rows()};
+        auto mxb1_cols{mxb1.get_cols()};
+        auto mxb2_cols{mxb2.get_cols()};
+
+        using common_type = std::common_type_t<T, R>;
+        Matrix<common_type> mx{mxb1_rows, mxb1_cols+mxb2_cols};
+
+        mx.cols_at(0, mxb1_cols) = mxb1;
+        mx.rows_at(mxb1_cols, 0) = mxb2;
         return mx;
     }
 }

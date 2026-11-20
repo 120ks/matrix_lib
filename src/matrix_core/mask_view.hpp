@@ -10,77 +10,143 @@ namespace machx
     class Mask_view : public Matrix_base<Mask_view<T>, T>
     {
         private:
+            template<typename, typename>
+            friend class Matrix_base;
+
 
             array<T*> ptr_arr{};
-
+            long long rows{};
+            long long cols{};
         public:
             template<typename Tmx, typename BOOLmx>
             Mask_view(Matrix_base<Tmx, T> &mxb1, const Matrix_base<BOOLmx, bool> &mask)
             : ptr_arr{}
             {   
-                quick_throw::throw_if_dimension_mismatch(mxb1, mask);
-                auto rows = mask.get_rows();
-                auto cols = mask.get_cols();
+                auto mask_rows = mask.get_rows();
+                auto mask_cols = mask.get_cols();
+                auto mxb1_rows = mxb1.get_rows();
+                auto mxb1_cols = mxb1.get_cols();
                 ptr_arr.reserve(rows*cols);
 
-                for(long long row{} ; row < rows ; row++){
-                    for(long long col{} ; col<cols ; col++){
+                //ROW/COL MASK
+                if(mask_cols == 1 && mask_rows == mxb1_rows){
+                    this->cols = mxb1_cols;
+                    for(long long row{} ; row < mask_rows ; row++){
+                        if(mask(row, 0) == true){
+                            this->rows++;
+                            for(long long col{} ; col<mxb1_cols ; col++){
+                                ptr_arr.push_back(&mxb1(row, col));
+                            }
+                        }
+                    }
+                    return;
+                }
+                else if(mask_rows == 1 && mask_cols == mxb1_cols){
+                    this->rows = mxb1_rows;
+                    for(long long row{} ; row < mxb1_rows ; row++){
+                        for(long long col{} ; col<mask_cols ; col++){
+                            if(mask(0, col) == true){
+                                ptr_arr.push_back(&mxb1(row, col));
+                                if(row==0){
+                                    this->cols++;
+                                }
+                            }
+                        }
+                    }
+                    return;
+                }
+                this->rows = 1;
+                for(long long row{} ; row < mask_rows ; row++){
+                    for(long long col{} ; col<mask_cols ; col++){
                         if(mask(row, col) == true){
                             ptr_arr.push_back(&mxb1(row, col));
                         }
                     }
                 }
+                this->cols = ptr_arr.size();
             }
+            template<typename Tmx, typename BOOLmx>
+            Mask_view(const Matrix_base<Tmx, T> &mxb1, const Matrix_base<BOOLmx, bool> &mask)
+            : Mask_view(const_cast<Matrix_base<Tmx, T>&>(mxb1), mask)
+            {}
+
             Mask_view(const machx::array<T*> &arr)
             : ptr_arr{arr}
-            {}
+            , rows{1}
+            , cols{}
+            {
+                this->cols = ptr_arr.size();
+            }
             Mask_view(machx::array<T*>&& arr)
             : ptr_arr{std::move(arr)}
-            {}
+            , rows{1}
+            , cols{}
+            {
+                this->cols = ptr_arr.size();
+            }
 
             template<typename Tmx, typename BOOLmx>
             Mask_view(Matrix_base<Tmx, T> &&mxb1, const Matrix_base<BOOLmx, bool> &mask)
             : Mask_view(mxb1, mask)
             {}
-
             Mask_view(const Mask_view<T> &other)
             : ptr_arr{other.ptr_arr}
+            , rows{other.rows}
+            , cols{other.cols}
             {}
             Mask_view(Mask_view<T> &&other)
             : ptr_arr{std::move(other.ptr_arr)}
+            , rows{other.rows}
+            , cols{other.cols}
             {}
 
-            inline long long get_rows()const{return 1;} //always 1 row N cols
-            inline long long get_cols()const{return ptr_arr.size();}
+            inline long long get_rows()const{return rows;}
+            inline long long get_cols()const{return cols;}
 
             inline T& operator()(long long row, long long col){
-                col = (col<0)? ptr_arr.size()+col : col;
-                return *(ptr_arr[col]); //row always = 0, cols = size
+                row = (row<0)? rows+row : row;
+                col = (col<0)? cols+col : col;
+                return *(ptr_arr[row * cols + col]);
             }
             inline const T& operator()(long long row, long long col)const{   
-                col = (col<0)? ptr_arr.size()+col : col;
-                return *(ptr_arr[col]);
+                row = (row<0)? rows+row : row;
+                col = (col<0)? cols+col : col;
+                return *(ptr_arr[row * cols + col]);
             }
+            //MASK
+            using Matrix_base<Mask_view<T>, T>::operator[];
 
-            inline T& operator()(long long col){
-                col = (col<0)? ptr_arr.size()+col : col;
-                return *(ptr_arr[col]); //row always = 0, cols = size
-            }
-            inline const T& operator()(long long col)const{   
-                col = (col<0)? ptr_arr.size()+col : col;
-                return *(ptr_arr[col]);
-            }
-
-            template<typename BOOLmx>
-            Mask_view<T> operator[](const Matrix_base<BOOLmx, bool> &mask){
-                quick_throw::throw_if_dimension_mismatch(*this, mask, "mask does not match dims of mxb");
-                
+            //SLICING
+            Mask_view<T> operator()(Slice row_slice, Slice col_slice){
+                Matrix<bool> mask{this->get_rows(), this->get_cols(), false};
+                mask(row_slice, col_slice) = true;
                 return {*this, mask};
             }
-
-            template<typename R>
-            inline Matrix<R> copy_as(){
-                return Matrix<R>{*this};
+            Mask_view<T> operator()(Slice row_slice){
+                Matrix<bool> mask{this->get_rows(), this->get_cols(), false};
+                mask(row_slice) = true;
+                return {*this, mask}; 
+            }
+            Mask_view<T> operator[](Slice col_slice){
+                Matrix<bool> mask{this->get_rows(), this->get_cols(), false};
+                mask[col_slice] = true;
+                return {*this, mask};
+            }
+            //CONST SLICING
+            const Mask_view<T> operator()(Slice row_slice, Slice col_slice)const{
+                Matrix<bool> mask{this->get_rows(), this->get_cols(), false};
+                mask(row_slice) = true;
+                return {*this, mask};
+            }
+            const Mask_view<T> operator()(Slice row_slice)const{
+                Matrix<bool> mask{this->get_rows(), this->get_cols(), false};
+                mask(row_slice)= true;
+                return {*this, mask};
+            }
+            const Mask_view<T> operator[](Slice col_slice)const{
+                Matrix<bool> mask{this->get_rows(), this->get_cols(), false};
+                mask[col_slice] = true;
+                return {*this, mask};
             }
 
             T* begin(){return nullptr;}
@@ -100,21 +166,16 @@ namespace machx
                 return *this;
             }
             using Matrix_base<Mask_view<T>, T>::operator=;
-            //
-            //FLAGS
-            //
-            mask_flag<Mask_view<T>, T> M(){
-                return {*this};
-            }
 
             operator bool()const{ //empty is valid with mask so always valid
                 return true;
             }
-
+        
+        private:
+            //BASE EDITING FUNCTIONS
+            T*& get_ptr_at(long long row, long long col){
+                return ptr_arr[row * cols + col];
+            }
     };
-    template<typename T>
-    template<typename BOOLmx>
-    Mask_view<T> Matrix<T>::operator[](const Matrix_base<BOOLmx, bool> &mask){
-        return {*this, mask};
-    }
+    
 }

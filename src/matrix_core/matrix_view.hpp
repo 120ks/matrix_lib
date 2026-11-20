@@ -28,12 +28,7 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
 //CONSTRUCTORS
 //
     public:
-//
-//FLAGS
-//          
-        mask_flag<Matrix_view<T>, T> M(){
-            return *this;
-        }
+//FLAGS   
         view_assign_flag<T> A(){
             return *this;
         }
@@ -72,6 +67,7 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
             row_slice.begin = (row_slice.begin < 0) ? m_ptr->get_rows()+row_slice.begin : row_slice.begin; 
             col_slice.begin = (col_slice.begin < 0) ? m_ptr->get_cols()+col_slice.begin : col_slice.begin;
         }
+        
         Matrix_view(Matrix_view<T> &&other)noexcept
         : Matrix_view(other)
         {}
@@ -143,34 +139,48 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
             return m_ptr->get_mutex();
         }
 
-//
-//SLICING AND MASKING
-//      
-        Matrix_view<T> operator()(const Slice r_slice, const Slice c_slice)
-        {   
+
+        //SLICING
+        Matrix_view<T> operator()(const Slice r_slice, const Slice c_slice){   
             quick_throw::throw_if_no_data(*this);
             quick_throw::throw_if_slice_mismatch(*this, r_slice, c_slice);
             
             return{*this, row_slice+r_slice, col_slice+c_slice};
         }
 
-        Matrix_view<T> operator()(const Slice r_slice) //row slice
-        {   
+        Matrix_view<T> operator()(const Slice r_slice){   
             quick_throw::throw_if_no_data(*this);
             quick_throw::throw_if_slice_mismatch(*this, r_slice, Slice{}, "row slicing");
             return {*this, row_slice+r_slice, col_slice};
         }
 
-        Matrix_view<T> operator[](const Slice c_slice) //col slice
-        {   
+        Matrix_view<T> operator[](const Slice c_slice){   
             quick_throw::throw_if_no_data(*this);
             quick_throw::throw_if_slice_mismatch(*this, Slice{}, c_slice, "row slicing");
             return {*this, row_slice, col_slice+c_slice};
         }
 
-        Mask_view<T> operator[](const Matrix<bool> &mask){ //note the  []
-            return{*this, mask};
+        //CONST SLICING
+        const Matrix_view<T> operator()(const Slice r_slice, const Slice c_slice)const{ 
+            quick_throw::throw_if_no_data(*this);
+            quick_throw::throw_if_slice_mismatch(*this, r_slice, c_slice);
+            return{*this, row_slice+r_slice, col_slice+c_slice};
         }
+
+        const Matrix_view<T> operator()(const Slice r_slice)const{   
+            quick_throw::throw_if_no_data(*this);
+            quick_throw::throw_if_slice_mismatch(*this, r_slice, Slice{}, "row slicing");
+            return {*this, row_slice+r_slice, col_slice};
+        }
+
+        const Matrix_view<T> operator[](const Slice c_slice)const{   
+            quick_throw::throw_if_no_data(*this);
+            quick_throw::throw_if_slice_mismatch(*this, Slice{}, c_slice, "row slicing");
+            return {*this, row_slice, col_slice+c_slice};
+        }
+
+        //MASKING
+        using Matrix_base<Matrix_view<T>, T>::operator[];
 //
 // ASSIGN OPERATORS
 //      

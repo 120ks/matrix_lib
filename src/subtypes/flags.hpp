@@ -163,40 +163,158 @@ namespace machx
         case(Condition::is_true):   is_true(); break;
         }
         return p_arr;
-    }
+    }  
+    
 
 
     template<typename>
     class Mask_view;
     
     template<typename Tmx, typename T, typename R>
-    Mask_view<T> operator>(mask_flag<Tmx, T> flag, const R &val) 
-    {   
+    Mask_view<T> operator>(mask_flag<Tmx, T> &&flag, const R &val){
+        if(flag.row_mask){
+            auto mask = ((*flag.ptr) > val).row_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        else if(flag.col_mask){
+            auto mask = ((*flag.ptr) > val).col_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
         return {make_ptr_arr(*flag.ptr, Condition::over, val)};
     }
+
     template<typename Tmx, typename T, typename R>
-    Mask_view<T> operator<(mask_flag<Tmx, T> flag, const R &val) 
-    {   
+    Mask_view<T> operator<(mask_flag<Tmx, T> &&flag, const R &val){
+        if(flag.row_mask){
+            auto mask = ((*flag.ptr) < val).row_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        else if(flag.col_mask){
+            auto mask = ((*flag.ptr) < val).col_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
         return {make_ptr_arr(*flag.ptr, Condition::under, val)};
     }
     template<typename Tmx, typename T, typename R>
-    Mask_view<T> operator>=(mask_flag<Tmx, T> flag, const R &val) 
-    {   
+    Mask_view<T> operator>=(mask_flag<Tmx, T> &&flag, const R &val){
+        if(flag.row_mask){
+            auto mask = ((*flag.ptr) >= val).row_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        else if(flag.col_mask){
+            auto mask = ((*flag.ptr) >= val).col_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
         return {make_ptr_arr(*flag.ptr, Condition::over_or, val)};
     }
     template<typename Tmx, typename T, typename R>
-    Mask_view<T> operator<=(mask_flag<Tmx, T> flag, const R &val)  
-    {   
+    Mask_view<T> operator<=(mask_flag<Tmx, T> &&flag, const R &val){
+        if(flag.row_mask){
+            auto mask = ((*flag.ptr) <= val).row_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        else if(flag.col_mask){
+            auto mask = ((*flag.ptr) <= val).col_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
         return {make_ptr_arr(*flag.ptr, Condition::under_or, val)};
     }
     template<typename Tmx, typename T, typename R>
-    Mask_view<T> operator==(mask_flag<Tmx, T> flag, const R &val) 
-    {   
+    Mask_view<T> operator==(mask_flag<Tmx, T> &&flag, const R &val){
+        if(flag.row_mask){
+            auto mask = ((*flag.ptr) == val).row_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        else if(flag.col_mask){
+            auto mask = ((*flag.ptr) == val).col_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
         return {make_ptr_arr(*flag.ptr, Condition::is, val)};
     }
     template<typename Tmx, typename T, typename R>
-    Mask_view<T> operator!=(mask_flag<Tmx, T> flag, const R &val) 
-    {   
+    Mask_view<T> operator!=(mask_flag<Tmx, T> &&flag, const R &val){
+        if(flag.row_mask){
+            auto mask = ((*flag.ptr) != val).row_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        else if(flag.col_mask){
+            auto mask = ((*flag.ptr) != val).col_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        } 
+        return {make_ptr_arr(*flag.ptr, Condition::is_not, val)};
+    }
+
+    //CONST
+    template<typename Tmx, typename T, typename R>
+    const Mask_view<T> operator>(const mask_flag<Tmx, T> &flag, const R &val){   
+        if(flag.row_mask){
+            auto mask = ((*flag.ptr) > val).row_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        else if(flag.col_mask){
+            auto mask = ((*flag.ptr) > val).col_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        return {make_ptr_arr(*flag.ptr, Condition::over, val)};
+    }
+    template<typename Tmx, typename T, typename R>
+    const Mask_view<T> operator<(const mask_flag<Tmx, T> &flag, const R &val){   
+        if(flag.row_mask){
+            auto mask = ((*flag.ptr) < val).row_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        else if(flag.col_mask){
+            auto mask = ((*flag.ptr) < val).col_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        return {make_ptr_arr(*flag.ptr, Condition::over, val)};
+    }
+    template<typename Tmx, typename T, typename R>
+    const Mask_view<T> operator>=(const mask_flag<Tmx, T> &flag, const R &val){   
+        if(flag.row_mask){
+            auto mask = ((*flag.ptr) >= val).row_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        else if(flag.col_mask){
+            auto mask = ((*flag.ptr) >= val).col_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        return {make_ptr_arr(*flag.ptr, Condition::over, val)};
+    }
+    template<typename Tmx, typename T, typename R>
+    const Mask_view<T> operator<=(const mask_flag<Tmx, T> &flag, const R &val) {   
+        if(flag.row_mask){
+            auto mask = ((*flag.ptr) <= val).row_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        else if(flag.col_mask){
+            auto mask = ((*flag.ptr) <= val).col_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        return {make_ptr_arr(*flag.ptr, Condition::under_or, val)};
+    }
+    template<typename Tmx, typename T, typename R>
+    const Mask_view<T> operator==(const mask_flag<Tmx, T> &flag, const R &val){   
+        if(flag.row_mask){
+            auto mask = ((*flag.ptr) == val).row_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        else if(flag.col_mask){
+            auto mask = ((*flag.ptr) == val).col_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        return {make_ptr_arr(*flag.ptr, Condition::is, val)};
+    }
+    template<typename Tmx, typename T, typename R>
+    const Mask_view<T> operator!=(const mask_flag<Tmx, T> &flag, const R &val){   
+        if(flag.row_mask){
+            auto mask = ((*flag.ptr) != val).row_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        }
+        else if(flag.col_mask){
+            auto mask = ((*flag.ptr) != val).col_mask(flag.logical_and);
+            return flag.ptr->operator[](mask);
+        } 
         return {make_ptr_arr(*flag.ptr, Condition::is_not, val)};
     }
 }
@@ -214,7 +332,7 @@ namespace machx
         ptr->rows = temp.rows;
         ptr->cols = temp.cols;
 
-        lifetime_table::new_generation(ptr->id);
+        lifetime_table::new_generation(ptr->matrix_id);
         return *ptr;
     }
 

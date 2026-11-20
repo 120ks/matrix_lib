@@ -27,6 +27,9 @@ namespace machx
     };
     static std::random_device random_device;
     static std::mt19937 generator(random_device());
+
+    const static double PI{3.1415926536};
+    const static double E{2.7182818285};
 }
 
 namespace machx
@@ -42,6 +45,7 @@ namespace machx
         is,
         is_not
     };
+
 }
 class Slice
 {   
@@ -171,7 +175,7 @@ namespace machx
 
             } 
             
-            void push_back(const T &item){
+            inline void push_back(const T &item){
                 if(m_allocated <= m_size){
                     this->reserve(1 + m_size*2);
                 }
@@ -179,7 +183,7 @@ namespace machx
                 m_size++;
             }
 
-            void push_back(T &&item){
+            inline void push_back(T &&item){
                 if(m_allocated <= m_size){
                     this->reserve(1 + m_size*2);
                 }
@@ -187,7 +191,7 @@ namespace machx
                 m_size++;
             }
 
-            void pop_back(){
+            inline void pop_back(){
                 if(m_size <= 0){
                     return;
                 }
@@ -195,7 +199,7 @@ namespace machx
             }
 
             template<typename ...Args>
-            void emplace_back(Args &&...arguments){
+            inline void emplace_back(Args &&...arguments){
                 if(m_allocated <= m_size){
                     this->reserve(1 + m_size*2);
                 }
@@ -203,13 +207,13 @@ namespace machx
                 m_size++;
             }
 
-            T& top(){
+            inline T& top(){
                 if(m_size<=0){
                     throw(std::runtime_error("stack does not have elements"));
                 }
                 return arr[m_size-1];
             }
-            const T& top()const {
+            inline const T& top()const {
                 if(m_size<=0){
                     throw(std::runtime_error("stack does not have elements"));
                 }
@@ -232,11 +236,11 @@ namespace machx
                 return arr+m_size;
             }
 
-            T& operator[](long long index){ //no bounds check here or in const
+            inline T& operator[](long long index){ //no bounds check here or in const
                 return arr[index];
             }
 
-            const T& operator[](long long index)const{
+            inline const T& operator[](long long index)const{
                 return arr[index];
             }
 

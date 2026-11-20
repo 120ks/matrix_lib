@@ -15,7 +15,8 @@ add_executable(${PROJECT_NAME}
 target_include_directories(matrix_lib PRIVATE
     interface_based/matrix_math
     interface_based/statistics
-
+    
+    src/base_member_f
     src/matrix_core
     src/core_helper_f
     src/subtypes

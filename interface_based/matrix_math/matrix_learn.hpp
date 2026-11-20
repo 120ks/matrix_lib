@@ -11,7 +11,6 @@ class Matrix;
 
 namespace machx
 {   
-    static const double E{2.718281828459};
 
     template<typename Tmx, typename T>
     Matrix<T> softmax(const Matrix_base<Tmx, T> &mxb1)
