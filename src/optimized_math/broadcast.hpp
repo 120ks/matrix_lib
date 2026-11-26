@@ -1,7 +1,11 @@
 #pragma once
 
+
 #include "matrix_exceptions.hpp"
 #include <cmath>
+#include "micros_pd.hpp"
+#include "micros_ps.hpp"
+#include <type_traits>
 
 namespace machx
 {   
@@ -18,6 +22,36 @@ namespace machx
 
     template<typename T, typename R>
     void broadcast(Matrix<T>& mx1, const Matrix<R>& mx2, const Operation op)
+    {   
+        if(same_dims(mx1, mx2)){
+            direct_broadcast(mx1.begin(), mx1.end(), mx2.begin(), op);
+            return;
+        }
+
+        if(divisible(mx1, mx2))
+        {
+            tile_broadcast(mx1, mx2, op);
+            return;
+        }
+    }
+    template<typename T>
+    requires (std::is_same_v<T, float>)
+    void broadcast(Matrix<T>& mx1, const Matrix<T>& mx2, const Operation op, int)
+    {   
+        if(same_dims(mx1, mx2)){
+            broadcast_ps_direct(mx1.begin(), mx2.begin(), mx1.get_rows(), mx2.get_cols(), op);
+            return;
+        }
+
+        if(divisible(mx1, mx2))
+        {
+            tile_broadcast(mx1, mx2, op);
+            return;
+        }
+    }
+    template<typename T>
+    requires (std::is_same_v<T, double>)
+    void broadcast(Matrix<T>& mx1, const Matrix<T>& mx2, const Operation op)
     {   
         if(same_dims(mx1, mx2)){
             direct_broadcast(mx1.begin(), mx1.end(), mx2.begin(), op);
@@ -76,6 +110,78 @@ namespace machx
         return {std::move(mxb1)};
     }
 }
+
+//SIMD BROADCASTING
+
+namespace machx{
+    inline void broadcast_ps_direct(float* __restrict mx1, const float* __restrict mx2, int rows, int cols, const Operation op){
+        //assumes dimensions same for both
+        constexpr int COL_M = 256; //div by 8
+        constexpr int ROW_M = 64; //div by 8 (4 if changing equal to use 4x8)
+        const int row_step = ((op == Operation::equal) ? 8: 4);
+
+        auto mul = [&](int &row, int row_end, int col_batch, int local_col)mutable{
+            for(; row <= row_end-row_step ; row += row_step){
+                machx::micro::prec1::broadcast_ps_4x8_mul(&mx1[row*cols + col_batch], &mx2[row*cols + col_batch], local_col, cols);
+            }
+        };
+        auto add = [&](int &row, int row_end, int col_batch, int local_col)mutable{
+            for(; row <= row_end-row_step ; row += row_step){
+                machx::micro::prec1::broadcast_ps_4x8_add(&mx1[row*cols + col_batch], &mx2[row*cols + col_batch], local_col, cols);
+            }
+        };
+        auto sub = [&](int &row, int row_end, int col_batch, int local_col)mutable{
+            for(; row <= row_end-row_step ; row += row_step){
+                machx::micro::prec1::broadcast_ps_4x8_sub(&mx1[row*cols + col_batch], &mx2[row*cols + col_batch], local_col, cols);
+            }
+        };
+        auto div = [&](int &row, int row_end, int col_batch, int local_col)mutable{
+            for(; row <= row_end-row_step ; row += row_step){
+                machx::micro::prec1::broadcast_ps_4x8_div(&mx1[row*cols + col_batch], &mx2[row*cols + col_batch], local_col, cols);
+            }
+        };
+        auto equal = [&](int &row, int row_end, int col_batch, int local_col)mutable{
+            for(; row <= row_end-row_step ; row += row_step){
+                machx::micro::prec1::broadcast_ps_8x8_equal(&mx1[row*cols + col_batch], &mx2[row*cols + col_batch], local_col, cols);
+            }
+        };
+
+        #pragma omp parallel for collapse(2) schedule(dynamic, 8)
+        for(int row_batch = 0; row_batch<rows; row_batch+=ROW_M){
+            for(int col_batch = 0; col_batch<cols; col_batch += COL_M){
+                int row_end = std::min(row_batch + ROW_M, rows);
+                int local_col = std::min(COL_M, cols-col_batch);
+
+                int row = row_batch;
+                switch (op)
+                {
+                    case Operation::multiply: mul(row, row_end, col_batch, local_col); break;
+                    case Operation::add: add(row, row_end, col_batch, local_col); break;
+                    case Operation::substract: sub(row, row_end, col_batch, local_col); break;
+                    case Operation::divide: div(row, row_end, col_batch, local_col); break;
+                    case Operation::equal: equal(row, row_end, col_batch, local_col); break;
+                }
+                
+                for(; row<row_end; row++){
+                    for(int col = col_batch; col<col_batch+local_col; col++){
+                        float& m1 = mx1[row*cols + col];
+                        const float m2 = mx2[row*cols + col];
+                        switch (op) {
+                        case Operation::multiply:  m1 *= m2; break;
+                        case Operation::add:       m1 += m2; break;
+                        case Operation::substract: m1 -= m2; break;
+                        case Operation::divide:    m1 /= m2; break;
+                        case Operation::equal:     m1 = m2;  break;
+                        }
+                    }   
+                }
+            }
+        }   
+    }
+}
+
+
+
 //
 //BROADCAST machx END
 //
@@ -307,96 +413,4 @@ namespace machx
         case(Operation::equal)      : equal(); return;
         }
     }
-}
-
-namespace machx{
-    template<typename Tmx, typename T, typename Rmx, typename R>
-    Tmx& power(Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2){
-        
-        auto rows1{mxb1.get_rows()}, rows2{mxb2.get_rows()};
-        auto cols1{mxb1.get_cols()}, cols2{mxb2.get_cols()};
-
-        if((rows1 == 0) || (cols1 == 0)) {static_cast<Tmx&>(mxb1);}
-        if((rows2 == 0) || (cols2 == 0)) {static_cast<Tmx&>(mxb1);}
-
-        long long max_row{std::max(rows1, rows2)};
-        long long max_col{std::max(cols1, cols2)};
-        
-        long long mx1_row{}, mx2_row{};
-        long long mx1_col{}, mx2_col{};
-
-        for(long long r{0} ; r<max_row ; r++){  
-            mx1_row = r % rows1;
-            mx2_row = r % rows2; 
-            for(long long c{0} ; c<max_col ; c++){
-                mx1_col = c % cols1;
-                mx2_col = c % cols2;
-                mxb1(mx1_row, mx1_col) = std::pow(static_cast<double>(mxb1(mx1_row, mx1_col)), mxb2(mx2_row, mx2_col));
-            }
-        }
-        return static_cast<Tmx&>(mxb1);
-    }
-    
-    template<typename Tmx, typename T, typename R>
-    requires (std::is_arithmetic_v<R>)
-    Tmx& power(Matrix_base<Tmx, T> &mxb1, const R &val){
-        
-        auto rows1{mxb1.get_rows()};
-        auto cols1{mxb1.get_cols()};
-
-        if((rows1 == 0) || (cols1 == 0)) {static_cast<Tmx&>(mxb1);}
-
-        for(long long r{0} ; r<rows1 ; r++){  
-            for(long long c{0} ; c<cols1 ; c++){
-                mxb1(r, c) = std::pow(static_cast<double>(mxb1(r, c)), val);
-            }
-        }
-        return static_cast<Tmx&>(mxb1);
-    }
-
-
-    template<typename Tmx, typename T, typename Rmx, typename R>
-    Tmx& root(Matrix_base<Tmx, T> &mxb1, const Matrix_base<Rmx, R> &mxb2){
-        
-        auto rows1{mxb1.get_rows()}, rows2{mxb2.get_rows()};
-        auto cols1{mxb1.get_cols()}, cols2{mxb2.get_cols()};
-
-        if((rows1 == 0) || (cols1 == 0)) {static_cast<Tmx&>(mxb1);}
-        if((rows2 == 0) || (cols2 == 0)) {static_cast<Tmx&>(mxb1);}
-
-        long long max_row{std::max(rows1, rows2)};
-        long long max_col{std::max(cols1, cols2)};
-        
-        long long mx1_row{}, mx2_row{};
-        long long mx1_col{}, mx2_col{};
-
-        for(long long r{0} ; r<max_row ; r++){  
-            mx1_row = r % rows1;
-            mx2_row = r % rows2; 
-            for(long long c{0} ; c<max_col ; c++){
-                mx1_col = c % cols1;
-                mx2_col = c % cols2;
-                mxb1(mx1_row, mx1_col) = std::pow(static_cast<double>(mxb1(mx1_row, mx1_col)), 1.0 / mxb2(mx2_row, mx2_col));
-            }
-        }
-        return static_cast<Tmx&>(mxb1);
-    }
-
-    template<typename Tmx, typename T, typename R>
-    requires (std::is_arithmetic_v<R>)
-    Tmx& root(Matrix_base<Tmx, T> &mxb1, const R &val){
-        
-        auto rows1{mxb1.get_rows()};
-        auto cols1{mxb1.get_cols()};
-
-        if((rows1 == 0) || (cols1 == 0)) {return static_cast<Tmx&>(mxb1);}
-
-        for(long long r{0} ; r<rows1 ; r++){  
-            for(long long c{0} ; c<cols1 ; c++){
-                mxb1(r, c) = std::pow(static_cast<double>(mxb1(r, c)), 1.0/ val);
-            }
-        }
-        return static_cast<Tmx&>(mxb1);
-    }
-
 }

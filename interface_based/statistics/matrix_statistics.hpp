@@ -3,17 +3,6 @@
 #include "non_member_functions.hpp"
 #include <cmath>
 
-
-
-//
-//BASICS
-//
-namespace machx
-{   
-
-}
-
-
 //
 //SCALES AND NORMALIZERS
 //

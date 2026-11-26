@@ -498,20 +498,17 @@ namespace machx
 
         std::getline(std::cin, s);
 
-        Matrix<double> matrix1{rows, cols, 1};
-        Matrix<double> matrix2{rows, cols, 1};
+        Matrix<float> matrix1{rows, cols, 1};
+        Matrix<float> matrix2{cols, rows, 1};
         std::cout<<std::format("testing speed, matrix is ({}x{}), with {} iterations per course", rows, cols, iterations)<<std::endl<<std::endl;
         
         std::cout<<"one iter is matmul product"<<std::endl;
         std::getline(std::cin, s);
-        long long i{};
-        auto step = std::max(i, (iterations / 100));
+        auto step = std::max(1LL, (iterations / 100));
         auto start = std::chrono::steady_clock::now();
-
         for(long long i{} ; i<iterations ; i++)
-        {
-            matrix1.matmul(matrix1);
-
+        {   
+            matrix1.matmul(matrix2);
             if(i % step == 0)
             {   
                 if(i==0){
@@ -599,7 +596,7 @@ namespace machx
 
         for(long long i{} ; i<iterations ; i++)
         {
-            machx::threaded::tr_matmul(matrix1, matrix2, 3);
+            matrix1.matmul_t(matrix2);
 
             if(i % step == 0)
             {   
@@ -749,17 +746,45 @@ namespace machx
 
     void devep_test_ground()
     {   
-        Matrix<double> matrix{6, 6, 0};
-        matrix.randomize_uniform(-4, 10);
+        float i = 1;
+        Matrix<float> matrix{1696, 123, 0};
+        for(auto &member : matrix){
+            member = i+=0.001;
+        }
+        Matrix<float> matrix2{123, 1098, 0};
+        i = 0.001;
+        for(auto &member : matrix2){
+            member = i+=0.01;
+        }
+        auto reference_float_matmul = [](const Matrix<float>& mx1, const Matrix<float>& mx2) {
+            int rows = mx1.get_rows();
+            int cols = mx2.get_cols();
+            int ks = mx1.get_cols();
 
-        std::cout<<matrix;
-        std::cout<<"shift_cols(2) \n";
-        std::cout<<matrix.copy().shift_cols(2);
+            Matrix<float> mx3{rows, cols, 0.0f};
+            auto* b1 = mx1.begin();
+            auto* b2 = mx2.begin();
+            auto* b3 = mx3.begin();
 
-        std::cout<<"drop_nan_cols \n";
-        std::cout<<matrix.copy().shift_cols(2).drop_nan_cols();
+            // Standard dot-product order (r -> c -> k)
+            for(int r = 0; r < rows; r++){
+                for(int c = 0; c < cols; c++){
+                    float sum = 0.0f;
+                    for(int k = 0; k < ks; k++){
+                        sum += b1[r * ks + k] * b2[k * cols + c];
+                    }
+                    b3[r * cols + c] = sum;
+                }
+            }
+            return mx3;
+        };
+        auto control1_mx = reference_float_matmul(matrix, matrix2);
+        auto control2_mx = machx::threaded::tr_matmul(matrix, matrix2);
+        auto tested_mx = matrix.matmul(matrix2);
 
-
+        std::cerr<<(control1_mx-tested_mx).mean()<<'\n';
+        std::cerr<<(control2_mx-tested_mx).mean()<<'\n';
+        std::cerr<<(control2_mx-control1_mx).mean()<<'\n';
     };
 
     void test_data_manip(){
@@ -1077,7 +1102,7 @@ namespace machx
         Matrix<double> matrix{6, 6, 0};
         matrix.randomize_uniform(-4, 10);
         std::cerr<<matrix<<'\n';
-        std::cerr<<matrix.rolling_avg(2);
+
 
         auto x = matrix.RMO() < 1222;
         x(sl{1, 2}, sl{1, 3}) = 1000;

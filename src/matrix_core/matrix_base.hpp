@@ -74,64 +74,64 @@ namespace machx
         }
 
         //SLICING
-        auto operator()(Slice row_slice, Slice col_slice){
+        inline auto operator()(Slice row_slice, Slice col_slice){
             auto& mx = static_cast<Tmx&>(*this);
             return mx(row_slice, col_slice);
         }
-        auto operator()(Slice row_slice){
+        inline auto operator()(Slice row_slice){
             auto& mx = static_cast<Tmx&>(*this);
             return mx(row_slice);
         }
-        auto operator[](Slice col_slice){
+        inline auto operator[](Slice col_slice){
             auto& mx = static_cast<Tmx&>(*this);
             return mx[col_slice];
         }
         //CONST SLICING
-        const auto operator()(Slice row_slice, Slice col_slice)const{
+        inline const auto operator()(Slice row_slice, Slice col_slice)const{
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx(row_slice, col_slice);
         }
-        const auto operator()(Slice row_slice)const{
+        inline const auto operator()(Slice row_slice)const{
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx(row_slice);
         }
-        const auto operator[](Slice col_slice)const{
+        inline const auto operator[](Slice col_slice)const{
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx[col_slice];
         }
         
         //AT FUNCTIONS
-        auto rows_at(long long start, long long end){
+        inline auto rows_at(long long start, long long end){
             auto& mx = static_cast<Tmx&>(*this);
             return mx(Slice{start, end});
         }
-        auto cols_at(long long start, long long end){
+        inline auto cols_at(long long start, long long end){
             auto& mx = static_cast<Tmx&>(*this);
             return mx[Slice{start, end}];
         }
-        auto rows_at(long long start){
+        inline auto rows_at(long long start){
             auto& mx = static_cast<Tmx&>(*this);
             return mx(Slice{start, start+1});
         }
-        auto cols_at(long long start){
+        inline auto cols_at(long long start){
             auto& mx = static_cast<Tmx&>(*this);
             return mx[Slice{start, start+1}];
         }
 
         //AT FUNCTIONS CONST
-        const auto rows_at(long long start, long long end)const{
+        inline const auto rows_at(long long start, long long end)const{
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx(Slice{start, end});
         }
-        const auto cols_at(long long start, long long end)const{
+        inline const auto cols_at(long long start, long long end)const{
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx[Slice{start, end}];
         }
-        const auto rows_at(long long start)const{
+        inline const auto rows_at(long long start)const{
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx(Slice{start, start+1});
         }
-        const auto cols_at(long long start)const{
+        inline const auto cols_at(long long start)const{
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx[Slice{start, start+1}];
         }
@@ -148,19 +148,19 @@ namespace machx
         }
 
         //BEGIN END
-        T* begin(){
+        inline T* begin(){
             auto& mx = static_cast<Tmx&>(*this);
             return mx.begin();
         }
-        T* end(){
+        inline T* end(){
             auto& mx = static_cast<Tmx&>(*this);
             return mx.end();
         }
-        const T * begin()const{
+        inline const T * begin()const{
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx.begin();
         }
-        const T* end()const{
+        inline const T* end()const{
             const auto& mx = static_cast<const Tmx&>(*this);
             return mx.end();
         }
@@ -348,13 +348,19 @@ namespace machx
         Matrix<double> col_cov(const Matrix_base<Rmx, R>&, float = 1);
 
         //LINEAR
-        template<typename R>
-        requires (std::is_same_v<Tmx, Matrix<T>>)
-        Matrix<T> matmul(const Matrix<R>&)const;
+        template<typename R = T>
+        requires (std::is_same_v<R, float>)
+        Matrix<float> matmul(const Matrix<float>&)const;
 
-        template<typename Rmx, typename R>
-        requires (!std::is_same_v<Tmx, Matrix<T>>)
-        Matrix<T> matmul(const Matrix_base<Rmx, R>&)const;
+        template<typename R = T>
+        requires (std::is_same_v<R, double>)
+        Matrix<double> matmul(const Matrix<double>&)const;
+
+        template<typename R = T, typename Umx, typename U>
+        requires (!std::is_floating_point_v<R>)
+        Matrix<T> matmul(const Matrix_base<Umx, U>&)const;
+
+        Matrix<T> matmul_t(const Matrix<T>&)const;
         
         template<typename Rmx, typename R>
         double dot(const Matrix_base<Rmx, R>&)const;
@@ -415,14 +421,9 @@ namespace machx
         Tmx& bucket(long long);
         Tmx& fit_gaussian();
 
+        //Rolling
         Tmx& rolling(long long = 1);
-        Tmx& rolling_avg(long long = 1);
-        Tmx& rolling_std();
-        Tmx& rolling_sum();
-        Tmx& rolling_min();
-        Tmx& rolling_max();
-
-        //READY MOVING FUNCTIONS
+        
 
         //INIT AND RANDOM
         template<typename R, typename U>

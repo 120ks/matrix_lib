@@ -1,63 +1,72 @@
 #pragma once
 
 #include "non_member_functions.hpp"
-
+#include "matmul.hpp" //matmul (impelemtations) included trough this header
 namespace machx
-{   
+{      
     template<typename Tmx, typename T>
     template<typename R>
-    requires (std::is_same_v<Tmx, Matrix<T>>)
-    Matrix<T> Matrix_base<Tmx, T>::matmul(const Matrix<R>& matrix2)const{
-        auto rows_1 = this->get_rows();
-        auto cols_1 = this->get_cols();
-        auto rows_2 = matrix2.get_rows();
-        auto cols_2 = matrix2.get_cols();
+    requires (std::is_same_v<R, float>)
+    Matrix<float> Matrix_base<Tmx, T>::matmul(const Matrix<float>& matrix2)const{
+        const auto rows_1 = this->get_rows();
+        const auto ks = this->get_cols();
+        const auto rows_2 = matrix2.get_rows();
+        const auto cols_2 = matrix2.get_cols();
 
-        const Matrix<T>& matrix1 = static_cast<const Tmx&>(*this);
+
         Matrix<T> matrix3{rows_1, cols_2, 0};
+        const auto* base1 = this->begin();
+        const auto* base2 = matrix2.begin();
+        auto* base3 = matrix3.begin();
 
-        const auto& arr1 = matrix1.get_matrix();
-        const auto& arr2 = matrix2.get_matrix();
-        auto& arr3 = matrix3.get_matrix();
-
-        for(long long row{} ; row<rows_1 ; row++){
-            for(long long k{} ; k < cols_1 ; k++){
-                auto val = arr1[row*cols_1 + k];
-                for(long long col{} ; col<cols_2 ; col++){
-                    arr3[row * cols_2 + col] += val * arr2[k * cols_2 + col];
-                }
-            }
-        }
+        machx::matmul_ps_pack(base1, base2, base3, ks, rows_1, cols_2);
         return matrix3;
+    }
+    template<typename Tmx, typename T>
+    template<typename R>
+    requires (std::is_same_v<R, double>)
+    Matrix<double> Matrix_base<Tmx, T>::matmul(const Matrix<double>& matrix2)const{
+        const auto rows_1 = this->get_rows();
+        const auto ks = this->get_cols();
+        const auto rows_2 = matrix2.get_rows();
+        const auto cols_2 = matrix2.get_cols();
+
+
+        Matrix<T> matrix3{rows_1, cols_2, 0};
+        const auto* base1 = this->begin();
+        const auto* base2 = matrix2.begin();
+        auto* base3 = matrix3.begin();
+
+        machx::matmul_pd_pack(base1, base2, base3, ks, rows_1, cols_2);
+        return matrix3;
+    }
+    
+    template<typename Tmx, typename T>
+    template<typename R, typename Umx, typename U>
+    requires (!std::is_floating_point_v<R>)
+    Matrix<T> Matrix_base<Tmx, T>::matmul(const Matrix_base<Umx, U>& mxb2)const{
+        Matrix<double> mx1{*this};
+        Matrix<double> mx2{mxb2};
+        return mx1.matmul(mx2);
     }
 
     template<typename Tmx, typename T>
-    template<typename Rmx, typename R>
-    requires (!std::is_same_v<Tmx, Matrix<T>>)
-    Matrix<T> Matrix_base<Tmx, T>::matmul(const Matrix_base<Rmx, R>& mxb2)const{
-        auto rows_1 = this->get_rows();
-        auto cols_1 = this->get_cols();
-        auto rows_2 = mxb2.get_rows();
-        auto cols_2 = mxb2.get_cols();
+    Matrix<T> Matrix_base<Tmx, T>::matmul_t(const Matrix<T>& matrix2)const{
+        const auto rows_1 = this->get_rows();
+        const auto ks = this->get_cols();
+        const auto rows_2 = matrix2.get_rows();
+        const auto cols_2 = matrix2.get_cols();
 
-        auto matrix1 = this->copy();
-        auto matrix2 = mxb2.copy();
         Matrix<T> matrix3{rows_1, cols_2, 0};
+        const auto* base1 = this->begin();
+        const auto* base2 = matrix2.begin();
+        auto* base3 = matrix3.begin();
 
-        auto& arr1 = matrix1.get_matrix();
-        auto& arr2 = matrix2.get_matrix();
-        auto& arr3 = matrix3.get_matrix();
 
-        for(long long row{} ; row<rows_1 ; row++){
-            for(long long k{} ; k < cols_1 ; k++){
-                auto val = arr1[row*cols_1 + k];
-                for(long long col{} ; col<cols_2 ; col++){
-                    arr3[row * cols_2 + col] += val * arr2[k * cols_2 + col];
-                }
-            }
-        }
+
         return matrix3;
     }
+
 
     template<typename Tmx, typename T>
     template<typename Rmx, typename R>

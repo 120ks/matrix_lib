@@ -2,7 +2,6 @@
 
 #include "matrix_base.hpp"
 #include "matrix_statistics.hpp"
-#include "matrix_linear.hpp"
 #include "broadcast.hpp"
 
 

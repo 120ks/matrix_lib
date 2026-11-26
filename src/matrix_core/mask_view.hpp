@@ -170,6 +170,13 @@ namespace machx
             operator bool()const{ //empty is valid with mask so always valid
                 return true;
             }
+
+            bool empty()const{
+                if(ptr_arr.size() == 0){
+                    return true;
+                }
+                return false;
+            }
         
         private:
             //BASE EDITING FUNCTIONS

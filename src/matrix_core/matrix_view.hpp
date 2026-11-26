@@ -114,7 +114,7 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
         inline long long get_gen()const{return generation;}
 
         T* begin(){
-            if(this->get_cols() == m_ptr->get_cols()){
+            if((this->get_cols() == m_ptr->get_cols()) || this->get_rows() == 1){
                 return &((*this)(0, 0));
             }
             return nullptr;
@@ -123,8 +123,9 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
         T* end(){
             return &((*this)(-1, -1))+1;
         }
+
         const T* begin()const{
-            if(this->get_cols() == m_ptr->get_cols()){
+            if((this->get_cols() == m_ptr->get_cols()) || this->get_rows() == 1){
                 return &((*this)(0, 0));
             }
             return nullptr;
@@ -141,39 +142,39 @@ class Matrix_view : public Matrix_base<Matrix_view<T>, T>
 
 
         //SLICING
-        Matrix_view<T> operator()(const Slice r_slice, const Slice c_slice){   
+        inline Matrix_view<T> operator()(const Slice r_slice, const Slice c_slice){   
             quick_throw::throw_if_no_data(*this);
             quick_throw::throw_if_slice_mismatch(*this, r_slice, c_slice);
             
             return{*this, row_slice+r_slice, col_slice+c_slice};
         }
 
-        Matrix_view<T> operator()(const Slice r_slice){   
+        inline Matrix_view<T> operator()(const Slice r_slice){   
             quick_throw::throw_if_no_data(*this);
             quick_throw::throw_if_slice_mismatch(*this, r_slice, Slice{}, "row slicing");
             return {*this, row_slice+r_slice, col_slice};
         }
 
-        Matrix_view<T> operator[](const Slice c_slice){   
+        inline Matrix_view<T> operator[](const Slice c_slice){   
             quick_throw::throw_if_no_data(*this);
             quick_throw::throw_if_slice_mismatch(*this, Slice{}, c_slice, "row slicing");
             return {*this, row_slice, col_slice+c_slice};
         }
 
         //CONST SLICING
-        const Matrix_view<T> operator()(const Slice r_slice, const Slice c_slice)const{ 
+        inline const Matrix_view<T> operator()(const Slice r_slice, const Slice c_slice)const{ 
             quick_throw::throw_if_no_data(*this);
             quick_throw::throw_if_slice_mismatch(*this, r_slice, c_slice);
             return{*this, row_slice+r_slice, col_slice+c_slice};
         }
 
-        const Matrix_view<T> operator()(const Slice r_slice)const{   
+        inline const Matrix_view<T> operator()(const Slice r_slice)const{   
             quick_throw::throw_if_no_data(*this);
             quick_throw::throw_if_slice_mismatch(*this, r_slice, Slice{}, "row slicing");
             return {*this, row_slice+r_slice, col_slice};
         }
 
-        const Matrix_view<T> operator[](const Slice c_slice)const{   
+        inline const Matrix_view<T> operator[](const Slice c_slice)const{   
             quick_throw::throw_if_no_data(*this);
             quick_throw::throw_if_slice_mismatch(*this, Slice{}, c_slice, "row slicing");
             return {*this, row_slice, col_slice+c_slice};

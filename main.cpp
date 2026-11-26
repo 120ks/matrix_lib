@@ -2,6 +2,8 @@
 #include <iomanip>
 
 
+
+
 int main()
 {   
     namespace mxn = machx;
@@ -11,14 +13,14 @@ int main()
         //mxn::test_view();
         //mxn::test_view_safety();
         //mxn::test_operators();
-        //mxn::speed_test(258, 258, 1000);
+        mxn::speed_test(4128, 4128, 10);
         //mxn::test_threads();
-        //mxn::devep_test_ground();
+        mxn::devep_test_ground();
         //mxn::test_data_manip();
         //mxn::flag_test();
         //mxn::cov_and_corr();
         //mxn::searching();
-        mxn::test_rolling();
+        //mxn::test_rolling();
     }
     catch(mxn::dimension_mismatch &e)
     {
